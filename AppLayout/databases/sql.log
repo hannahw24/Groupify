@@ -22,3 +22,14 @@ ALTER TABLE "auth_user" ADD "last_password_change" TIMESTAMP;
 timestamp: 2020-05-05T16:30:03.361785
 ALTER TABLE "auth_user" ADD "past_passwords_hash" TEXT;
 success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
