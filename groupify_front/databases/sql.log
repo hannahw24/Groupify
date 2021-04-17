@@ -24,8 +24,6 @@ ALTER TABLE "auth_user" ADD "past_passwords_hash" TEXT;
 success!
 success!
 success!
-<<<<<<< HEAD
-=======
 success!
 success!
 success!
@@ -35,11 +33,8 @@ success!
 success!
 success!
 success!
-<<<<<<< HEAD
->>>>>>> c53928136a8765748c7b169666f465882fcd86e4
-=======
 success!
 success!
 success!
->>>>>>> 174e68d53aa7220dabb4ff6b555e9b2a73caf1ef
+success!
 success!

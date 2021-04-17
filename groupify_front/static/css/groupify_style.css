@@ -1,0 +1,86 @@
+/* page padding */
+.main {
+    margin-top: 160px; /* Same as the width of the sidenav */
+    /* padding: 0px 10px; */
+}
+
+/* home page friend left panel  */
+.friend_bar {
+    height: 85%; /* Full-height: remove this if you want "auto" height */
+    width: 25%; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 10%; /* Stay at the top */
+    left: 0;
+    background-color: #d9dddc;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 20px;
+}
+  
+/* The navigation menu links */
+.friend_bar p {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    /* display: block; */
+}
+
+/* home page right panel group bar */
+.group_bar {
+    height: 85%; /* Full-height: remove this if you want "auto" height */
+    width: 5%; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 10%; /* Stay at the top */
+    right: 0;
+    background-color: #d9dddc;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 20px;
+}
+
+.group_button{
+    height: 10%;
+    width: 3px;
+    position: fixed;
+    top: 50%;
+    right: 4%;
+    background-color: #8f8f8f;
+}
+
+/* home page center panel */
+.main_profile{
+    height: 85%; /* Full-height: remove this if you want "auto" height */
+    width: 66%; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 10%; /* Stay at the top */
+    left: 27%;
+    /* background-color: */
+    padding-left: 2px;
+    padding-right: 2px;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 20px;
+}
+
+/* Group_Page sidebar  */
+.queue_panel {
+    height: 85%; /* Full-height: remove this if you want "auto" height */
+    width: 30%; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 10%; /* Stay at the top */
+    right: 0;
+    background-color: #d9dddc;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 20px;
+}
+  
+/* The navigation menu links */
+.queue_panel p {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    /* display: block; */
+}
