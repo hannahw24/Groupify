@@ -4,15 +4,16 @@
     [[=message]]
 </div-->
 
-<section >
+<section>
+    <!--Separates friends and profile-->
     <div class="columns">
         <!--Friend List Column-->
         <div class="column">
-            <div id="friends" class="tile is-ancestor notification is-vertical">
-                <h1 id="friendonlinetext" class="title is-5">Friends Online</h1>
+            <div class="tile is-ancestor notification is-vertical">
+                <strong>Friends Online</strong>
                 <div class="tile is-parent is-vertical">
                     <!--Friend Tiles-->
-                    <div id="friendtile0" class="tile is-child notification is-primary">
+                    <div class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
@@ -23,7 +24,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="friendtile1" class="tile is-child notification is-primary">
+                    <div class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
@@ -34,7 +35,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="friendtile2" class="tile is-child notification is-primary">
+                    <div class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
@@ -45,7 +46,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="friendtile3" class="tile is-child notification is-primary">
+                    <div class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
@@ -56,7 +57,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="friendtile4" class="tile is-child notification is-primary">
+                    <div class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
@@ -70,65 +71,41 @@
                 </div>
             </div>
         </div>
-        
         <!--Profile Column-->
-        <div id="profile" class="column is-8">
-            <div class="tile is-ancestor is-vertical is-centered">
+        <div class="column is-8">
+            <div class="tile is-ancestor is-vertical">
                 <!--Banner-->
-                <div class="tile is-parent is-centered">
+                <div class="tile is-parent">
                     <img src=[[=URL('static', 'images/banner.png')]] width="825">
                 </div>
-
+                <!--Theme Button-->
+                <div class="tile is-parent">
+                    <a class="button is-primary" href="[[=URL('index')]]">Theme<i class="fa fa-fw fa-angle-down"></i></a>
+                </div>
             <!--Large Buttons (column for each)-->
             <div class="tile is-parent">
                 <div class="columns">
-                    <div class="column is-one-third">
-                        <div id="p1" class="tile is-child is-success notification box is-vertical">
-                            <p id="t1" class="title">Top Songs & Artists</p>
-                            <div id="b1" style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-list-ul"></i></div>
+                    <div class="column">
+                        <div class="tile is-child is-success notification box is-vertical">
+                            <p class="title">Top Songs & Artists</p>
+                            <div style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-list-ul"></i></div>
                         </div>
                     </div>
-                    <div class="column is-one-third">
-                        <div id="p2" class="tile is-child is-success notification box is-vertical">
-                            <p id="t2" class="title">Stats & Analytics</p>
-                            <div id="b2" style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-chart-bar"></i></div>
+                <div class="column">
+                    <div class="tile is-child is-success notification box is-vertical">
+                            <p class="title">Stats & Analytics</p>
+                            <div style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-chart-bar"></i></div>
                         </div>
                     </div>
-                        <div class="column is-one-third">
-                            <div id="p3" class="tile is-child is-success notification box is-vertical">
-                                <p id="t3" class="title">Start Group Listen</p>
-                                <div id="b3" style="font-size: 24px;"><a href="[[=URL('groupSession')]]"><i class="fa fa-fw fa-5x fa-play"></i></a></div>
-                            </div>
+                    <div class="column">
+                        <div class="tile is-child is-success notification box is-vertical">
+                            <p class="title">Start Group Listen</p>
+                            <div style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-play"></i></div>
+                        </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!--Theme Button-->
-    <!-- <a class="button is-primary" href="[[=URL('index')]]">Reset<i class="fa fa-fw fa-angle-down"></i></a>
-    <div class="dropdown is-hoverable">
-        <div class="dropdown-trigger">
-            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu3">
-                <span>Theme</span>
-                <span class="icon is-small">
-                    <i class="fas fa-angle-down" aria-hidden="true"></i>
-                </span>
-            </button>
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-          <div class="dropdown-content">
-            <a class="dropdown-item" onclick="spotifyTheme();"> Spotify </a>
-            <a class="dropdown-item" onclick="countryTheme();"> Country </a>
-            <a class="dropdown-item" onclick="rapTheme();"> Rap </a>
-            <a class="dropdown-item" onclick="spotifyTheme();"> Pop </a>
-            <a class="dropdown-item" onclick="spotifyTheme();"> RNB </a>
-            <a class="dropdown-item" onclick="spotifyTheme();"> Lofi </a>
-          </div>
-        </div>
-    </div> -->
-
-
-
 </section>
