@@ -57,6 +57,8 @@
     top: 10%; /* Stay at the top */
     left: 27%;
     /* background-color: */
+    padding-left: 2px;
+    padding-right: 2px;
     overflow-x: hidden; /* Disable horizontal scroll */
     padding-top: 20px;
 }
