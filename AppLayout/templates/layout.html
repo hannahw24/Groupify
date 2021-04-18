@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-
+<!-- https://py4web.com/_documentation/static/en/chapter-09.html -->
 <html>
   <head>
     <base href="[[=URL('static')]]/">
@@ -25,12 +25,17 @@
       <div id="left-navbar" class="navbar-menu">
         <div class="navbar-start">   
             <img src=[[=URL('static', 'images/logo-circle.png')]] style="width:30px;height:57px;">
+          [[if session.get("userID") is None:]]
           <a class="navbar-item" href="[[=URL('index')]]">Home</a>
+          [[else:
+            userPage = "user/" + session.get("userID") ]]
+          <a class="navbar-item" href="[[=URL(userPage)]]" >Home</a>
+          [[pass]]
           [[block page_menu_items]]<!-- individual pages can add menu items here -->[[end]]
         </div>
-
+        [[if (editable==True):]]
         <div class="m-6">
-          <a class="button is-primary" href="[[=URL('index')]]">Reload</a>
+          <a class="button is-primary" href="[[=URL(userPage)]]">Reload</a>
           <div class="dropdown is-hoverable">
               <div class="dropdown-trigger">
                   <button class="button" aria-haspopup="true" aria-controls="dropdown-menu3">
@@ -52,17 +57,17 @@
               </div>
           </div>
         </div>
+        [[pass]]
 
         <div class="navbar-end">
           <img src=[[=URL('static', 'images/icon.png')]] style="width:30px;height:57px;">
           <a class="navbar-item" href="[[=URL('index')]]">Profile</a>
           <div class="navbar-item">
             <div class="buttons">
-              [[if globals().get('user'):]]
+              [[if session.get("userID") is not None:]]
               <a class="button is-primary" href="[[=URL('auth/logout')]]">Sign out</a>
               [[else:]]
-              <a class="button is-primary" href="[[=URL('auth/register')]]">Sign up</a>
-              <a class="button is-light" href="[[=URL('auth/login')]]">Sign in</a>
+              <a class="button is-light" href="[[=URL('login')]]">Sign in</a>
               [[pass]]
             </div>
           </div>
