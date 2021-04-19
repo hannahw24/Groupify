@@ -2,7 +2,7 @@
 1. go to your /py4web folder
 2. conda activate cse183
 3. pip3 install spotipy 
-4. 
+
 **-------------------------------------**
 
 To launch the app correctly 
