@@ -1,42 +1,49 @@
+/* ********************** ACROSS ALL PAGES ********************** */
 /* page padding */
 .main {
     margin-top: 160px; /* Same as the width of the sidenav */
-    /* padding: 0px 10px; */
 }
 
-/* home page friend left panel  */
-.friend_bar {
-    height: 85%; /* Full-height: remove this if you want "auto" height */
-    width: 25%; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 10%; /* Stay at the top */
-    left: 0;
+/* general panel formatting */
+.panel_spec {
+    position: fixed;
     background-color: #d9dddc;
     overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 20px;
+    padding: 20px;
+    z-index: 1; /* Stay on top */
 }
-  
-/* The navigation menu links */
-.friend_bar p {
-    padding: 6px 8px 6px 16px;
+
+p.labels{
     text-decoration: none;
     font-size: 25px;
     color: #818181;
-    /* display: block; */
+}
+
+.profile_photo {
+    color: #818181;
+    width: 100px;
+    height: 100px;
+    background-color: #818181;
+    border-radius:50%;
+    box-shadow: 7px 7px 15px 1px #55555569;
+}
+
+
+/* ********************** HOME PAGE ********************** */
+/* home page friend left panel  */
+.friend_bar {
+    height: 85%; 
+    width: 25%; 
+    top: 10%; 
+    left: 0;
 }
 
 /* home page right panel group bar */
 .group_bar {
-    height: 85%; /* Full-height: remove this if you want "auto" height */
-    width: 5%; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 10%; /* Stay at the top */
+    height: 85%;
+    width: 5%; 
+    top: 10%; 
     right: 0;
-    background-color: #d9dddc;
-    overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 20px;
 }
 
 .group_button{
@@ -50,37 +57,54 @@
 
 /* home page center panel */
 .main_profile{
-    height: 85%; /* Full-height: remove this if you want "auto" height */
-    width: 66%; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 10%; /* Stay at the top */
+    height: 85%; 
+    width: 66%; 
+    position: fixed; 
+    z-index: 1; 
+    top: 10%; 
     left: 27%;
     /* background-color: */
     padding-left: 2px;
     padding-right: 2px;
-    overflow-x: hidden; /* Disable horizontal scroll */
+    overflow-x: hidden; 
     padding-top: 20px;
+    padding-bottom: 20px;
 }
 
+
+/* ********************** GROUP PAGE ********************** */
 /* Group_Page sidebar  */
 .queue_panel {
-    height: 85%; /* Full-height: remove this if you want "auto" height */
-    width: 30%; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 10%; /* Stay at the top */
+    height: 85%; 
+    width: 25%; 
+    top: 10%;
     right: 0;
-    background-color: #d9dddc;
-    overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 20px;
 }
-  
-/* The navigation menu links */
-.queue_panel p {
-    padding: 6px 8px 6px 16px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    /* display: block; */
+
+/* Group_Page group listen panel  */
+.group_panel {
+    height: 85%;
+    width: 70%;
+    top: 10%;
+    left: 0;
+}
+
+.group_pfp {
+    margin-left: auto;
+    margin-right: auto;
+    top: 40%;
+}
+
+/* ********************** SETTINGS PAGE ********************** */
+.settings_panel{
+    height: 90%;
+    width: 60%;
+    top: 10%;
+    left: 20%;
+}
+
+.settings_pfp {
+    margin-left: auto;
+    margin-right: auto;
+    top: 5%;
 }
