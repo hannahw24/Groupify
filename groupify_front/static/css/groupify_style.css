@@ -71,6 +71,24 @@ p.labels{
     padding-bottom: 20px;
 }
 
+.album_box {
+    /* background-color: white; */
+    border-radius: 0px; 
+    /* color: #4a4a4a; */
+    display: block;
+    padding: .25rem;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.index_pfp {
+    background-color: #8f8f8f
+    /* margin-left: auto;
+    margin-right: auto; */
+    /* top: 17%; */
+    /* position: absolute !important;
+    z-index: 1; */
+}
 
 /* ********************** GROUP PAGE ********************** */
 /* Group_Page sidebar  */
