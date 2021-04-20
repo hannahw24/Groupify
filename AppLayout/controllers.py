@@ -126,7 +126,7 @@ def getUserInfo():
         profile_pic = None
 
     #Test function ignore
-    search()
+    #search()
 
     # Assigns the userID to the session. This is used to verify who can edit
     # profiles. 
@@ -231,7 +231,7 @@ def getTopTracksFunction():
     # long_term = all time
     # medium_term = 6 months
     # short_term = 4 weeks
-    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
+    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="long_term")
     #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
     TopSongsString= ""
