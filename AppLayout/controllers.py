@@ -246,7 +246,7 @@ def getSettings():
     return dict(session=session, editable=False)
 
 # Taken from the spotipy examples page referenced above.
-@action('/sign_out')
+@action('sign_out')
 @action.uses(session)
 def sign_out():
     try:
@@ -255,4 +255,4 @@ def sign_out():
         session.clear()
     except OSError as e:
         print ("Error: %s - %s." % (e.filename, e.strerror))
-    return redirect('/')
+    return redirect(URL('index'))

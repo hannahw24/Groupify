@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- https://py4web.com/_documentation/static/en/chapter-09.html -->
 <html>
   <head>
     <base href="[[=URL('static')]]/">
@@ -33,65 +32,64 @@
           <a class="navbar-item" href="[[=URL(userPage)]]" >Group-ify</a>
           [[pass]]
           [[block page_menu_items]]<!-- individual pages can add menu items here -->[[end]]
-        </div>
-        [[if (editable==True):]]
-        <div class="m-6">
-          <a class="button is-primary" href="[[=URL(userPage)]]">Reload</a>
-          <div class="dropdown is-hoverable">
-              <div class="dropdown-trigger">
-                  <button class="button" aria-haspopup="true" aria-controls="dropdown-menu3">
-                      <span>Theme</span>
-                      <span class="icon is-small">
-                          <i class="fas fa-angle-down" aria-hidden="true"></i>
-                      </span>
-                  </button>
-              </div>
-              <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                <div class="dropdown-content">
-                  <a class="dropdown-item" onclick="spotifyTheme();"> Spotify </a>
-                  <a class="dropdown-item" onclick="countryTheme();"> Country </a>
-                  <a class="dropdown-item" onclick="rapTheme();"> Rap </a>
-                  <a class="dropdown-item" onclick="popTheme();"> Pop </a>
-                  <a class="dropdown-item" onclick="rnbTheme();"> RNB </a>
-                  <a class="dropdown-item" onclick="lofiTheme();"> Lofi </a>
+          </div>
+          <div class="navbar-end">
+            <!-- themes picker -->
+            <!-- <a class="button is-primary" href="[[=URL('index')]]">Reload</a> -->
+            [[if (editable==True):]]
+            <nav class="navbar is-dark" role="navigation" aria-label="dropdown navigation">
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">theme</a>
+                <div class="navbar-dropdown">
+                  <a class="navbar-item" href="[[=URL('index')]]">Default</a>
+                  <a class="navbar-item" onclick="spotifyTheme();">Spotify</a>
+                  <a class="navbar-item" onclick="countryTheme();">Country</a>
+                  <a class="navbar-item" onclick="rapTheme();">Rap</a>
+                  <a class="navbar-item" onclick="popTheme();">Pop</a>
+                  <a class="navbar-item" onclick="rnbTheme();">R&B</a>
+                  <a class="navbar-item" onclick="lofiTheme();">Lo-Fi</a>
                 </div>
               </div>
-          </div>
-        </div>
-        [[pass]]
-
-        <div class="navbar-end">
-          <div class="navbar-item">
-            <div class="buttons">
-              [[if session.get("userID") is not None:]]
-              <a class="button is-primary" href="[[=URL('auth/logout')]]">Sign out</a>
-              [[else:]]
-              <a class="button is-light" href="[[=URL('login')]]">Sign in</a>
-              [[pass]]
+            </nav>
+            [[pass]]
+            <!-- Home, settings, group -->
+            <!-- <img src=[[=URL('static', 'images/icon.png')]] style="width:30px;height:57px;"> -->
+            [[if session.get("userID") != None:]]
+            <a class="navbar-item" href="[[=URL('groupSession')]]">group</a>
+            <a class="navbar-item" href="[[=URL('settings')]]">settings</a>
+            [[pass]]
+            <!-- Sign In/Sign Out -->
+            <div class="navbar-item">
+              <div class="buttons">
+                [[if session.get("userID") is not None:]]
+                <a class="button is-primary" href="[[=URL('sign_out')]]">Sign out</a>
+                [[else:]]
+                <a class="button is-light" href="[[=URL('login')]]">Sign in</a>
+                [[pass]]
+              </div>
             </div>
           </div>
         </div>
+      </nav>
+      <!--section class="section">
+        <div class="container">
+          <h1 class="title">Frieds Online</h1>
+        </div>
+      </section-->
+      <div>
+        <!-- beginning of HTML inserted by extending template -->
+        [[include]]
+        <!-- end of HTML inserted by extending template -->
       </div>
-    </nav>
-    <!--section class="section">
-      <div class="container">
-        <h1 class="title">Frieds Online</h1>
-      </div>
-    </section-->
-    <div>
-      <!-- beginning of HTML inserted by extending template -->
-      [[include]]
-      <!-- end of HTML inserted by extending template -->
-    </div>
-    <!-- <footer class="footer">
-      <div class="content has-text-centered">
-        hi there i am a foot
-      </div>
-    </footer> -->
-  </body>
-  <script src="js/sugar.min.js"></script>
-  <script src="js/axios.min.js"></script>
-  <script src="js/vue.min.js"></script>
-  <script src="js/theme_change.js"></script>
-  [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
-</html>
+      <!-- <footer class="footer">
+        <div class="content has-text-centered">
+          hi there i am a foot
+        </div>
+      </footer> -->
+    </body>
+    <script src="js/sugar.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <script src="js/vue.min.js"></script>
+    <script src="js/theme_change.js"></script>
+    [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
+  </html>
