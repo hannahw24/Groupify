@@ -17,7 +17,7 @@ To launch the app correctly
     b. SET SPOTIPY_CLIENT_SECRET=d9ff6b1b8e0d4dd3a421f0c1e4f70e67
     
        On Mac/Linux:
-       export SPOTIPY_CLIENT_ID='d9ff6b1b8e0d4dd3a421f0c1e4f70e67'
+       export SPOTIPY_CLIENT_SECRET='d9ff6b1b8e0d4dd3a421f0c1e4f70e67'
        
     c. SET SPOTIPY_REDIRECT_URI=http://127.0.0.1:8000/AppLayout/callback
     
