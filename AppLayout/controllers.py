@@ -133,12 +133,17 @@ def getUserInfo():
     session["userID"] = userID
     profileURL = "user/" + userID
     print ("session[userID] = ", session["userID"])
+    topTracks = getTopTracksFunction()
+    print(topTracks)
     # Loops through the dbUser table to see if the userID already exists.
     for row in db(db.dbUser.userID).select():
         if row.userID == userID:
+            row.update(topTracks=topTracks)
+            print (row.topTracks)
+            print (row)
             print ("This is a duplicate")
             return redirect(profileURL)
-    db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic)
+    db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic, topTracks=topTracks)
     return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
@@ -159,6 +164,8 @@ def getUserProfile(userID=None):
     # Commands below finds friends of the person logged in
     profile_info = session.get("userID")
     rows = db(db.dbUser.userID == profile_info).select().as_list()
+    topTracks = rows[0]["topTracks"]
+    print(topTracks)
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
     for row in rows:
@@ -168,7 +175,7 @@ def getUserProfile(userID=None):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
-    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList)
+    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks)
 
 # Returns whether the user can edit a profile
 @action.uses(session)
@@ -213,6 +220,28 @@ def getLikedTracks():
         track = item['track']
         LikedSongsString = LikedSongsString + str((idx, track['artists'][0]['name'], " – ", track['name'])) + "<br>"
     return LikedSongsString
+
+def getTopTracksFunction():
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect('login')
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+
+    # long_term = all time
+    # medium_term = 6 months
+    # short_term = 4 weeks
+    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
+    #Taken from the quick start of Spotipy authorization flow
+    #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
+    TopSongsString= ""
+    TopSongsList = []
+    for idx, item in enumerate(results['items']):
+        track = item['name']
+        TopSongsList.append(track)
+        TopSongsString = TopSongsString + str(track) + "<br>"
+    
+    return TopSongsList
 
 @action('getTopTracks')
 def getTopTracks():

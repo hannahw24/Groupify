@@ -18,7 +18,8 @@ db.define_table(
     Field('userID', notnull=True, unique=True),
     Field('display_name'),
     #Ash: email may be unnecessary. 
-    Field('profile_pic')
+    Field('profile_pic'),
+    Field('topTracks')
 )
 
 db.define_table(
