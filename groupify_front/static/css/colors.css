@@ -1,0 +1,39 @@
+.is-blue {
+    background-color: #7fe5f0 !important;
+}
+
+.has-text-blue {
+    color: #7fe5f0 !important;
+}
+
+.is-green {
+    background-color: #a6f87e !important;
+}
+
+.has-text-green {
+    color: #a6f87e !important;
+}
+
+.is-yellow {
+    background-color: #fdf287 !important;
+}
+
+.has-text-yellow {
+    color: #fdf287 !important;
+}
+
+.is-red {
+    background-color: #ffb3ba !important;
+}
+
+.has-text-red {
+    color: #ffb3ba !important;
+}
+
+.is-purple {
+    background-color: #dda6f0 !important;
+}
+
+.has-text-purple {
+    color: #dda6f0 !important;
+}
