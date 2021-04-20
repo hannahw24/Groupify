@@ -53,6 +53,9 @@ scopes = "user-library-read user-read-private user-follow-read user-follow-modif
 @action('index', method='GET')
 @action.uses('index.html', session)
 def getIndex():
+    if session.get("userID") != None:
+        profileURL = "user/" + session.get("userID")
+        return redirect(profileURL)
     return dict(session=session, editable=False)
 
 # https://github.com/plamere/spotipy/blob/master/examples/search.py
@@ -154,10 +157,12 @@ def getUserProfile(userID=None):
     if (not auth_manager.validate_token(cache_handler.get_cached_token())) or (userID == None):
         return redirect(URL('index'))
     rows = db(db.dbUser.userID == userID).select().as_list()
+    #Avoid the for loop errors in user.html that would occur if friendsList is None
+    friendsList = []
     for row in rows:
         userNumber = row["id"]
         friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
-    if ((friendsList is not None) and len(friendsList) > 0):
+    if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
@@ -226,6 +231,17 @@ def getTopTracks():
         track = item['name']
         TopSongsString = TopSongsString + str(track) + "<br>"
     return TopSongsString
+
+@action('groupSession')
+@action.uses(db, auth, 'groupSession.html', session)
+def groupSession():
+    return dict(session=session, editable=False)
+
+# Ash: There isn't a settings page right now
+@action('settings')
+@action.uses(db, auth, 'settings.html', session)
+def getSettings():
+    return dict(session=session, editable=False)
 
 # Taken from the spotipy examples page referenced above.
 @action('/sign_out')
