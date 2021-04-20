@@ -35,7 +35,7 @@ _Your path to py4web/apps/AppLayout here_
 
 export SPOTIPY_CLIENT_ID='f4cfb74420ed4bcaab8408922adb5820'
 
-export SPOTIPY_CLIENT_ID='d9ff6b1b8e0d4dd3a421f0c1e4f70e67'
+export SPOTIPY_CLIENT_SECRET='d9ff6b1b8e0d4dd3a421f0c1e4f70e67'
 
 export SPOTIPY_REDIRECT_URI='http://127.0.0.1:8000/AppLayout/callback'
 
