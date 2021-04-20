@@ -123,7 +123,7 @@ def getUserInfo():
         profile_pic = results["images"][0]["url"]
     else:
         # We need to assign a default picture for users without a profile picture.
-        profile_pic = None
+        profile_pic = ""
 
     #Test function ignore
     #search()
@@ -172,6 +172,7 @@ def getUserProfile(userID=None):
     profile_pic = ""
     currentProfileTopTracksList = (db(db.dbUser.userID == userID).select().as_list())
     if (currentProfileTopTracksList != None) and (currentProfileTopTracksList != []):
+        # Setting the top tracks and profile pic variables
         topTracks = currentProfileTopTracksList[0]["topTracks"]
         profile_pic = currentProfileTopTracksList[0]["profile_pic"]
     print("topTracks user: ", topTracks)
@@ -249,8 +250,6 @@ def getTopTracksFunction():
         track = item['name']
         TopSongsList.append(track)
         TopSongsString = TopSongsString + str(track) + "<br>"
-    # Shown in the anaconda window 
-    print(TopSongsString)
 
     if TopSongsList == []:
         TopSongsList = ""
@@ -260,6 +259,8 @@ def getTopTracksFunction():
 @action('groupSession')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession():
+    # Ash: set editable to False for now, not sure if setting the theme
+    #      on the groupSession page will change it for everyone
     return dict(session=session, editable=False)
 
 # Ash: There isn't a settings page right now
