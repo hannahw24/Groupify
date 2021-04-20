@@ -3,6 +3,19 @@
 <div>
     <div class="friend_bar panel_spec"> 
         <p class="labels">Frands</p>
+        [[for row in friendsList:]]
+        <div id="friendtile0" class="tile is-child notification is-primary">
+            <div class="columns">
+                <div class="column">
+                    <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                </div>
+                <div class="column is-9">
+                    <strong>[[=(row["display_name"])]]</strong>
+                    <p>Listening to Song - Artist</p>
+                </div>
+            </div>
+        </div>
+        [[pass]]
     </div>
     
     <div class="main_profile">

@@ -53,9 +53,6 @@ scopes = "user-library-read user-read-private user-follow-read user-follow-modif
 @action('index', method='GET')
 @action.uses('index.html', session)
 def getIndex():
-    if session.get("userID") != None:
-        profileURL = "user/" + session.get("userID")
-        return redirect(profileURL)
     return dict(session=session, editable=False)
 
 # https://github.com/plamere/spotipy/blob/master/examples/search.py
@@ -156,7 +153,12 @@ def getUserProfile(userID=None):
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if (not auth_manager.validate_token(cache_handler.get_cached_token())) or (userID == None):
         return redirect(URL('index'))
-    rows = db(db.dbUser.userID == userID).select().as_list()
+    # Command below finds friends of the profile user is viewing 
+    # rows = db(db.dbUser.userID == userID).select().as_list()
+
+    # Commands below finds friends of the person logged in
+    profile_info = session.get("userID")
+    rows = db(db.dbUser.userID == profile_info).select().as_list()
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
     for row in rows:
