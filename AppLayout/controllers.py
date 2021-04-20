@@ -112,14 +112,14 @@ def getUserInfo():
     # url to user, id, images (profile pic), and premium status
     results = spotify.current_user()
 
-    print(results)
-    print("")
-    print (results["display_name"]) #Example: "Ash"
+    #print(results)
+    #print("")
+    #print (results["display_name"]) #Example: "Ash"
     display_name = results["display_name"]
-    print (results["id"])
+    #print (results["id"])
     userID = results["id"]
     if (len(results["images"]) != 0):
-        print (results["images"][0]["url"])
+        #print (results["images"][0]["url"])
         profile_pic = results["images"][0]["url"]
     else:
         # We need to assign a default picture for users without a profile picture.
@@ -131,20 +131,23 @@ def getUserInfo():
     # Assigns the userID to the session. This is used to verify who can edit
     # profiles. 
     session["userID"] = userID
+    # Gets the URL ready for the redirect
     profileURL = "user/" + userID
-    print ("session[userID] = ", session["userID"])
+    # Gets the User's top tracks
     topTracks = getTopTracksFunction()
-    print(topTracks)
-    # Loops through the dbUser table to see if the userID already exists.
-    for row in db(db.dbUser.userID).select():
-        if row.userID == userID:
-            row.update(topTracks=topTracks)
-            print (row.topTracks)
-            print (row)
-            print ("This is a duplicate")
-            return redirect(profileURL)
-    db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic, topTracks=topTracks)
-    return redirect(profileURL)
+    # Checks to see if it can get the user from the database
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    # Not sure if returns as None or an empty list if user is new.
+    if (dbUserEntry == None) or dbUserEntry == []:
+        db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic, topTracks=topTracks)
+        print("Hello1")
+        return redirect(profileURL)
+    # If it is in the database, update its top tracks
+    else:
+        db.dbUser.update_or_insert(db.dbUser.userID == userID,
+                                topTracks=topTracks)
+        print("Hello2")
+        return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
@@ -164,8 +167,14 @@ def getUserProfile(userID=None):
     # Commands below finds friends of the person logged in
     profile_info = session.get("userID")
     rows = db(db.dbUser.userID == profile_info).select().as_list()
-    topTracks = rows[0]["topTracks"]
-    print(topTracks)
+
+    topTracks = ""
+    profile_pic = ""
+    currentProfileTopTracksList = (db(db.dbUser.userID == userID).select().as_list())
+    if (currentProfileTopTracksList != None) and (currentProfileTopTracksList != []):
+        topTracks = currentProfileTopTracksList[0]["topTracks"]
+        profile_pic = currentProfileTopTracksList[0]["profile_pic"]
+    print("topTracks user: ", topTracks)
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
     for row in rows:
@@ -175,7 +184,7 @@ def getUserProfile(userID=None):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
-    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks)
+    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks, profile_pic=profile_pic)
 
 # Returns whether the user can edit a profile
 @action.uses(session)
@@ -231,7 +240,7 @@ def getTopTracksFunction():
     # long_term = all time
     # medium_term = 6 months
     # short_term = 4 weeks
-    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="long_term")
+    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
     #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
     TopSongsString= ""
@@ -240,28 +249,13 @@ def getTopTracksFunction():
         track = item['name']
         TopSongsList.append(track)
         TopSongsString = TopSongsString + str(track) + "<br>"
-    
+    # Shown in the anaconda window 
+    print(TopSongsString)
+
+    if TopSongsList == []:
+        TopSongsList = ""
+    # Returned to the user profile
     return TopSongsList
-
-@action('getTopTracks')
-def getTopTracks():
-    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
-    if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
-
-    # long_term = all time
-    # medium_term = 6 months
-    # short_term = 4 weeks
-    results = spotify.current_user_top_tracks(limit=50, offset=0, time_range="short_term")
-    #Taken from the quick start of Spotipy authorization flow
-    #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
-    TopSongsString= ""
-    for idx, item in enumerate(results['items']):
-        track = item['name']
-        TopSongsString = TopSongsString + str(track) + "<br>"
-    return TopSongsString
 
 @action('groupSession')
 @action.uses(db, auth, 'groupSession.html', session)
