@@ -13,3 +13,26 @@ from pydal.validators import *
 #
 # db.commit()
 #
+db.define_table(
+    'dbUser',
+    Field('userID', notnull=True, unique=True),
+    Field('display_name'),
+    #Ash: email may be unnecessary. 
+    Field('profile_pic'),
+    Field('topTracks')
+)
+
+db.define_table(
+    'dbFriends',
+    Field('userID', notnull=True, unique=True),
+    Field('display_name'),
+    Field('profile_pic'),
+    #Ash: This should connect the friends table to the user table
+    Field('friendToWhoID', db.dbUser)
+)
+
+#“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
+#db.table._extra = {}
+
+
+db.commit()
