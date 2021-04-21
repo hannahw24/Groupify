@@ -1,134 +1,25 @@
 [[extend 'layout.html']]
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+</head>
 
-<!--div class="vars">
-    [[=message]]
-</div-->
-
-<section >
-    <div class="columns">
-        <!--Friend List Column-->
-        <div class="column">
-            <div id="friends" class="tile is-ancestor notification is-vertical">
-                <h1 id="friendonlinetext" class="title is-5">Friends Online</h1>
-                <div class="tile is-parent is-vertical">
-                    <!--Friend Tiles-->
-                    <div id="friendtile0" class="tile is-child notification is-primary">
-                        <div class="columns">
-                            <div class="column">
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                            </div>
-                            <div class="column is-9">
-                                <strong>Friend 1</strong>
-                                <p>Listening to Song - Artist</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="friendtile1" class="tile is-child notification is-primary">
-                        <div class="columns">
-                            <div class="column">
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                            </div>
-                            <div class="column is-9">
-                                <strong>Friend 2</strong>
-                                <p>Listening to Song - Artist</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="friendtile2" class="tile is-child notification is-primary">
-                        <div class="columns">
-                            <div class="column">
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                            </div>
-                            <div class="column is-9">
-                                <strong>Friend 3</strong>
-                                <p>Listening to Song - Artist</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="friendtile3" class="tile is-child notification is-primary">
-                        <div class="columns">
-                            <div class="column">
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                            </div>
-                            <div class="column is-9">
-                                <strong>Friend 4</strong>
-                                <p>Listening to Song - Artist</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="friendtile4" class="tile is-child notification is-primary">
-                        <div class="columns">
-                            <div class="column">
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                            </div>
-                            <div class="column is-9">
-                                <strong>Friend 5</strong>
-                                <p>Listening to Song - Artist</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body>
+    <section class="section">
+        <div class="has-text-centered" style="margin-top: 15%;">
+            <h1 class="title">
+                Welcome to Groupify! 
+            </h1>
+            <p>
+                Please log in before continuing
+            </p>
         </div>
-        
-        <!--Profile Column-->
-        <div id="profile" class="column is-8">
-            <div class="tile is-ancestor is-vertical is-centered">
-                <!--Banner-->
-                <div class="tile is-parent is-centered">
-                    <img src=[[=URL('static', 'images/banner.png')]] width="825">
-                </div>
+    </section>
 
-            <!--Large Buttons (column for each)-->
-            <div class="tile is-parent">
-                <div class="columns">
-                    <div class="column is-one-third">
-                        <div id="p1" class="tile is-child is-success notification box is-vertical">
-                            <p id="t1" class="title">Top Songs & Artists</p>
-                            <div id="b1" style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-list-ul"></i></div>
-                        </div>
-                    </div>
-                    <div class="column is-one-third">
-                        <div id="p2" class="tile is-child is-success notification box is-vertical">
-                            <p id="t2" class="title">Stats & Analytics</p>
-                            <div id="b2" style="font-size: 24px;"><i class="fa fa-fw fa-5x fa-chart-bar"></i></div>
-                        </div>
-                    </div>
-                        <div class="column is-one-third">
-                            <div id="p3" class="tile is-child is-success notification box is-vertical">
-                                <p id="t3" class="title">Start Group Listen</p>
-                                <div id="b3" style="font-size: 24px;"><a href="[[=URL('groupSession')]]"><i class="fa fa-fw fa-5x fa-play"></i></a></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <section class="section">
+        <div class="buttons is-centered">
+            <a class="button is-black is-focused" href="[[=URL('login')]]">Continue to Spotify</a>
         </div>
-    </div>
-
-    <!--Theme Button-->
-    <!-- <a class="button is-primary" href="[[=URL('index')]]">Reset<i class="fa fa-fw fa-angle-down"></i></a>
-    <div class="dropdown is-hoverable">
-        <div class="dropdown-trigger">
-            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu3">
-                <span>Theme</span>
-                <span class="icon is-small">
-                    <i class="fas fa-angle-down" aria-hidden="true"></i>
-                </span>
-            </button>
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-          <div class="dropdown-content">
-            <a class="dropdown-item" onclick="spotifyTheme();"> Spotify </a>
-            <a class="dropdown-item" onclick="countryTheme();"> Country </a>
-            <a class="dropdown-item" onclick="rapTheme();"> Rap </a>
-            <a class="dropdown-item" onclick="spotifyTheme();"> Pop </a>
-            <a class="dropdown-item" onclick="spotifyTheme();"> RNB </a>
-            <a class="dropdown-item" onclick="spotifyTheme();"> Lofi </a>
-          </div>
-        </div>
-    </div> -->
-
-
-
-</section>
+    </section>
+</body>
