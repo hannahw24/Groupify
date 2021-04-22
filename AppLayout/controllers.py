@@ -136,36 +136,43 @@ def getUserInfo():
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
-
+    friendsEntries =  (db(db.dbFriends.userID == userID).select().as_list())
 
     # Not sure if returns as None or an empty list if user is new.
     if (dbUserEntry == None) or dbUserEntry == []:
         db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic)
         insertedID = getIDFromUserTable(userID)
-        print("insertedID ", insertedID)
-        print("Hello1")
     # If it is in the database, update its top tracks
     else:
         # Update all info
         db(db.dbUser.userID == userID).update(display_name=display_name)
         db(db.dbUser.userID == userID).update(profile_pic=profile_pic)
-        print("Hello2")
-    if (shortTermEntry == None) or shortTermEntry == []:
+    # Updates the information in friends database so the friends NAV bar is up to date. 
+    if (friendsEntries != None) and (friendsEntries != []):
+        if friendsEntries[0]["profile_pic"] != profile_pic:
+            print("Differences in profile pic!")
+            for row in friendsEntries:
+                dbRow = db(db.dbFriends.id == row["id"])
+                dbRow.update(profile_pic=profile_pic)
+                dbRow.update(display_name=display_name)
+    # Is there shortTerm top tracks populated?
+    if (shortTermEntry == None) or (shortTermEntry == []):
         insertedID = getIDFromUserTable(userID)
         print("insertedID ", insertedID)
         db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
                             trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
-        print("Hello11")
+    # If it is update it
     else:
         insertedID = getIDFromUserTable(userID)
         print("insertedID ", insertedID)
         # Updates their songs of the past 4 weeks. 
-        db(db.shortTerm.topTracksOfWho == insertedID).update(topTracks=topTracks)
-        db(db.shortTerm.topTracksOfWho == insertedID).update(topArtists=topArtists)
-        db(db.shortTerm.topTracksOfWho == insertedID).update(imgList=imgList)
-        db(db.shortTerm.topTracksOfWho == insertedID).update(trackLinks=trackLinks)
-        db(db.shortTerm.topTracksOfWho == insertedID).update(artistLinks=artistLinks)
-        print("Hello22")
+        dbRow =  db(db.shortTerm.topTracksOfWho == insertedID)
+        dbRow.update(topTracks=topTracks)
+        dbRow.update(topArtists=topArtists)
+        dbRow.update(imgList=imgList)
+        dbRow.update(trackLinks=trackLinks)
+        dbRow.update(artistLinks=artistLinks)
+    
     return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
@@ -184,7 +191,8 @@ def getUserProfile(userID=None):
     # rows = db(db.dbUser.userID == userID).select().as_list()
 
     # Commands below finds friends of the person logged in
-    userEntry = db(db.dbUser.userID == userID).select().as_list()
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     shortTermList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
 
     # Declared early for checking an error where a user hasn't listened to songs, do not remove
@@ -207,13 +215,13 @@ def getUserProfile(userID=None):
         artistLinks = fillerTopTracks
 
     profile_pic = ""
-    if (userEntry != None) and (userEntry != []):
+    if (currentProfileEntry != None) and (currentProfileEntry != []):
         # Setting the top tracks and profile pic variables
-        profile_pic = userEntry[0]["profile_pic"]
+        profile_pic = currentProfileEntry[0]["profile_pic"]
     print("topTracks user: ", topTracks)
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
-    for row in userEntry:
+    for row in loggedInUserEntry:
         userNumber = row["id"]
         friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
     if ((friendsList != None) and len(friendsList) > 0):

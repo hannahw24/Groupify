@@ -3,7 +3,7 @@
 
 <div>
     <div class="friend_bar panel_spec"> 
-        <p class="labels">Frands</p>
+        <p class="labels">Following</p>
         <!-- Field for search bar -->
         <div class="tile is-parent">
             <div class="field is-pulled-right">
@@ -12,7 +12,7 @@
                         <i class="fas fa-search"></i>
                     </span>
                     <!-- Calls function when something is entered -->
-                    <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search Friends">
+                    <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search">
                 </div>
             </div>
         </div>
@@ -23,10 +23,15 @@
                     <div id="friendtile0" class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
+                                [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                [[else:]]
+                                <img class="is-rounded" src=[[=(row["profile_pic"]) ]]>
+                                [[pass]]
                             </div>
                             <div class="column is-9">
-                                <a><strong>[[=(row["display_name"])]]</strong></a>
+                                [[ profileURL = "user/" + row["userID"] ]]
+                                <a href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p>Listening to Song - Artist</p>
                             </div>
                         </div>
