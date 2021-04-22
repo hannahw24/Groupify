@@ -12,7 +12,7 @@
                         <i class="fas fa-search"></i>
                     </span>
                     <!-- Calls function when something is entered -->
-                    <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search Friends">
+                    <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search">
                 </div>
             </div>
         </div>
@@ -23,10 +23,15 @@
                     <div id="friendtile0" class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
+                                [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                [[else:]]
+                                <img class="is-rounded" src=[[=(row["profile_pic"]) ]]>
+                                [[pass]]
                             </div>
                             <div class="column is-9">
-                                <a><strong>[[=(row["display_name"])]]</strong></a>
+                                [[ profileURL = "user/" + row["userID"] ]]
+                                <a href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p>Listening to Song - Artist</p>
                             </div>
                         </div>
@@ -136,8 +141,29 @@
                 <div class="tile is-ancestor">
                     <div class="tile is-parent">
                         <div class="tile is-child box"> 
-                            top 10 songs
-                            [[=(topTracks)]]
+                            <!-- Panel title -->
+                            <strong>Top 10 Songs</strong>
+                                <!-- For each top song -->
+                                [[for i in range(10):]]
+                                <section>
+                                    <div class="columns">
+                                        <div class="column">
+                                            <!-- Album art image with link to track -->
+                                            <a href=[[=(trackLinks[i])]] target="_blank"><img src=[[=(imgList[i])]]></a>
+                                        </div>
+                                        <div class="column is-9">
+                                            <div>
+                                                <!-- Song title with link to track -->
+                                                <a href=[[=(trackLinks[i])]] target="_blank" style="color:#000000"><strong>[[=(topTracks[i])]]</strong></a>
+                                            </div>
+                                            <div>
+                                                <!-- Artist name with link to their Spotify page -->
+                                                <a href=[[=(artistLinks[i])]] target="_blank" style="color:#000000">[[=(topArtists[i])]]</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                                [[pass]]
                         </div>
                     </div>
                     <div class="tile is-vertical is-parent">
