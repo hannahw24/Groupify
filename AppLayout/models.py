@@ -19,6 +19,10 @@ db.define_table(
     Field('display_name'),
     #Ash: email may be unnecessary. 
     Field('profile_pic'),
+<<<<<<< HEAD
+=======
+    Field('topTracks')
+>>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 )
 
 db.define_table(
@@ -30,6 +34,7 @@ db.define_table(
     Field('friendToWhoID', db.dbUser)
 )
 
+<<<<<<< HEAD
 
 # Table to store the short_term tracks, medium_term and long_term should have their own tables
 db.define_table(
@@ -42,6 +47,8 @@ db.define_table(
     Field('topTracksOfWho', db.dbUser)
 )
 
+=======
+>>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}
 
