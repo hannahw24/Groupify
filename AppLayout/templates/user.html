@@ -25,22 +25,14 @@
                         <div class="columns">
                             <div class="column">
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
-<<<<<<< HEAD
-                                <img class="is-rounded" src=[[=URL('static', 'images/icon-crop.png')]]>
-=======
                                 <img class="is-rounded" src=[[=URL('static', 'images/icon-crop.png')]] width="50">
->>>>>>> cdc9f8e6a6876076ec85d686afe6a1d9ed80d366
                                 [[else:]]
                                 <img class="is-rounded" src=[[=(row["profile_pic"]) ]]>
                                 [[pass]]
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-<<<<<<< HEAD
-                                <a class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-=======
                                 <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
->>>>>>> cdc9f8e6a6876076ec85d686afe6a1d9ed80d366
                                 <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
                             </div>
                         </div>
