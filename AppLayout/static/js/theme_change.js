@@ -91,6 +91,7 @@ function popTheme(){
     const back_blue = '#0080fe';
     const white = 'white';
     const text_black = '#221B1B';
+    const friend_purp = '#BAA9FF';
 
     // change background of profile page to gradient of red to black
     document.body.style.backgroundImage = 'linear-gradient('+back_pink+' 25%,'+back_blue +')';
@@ -101,7 +102,7 @@ function popTheme(){
 
     // change each friend tile to soft red 
     for(let i=0; document.getElementsByClassName("tile is-child notification")[i]; i++){
-        document.getElementsByClassName("tile is-child notification")[i].style.backgroundColor = back_pink;
+        document.getElementsByClassName("tile is-child notification")[i].style.backgroundColor = friend_purp;
         document.getElementsByClassName("friendname")[i].style.color = text_black;
         document.getElementsByClassName("friendtext")[i].style.color = text_black;
     }
@@ -115,10 +116,10 @@ function popTheme(){
 }
 
 function rnbTheme(){
-    const back_black = '#12006e';
+    const back_black = '#0A003C';
     const back_vio = '#942ec8';
     const friend_purple = '#8961d8';
-    const tile_pink = '#d9dddc';
+    const tile_pink = '#C3BBD0';
     const text_black = '#221B1B';
 
     // change background of profile page to gradient of red to black
