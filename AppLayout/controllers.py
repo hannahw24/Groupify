@@ -226,7 +226,7 @@ def getUserProfile(userID=None):
     friendsList = []
     for row in loggedInUserEntry:
         userNumber = row["id"]
-        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
+        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
     if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
