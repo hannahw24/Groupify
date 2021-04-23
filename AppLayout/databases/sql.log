@@ -756,3 +756,41 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2021-04-22T18:30:12.034883
+CREATE TABLE "mediumTerm"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "toptracks" TEXT,
+    "topartists" TEXT,
+    "imglist" TEXT,
+    "tracklinks" TEXT,
+    "artistlinks" TEXT,
+    "toptracksofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
+);
+success!
+timestamp: 2021-04-22T18:30:12.040250
+CREATE TABLE "longTerm"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "toptracks" TEXT,
+    "topartists" TEXT,
+    "imglist" TEXT,
+    "tracklinks" TEXT,
+    "artistlinks" TEXT,
+    "toptracksofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
