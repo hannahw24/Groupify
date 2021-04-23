@@ -1,38 +1,3 @@
-<<<<<<< HEAD
- // Function to change webpage background color
- function defaultTheme(){
-    document.getElementById("friends").style.background = '#89cfef';
-    document.getElementById("friendonlinetext").style.color = '#1c2951';
-    document.body.style.background = '#cdb7f6';
-
-    for(let i=0; i<=4; i++){ document.getElementById("friendtile"+i).style.background = '#d0f0c0'; }
-    for(let i=1; i<=3; i++){
-        document.getElementById("p"+i).style.background = '#89cfef';
-        document.getElementById("t"+i).style.color = '#d0f0c0';
-        document.getElementById("b"+i).style.color = '#d0f0c0';
-    }
-}
-
-function spotifyTheme(){
-    document.getElementById("friends").style.background = '#ffffff';
-    document.getElementById("friendonlinetext").style.color = 'black';
-    for(let i=0; i<=4; i++){
-        document.getElementById("friendtile"+i).style.background = '#2b856b';
-    }
-    for(let i=1; i<=3; i++){
-        document.getElementById("p"+i).style.background = '#003245';
-        document.getElementById("t"+i).style.color = '#1db954';
-        document.getElementById("b"+i).style.color = '#1db954';
-    }
-    document.body.style.background = 'black';
-}
- 
- function countryTheme(){
-    document.getElementById("friends").style.background = '#fffdd0';
-    document.getElementById("friendonlinetext").style.color = '#420d09';
-    for(let i=0; i<=4; i++){
-        document.getElementById("friendtile"+i).style.background = '#997950';
-=======
 
 function defaultTheme(){
     const back_black = '#191414';
@@ -53,7 +18,6 @@ function defaultTheme(){
         document.getElementsByClassName("tile is-child notification")[i].style.backgroundColor = soft_green;
         document.getElementsByClassName("friendname")[i].style.color = text_black;
         document.getElementsByClassName("friendtext")[i].style.color = text_black;
->>>>>>> cdc9f8e6a6876076ec85d686afe6a1d9ed80d366
     }
 
     // change each profile and bio tile to white
@@ -64,13 +28,6 @@ function defaultTheme(){
     document.getElementById("groupSideButton").style.backgroundColor = tile_white; 
 }
 
-<<<<<<< HEAD
-function rapTheme(){
-    document.getElementById("friends").style.background = '#191414';
-    document.getElementById("friendonlinetext").style.color = '#d9dddc';
-    for(let i=0; i<=4; i++){
-        document.getElementById("friendtile"+i).style.background = '#800000';
-=======
  function countryTheme(){
     const back_brown = '#420d09';
     const back_yellow = '#f8e473';
@@ -90,7 +47,6 @@ function rapTheme(){
         document.getElementsByClassName("tile is-child notification")[i].style.backgroundColor = friend_brown;
         document.getElementsByClassName("friendname")[i].style.color = text_white;
         document.getElementsByClassName("friendtext")[i].style.color = text_white;
->>>>>>> cdc9f8e6a6876076ec85d686afe6a1d9ed80d366
     }
 
     // change each profile and bio tile to metal-gray
@@ -101,8 +57,6 @@ function rapTheme(){
     document.getElementById("groupSideButton").style.backgroundColor = soft_yellow; 
 }
 
-<<<<<<< HEAD
-=======
 function rapTheme(){
     const back_black = '#191414';
     const back_red = '#800000';
@@ -132,7 +86,6 @@ function rapTheme(){
     document.getElementById("groupSideButton").style.backgroundColor = metal_gray; 
 }
 
->>>>>>> cdc9f8e6a6876076ec85d686afe6a1d9ed80d366
 function popTheme(){
     const back_pink = '#ffaff6';
     const back_blue = '#0080fe';
@@ -217,4 +170,31 @@ function lofiTheme(){
     }
     // change side group button to metal-gray
     document.getElementById("groupSideButton").style.backgroundColor = friend_purple; 
+}
+
+function metalTheme(){
+    const back_black = '#191414';
+    const metal_gray = '#919191';
+    const text_white = 'white';
+
+    // change background of profile page to gradient of red to black
+    document.body.style.backgroundImage = 'linear-gradient('+text_white+' 0%, '+back_black +' 25%)'; //'linear-gradient('+back_black+' 85%, '+text_white +')';
+
+    // change background of friend side bar metal-gray, text to ______
+    document.getElementById("friendbar").style.backgroundColor = metal_gray;
+    document.getElementById("follwingfriendtitle").style.color = back_black;
+
+    // change each friend tile to soft red 
+    for(let i=0; document.getElementsByClassName("tile is-child notification")[i]; i++){
+        document.getElementsByClassName("tile is-child notification")[i].style.backgroundColor = back_black;
+        document.getElementsByClassName("friendname")[i].style.color = text_white;
+        document.getElementsByClassName("friendtext")[i].style.color = text_white;
+    }
+
+    // change each profile and bio tile to metal-gray
+    for(let i=0; document.getElementsByClassName("tile is-child box")[i]; i++){
+        document.getElementsByClassName("tile is-child box")[i].style.backgroundColor = metal_gray;
+    }
+    // change side group button to metal-gray
+    document.getElementById("groupSideButton").style.backgroundColor = metal_gray; 
 }
