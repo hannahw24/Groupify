@@ -3,11 +3,7 @@
 
 <div>
     <div class="friend_bar panel_spec"> 
-<<<<<<< HEAD
         <p class="labels">Following</p>
-=======
-        <p class="labels">Frands</p>
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
         <!-- Field for search bar -->
         <div class="tile is-parent">
             <div class="field is-pulled-right">
@@ -16,11 +12,7 @@
                         <i class="fas fa-search"></i>
                     </span>
                     <!-- Calls function when something is entered -->
-<<<<<<< HEAD
                     <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search">
-=======
-                    <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search Friends">
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
                 </div>
             </div>
         </div>
@@ -31,7 +23,6 @@
                     <div id="friendtile0" class="tile is-child notification is-primary">
                         <div class="columns">
                             <div class="column">
-<<<<<<< HEAD
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
                                 <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                 [[else:]]
@@ -41,12 +32,6 @@
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
                                 <a href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-=======
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                            </div>
-                            <div class="column is-9">
-                                <a><strong>[[=(row["display_name"])]]</strong></a>
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
                                 <p>Listening to Song - Artist</p>
                             </div>
                         </div>
@@ -55,6 +40,7 @@
             </li>
         [[pass]]
         </ul>
+        <a class="button is-primary" href="[[=URL('add_friend')]]">Add a friend!</a>
     </div>
     
     <div class="main_profile">
@@ -156,7 +142,6 @@
                 <div class="tile is-ancestor">
                     <div class="tile is-parent">
                         <div class="tile is-child box"> 
-<<<<<<< HEAD
                             <!-- Panel title -->
                             <strong>Top 10 Songs</strong>
                                 <!-- For each top song -->
@@ -180,10 +165,6 @@
                                     </div>
                                 </section>
                                 [[pass]]
-=======
-                            top 10 songs
-                            [[=(topTracks)]]
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
                         </div>
                     </div>
                     <div class="tile is-vertical is-parent">

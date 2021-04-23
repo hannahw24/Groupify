@@ -2,7 +2,7 @@
 This file defines the database models
 """
 
-from .common import db, Field
+from .common import db, Field, T, session, auth
 from pydal.validators import *
 
 ### Define your table below
@@ -13,16 +13,15 @@ from pydal.validators import *
 #
 # db.commit()
 #
+def get_session_user():
+    return auth.current_user.get('user_id') if auth.current_user else None 
+
 db.define_table(
     'dbUser',
     Field('userID', notnull=True, unique=True),
     Field('display_name'),
     #Ash: email may be unnecessary. 
     Field('profile_pic'),
-<<<<<<< HEAD
-=======
-    Field('topTracks')
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 )
 
 db.define_table(
@@ -31,10 +30,14 @@ db.define_table(
     Field('display_name'),
     Field('profile_pic'),
     #Ash: This should connect the friends table to the user table
-    Field('friendToWhoID', db.dbUser)
+    Field('friendToWhoID', default = get_session_user)
 )
+db.dbFriends.profile_pic.readable = db.dbFriends.profile_pic.writable = False
+#db.dbFriends.userID.readable = db.dbFriends.userID.writable = False
+#db.dbFriends.display_name.readable = db.dbFriends.display_name.writable = False
+#db.dbFriends.friendToWhoID.label = T('Friend ID')
+db.dbFriends.friendToWhoID.readable = db.dbFriends.friendToWhoID.writable = False
 
-<<<<<<< HEAD
 
 # Table to store the short_term tracks, medium_term and long_term should have their own tables
 db.define_table(
@@ -47,8 +50,6 @@ db.define_table(
     Field('topTracksOfWho', db.dbUser)
 )
 
-=======
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}
 

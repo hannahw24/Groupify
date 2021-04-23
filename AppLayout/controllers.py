@@ -28,6 +28,7 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
+from py4web.utils.form import Form, FormStyleBulma
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -76,10 +77,7 @@ def userLogin():
     # In this case the auth_url is [localhost]/callback
     return redirect(auth_url)
 
-<<<<<<< HEAD
 # When you login, Spotify goes to this
-=======
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 @action('callback')
 @action.uses(session)
 def getCallback():
@@ -101,10 +99,7 @@ def getCallback():
     auth_manager.get_access_token(code)
     return redirect("getUserInfo")
 
-<<<<<<< HEAD
 # After callback, the user goes to this function and has thier info made/updated
-=======
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 # Places a User's info in the database and then sends them to their profile.
 @action('getUserInfo')
 @action.uses(db, session)
@@ -120,7 +115,6 @@ def getUserInfo():
     # url to user, id, images (profile pic), and premium status
     results = spotify.current_user()
 
-<<<<<<< HEAD
     display_name = results["display_name"]
     userID = results["id"]
     if (len(results["images"]) != 0):
@@ -128,31 +122,12 @@ def getUserInfo():
     else:
         profile_pic = ""
 
-=======
-    #print(results)
-    #print("")
-    #print (results["display_name"]) #Example: "Ash"
-    display_name = results["display_name"]
-    #print (results["id"])
-    userID = results["id"]
-    if (len(results["images"]) != 0):
-        #print (results["images"][0]["url"])
-        profile_pic = results["images"][0]["url"]
-    else:
-        # We need to assign a default picture for users without a profile picture.
-        profile_pic = ""
-
-    #Test function ignore
-    #search()
-
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
     # Assigns the userID to the session. This is used to verify who can edit
     # profiles. 
     session["userID"] = userID
     # Gets the URL ready for the redirect
     profileURL = "user/" + userID
     # Gets the User's top tracks
-<<<<<<< HEAD
     tracksList = getTopTracksFunction()
     topTracks = tracksList[0]
     topArtists = tracksList[1]
@@ -200,22 +175,6 @@ def getUserInfo():
         dbRow.update(artistLinks=artistLinks)
     
     return redirect(profileURL)
-=======
-    topTracks = getTopTracksFunction()
-    # Checks to see if it can get the user from the database
-    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
-    # Not sure if returns as None or an empty list if user is new.
-    if (dbUserEntry == None) or dbUserEntry == []:
-        db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic, topTracks=topTracks)
-        print("Hello1")
-        return redirect(profileURL)
-    # If it is in the database, update its top tracks
-    else:
-        db.dbUser.update_or_insert(db.dbUser.userID == userID,
-                                topTracks=topTracks)
-        print("Hello2")
-        return redirect(profileURL)
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
@@ -233,7 +192,6 @@ def getUserProfile(userID=None):
     # rows = db(db.dbUser.userID == userID).select().as_list()
 
     # Commands below finds friends of the person logged in
-<<<<<<< HEAD
     loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     shortTermList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
@@ -265,29 +223,12 @@ def getUserProfile(userID=None):
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
     for row in loggedInUserEntry:
-=======
-    profile_info = session.get("userID")
-    rows = db(db.dbUser.userID == profile_info).select().as_list()
-
-    topTracks = ""
-    profile_pic = ""
-    currentProfileTopTracksList = (db(db.dbUser.userID == userID).select().as_list())
-    if (currentProfileTopTracksList != None) and (currentProfileTopTracksList != []):
-        # Setting the top tracks and profile pic variables
-        topTracks = currentProfileTopTracksList[0]["topTracks"]
-        profile_pic = currentProfileTopTracksList[0]["profile_pic"]
-    print("topTracks user: ", topTracks)
-    #Avoid the for loop errors in user.html that would occur if friendsList is None
-    friendsList = []
-    for row in rows:
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
         userNumber = row["id"]
         friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
     if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
-<<<<<<< HEAD
     return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
                 topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic)
 
@@ -296,9 +237,6 @@ def getIDFromUserTable(userID):
     if (insertedID is not None) and (insertedID != []):
         return insertedID[0]["id"]
     return None
-=======
-    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks, profile_pic=profile_pic)
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 
 # Returns whether the user can edit a profile
 @action.uses(session)
@@ -357,7 +295,6 @@ def getTopTracksFunction():
     results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
     #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
-<<<<<<< HEAD
     # Initialize Lists for each field
     TopSongsString= ""
     TopSongsList = []
@@ -398,19 +335,6 @@ def getTopTracksFunction():
     BigList.append(ALinkList)
     # Returned to the user profile
     return BigList
-=======
-    TopSongsString= ""
-    TopSongsList = []
-    for idx, item in enumerate(results['items']):
-        track = item['name']
-        TopSongsList.append(track)
-        TopSongsString = TopSongsString + str(track) + "<br>"
-
-    if TopSongsList == []:
-        TopSongsList = ""
-    # Returned to the user profile
-    return TopSongsList
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
 
 @action('groupSession')
 @action.uses(db, auth, 'groupSession.html', session)
@@ -425,6 +349,18 @@ def groupSession():
 def getSettings():
     return dict(session=session, editable=False)
 
+# Haanah: There isn't an add friend page right now
+@action('add_friend', method=["GET", "POST"])
+@action.uses(db, auth, 'add_friend.html', session)
+def addFriend():
+    form = Form(db.dbFriends, session=session, formstyle=FormStyleBulma)
+    if form.accepted:
+        #Edit already happened
+        #db.dbUser.insert(request.json.get('friendToWhoID'))
+        redirect(URL('user', session.get("userID")))
+    return dict(form = form, session=session, editable=False)
+    # return dict(session=session, editable=False)
+
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
 @action.uses(session)
@@ -436,11 +372,8 @@ def sign_out():
     except OSError as e:
         print ("Error: %s - %s." % (e.filename, e.strerror))
     return redirect(URL('index'))
-<<<<<<< HEAD
 
 fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs to see results",  
 "Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
  "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", 
   "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", ]
-=======
->>>>>>> 09e791cc15bd4c252a9796cecd4d7c84460e65c6
