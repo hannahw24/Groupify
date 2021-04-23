@@ -25,9 +25,10 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL
+from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
+from py4web.utils.form import Form, FormStyleBulma
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -76,6 +77,7 @@ def userLogin():
     # In this case the auth_url is [localhost]/callback
     return redirect(auth_url)
 
+# When you login, Spotify goes to this
 @action('callback')
 @action.uses(session)
 def getCallback():
@@ -97,6 +99,7 @@ def getCallback():
     auth_manager.get_access_token(code)
     return redirect("getUserInfo")
 
+# After callback, the user goes to this function and has their info made/updated
 # Places a User's info in the database and then sends them to their profile.
 @action('getUserInfo')
 @action.uses(db, session)
@@ -112,21 +115,12 @@ def getUserInfo():
     # url to user, id, images (profile pic), and premium status
     results = spotify.current_user()
 
-    #print(results)
-    #print("")
-    #print (results["display_name"]) #Example: "Ash"
     display_name = results["display_name"]
-    #print (results["id"])
     userID = results["id"]
     if (len(results["images"]) != 0):
-        #print (results["images"][0]["url"])
         profile_pic = results["images"][0]["url"]
     else:
-        # We need to assign a default picture for users without a profile picture.
         profile_pic = ""
-
-    #Test function ignore
-    #search()
 
     # Assigns the userID to the session. This is used to verify who can edit
     # profiles. 
@@ -134,20 +128,55 @@ def getUserInfo():
     # Gets the URL ready for the redirect
     profileURL = "user/" + userID
     # Gets the User's top tracks
-    topTracks = getTopTracksFunction()
+    tracksList = getTopTracksFunction()
+    topTracks = tracksList[0]
+    topArtists = tracksList[1]
+    imgList = tracksList[2]
+    trackLinks = tracksList[3]
+    artistLinks = tracksList[4]
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    # This takes all the instances of the logged in user in the friends database. 	
+    # This is so we can update their information.
+    friendsEntries =  (db(db.dbFriends.userID == userID).select().as_list())
+
     # Not sure if returns as None or an empty list if user is new.
     if (dbUserEntry == None) or dbUserEntry == []:
-        db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic, topTracks=topTracks)
-        print("Hello1")
-        return redirect(profileURL)
+        db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic)
+        insertedID = getIDFromUserTable(userID)
     # If it is in the database, update its top tracks
     else:
-        db.dbUser.update_or_insert(db.dbUser.userID == userID,
-                                topTracks=topTracks)
-        print("Hello2")
-        return redirect(profileURL)
+        # Update all info
+        db(db.dbUser.userID == userID).update(display_name=display_name)
+        db(db.dbUser.userID == userID).update(profile_pic=profile_pic)
+    # Updates the information in friends database so the friends NAV bar is up to date. 
+    if (friendsEntries != None) and (friendsEntries != []):
+        if friendsEntries[0]["profile_pic"] != profile_pic:
+            print("Differences in profile pic!")
+            for row in friendsEntries:
+                dbRow = db(db.dbFriends.id == row["id"])
+                dbRow.update(profile_pic=profile_pic)
+                dbRow.update(display_name=display_name)
+    # Is there shortTerm top tracks populated?
+    if (shortTermEntry == None) or (shortTermEntry == []):
+        insertedID = getIDFromUserTable(userID)
+        print("insertedID ", insertedID)
+        db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+    # If it is update it
+    else:
+        insertedID = getIDFromUserTable(userID)
+        print("insertedID ", insertedID)
+        # Updates their songs of the past 4 weeks. 
+        dbRow =  db(db.shortTerm.topTracksOfWho == insertedID)
+        dbRow.update(topTracks=topTracks)
+        dbRow.update(topArtists=topArtists)
+        dbRow.update(imgList=imgList)
+        dbRow.update(trackLinks=trackLinks)
+        dbRow.update(artistLinks=artistLinks)
+    
+    return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
@@ -165,27 +194,51 @@ def getUserProfile(userID=None):
     # rows = db(db.dbUser.userID == userID).select().as_list()
 
     # Commands below finds friends of the person logged in
-    profile_info = session.get("userID")
-    rows = db(db.dbUser.userID == profile_info).select().as_list()
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
+    shortTermList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
 
-    topTracks = ""
+    # Declared early for checking an error where a user hasn't listened to songs, do not remove
+    topTracks = None
+
+    # Get the fields from the shortTermList, but only if they have a reference in it 
+    if shortTermList != []:
+        topTracks = shortTermList[0]["topTracks"]
+        topArtists = shortTermList[0]["topArtists"]
+        imgList = shortTermList[0]["imgList"]
+        trackLinks = shortTermList[0]["trackLinks"]
+        artistLinks = shortTermList[0]["artistLinks"]
+
+    # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
+    if (topTracks == None) or len(topTracks) < 10:
+        topTracks = fillerTopTracks
+        topArtists = fillerTopTracks
+        imgList = fillerTopTracks
+        trackLinks = fillerTopTracks
+        artistLinks = fillerTopTracks
+
     profile_pic = ""
-    currentProfileTopTracksList = (db(db.dbUser.userID == userID).select().as_list())
-    if (currentProfileTopTracksList != None) and (currentProfileTopTracksList != []):
+    if (currentProfileEntry != None) and (currentProfileEntry != []):
         # Setting the top tracks and profile pic variables
-        topTracks = currentProfileTopTracksList[0]["topTracks"]
-        profile_pic = currentProfileTopTracksList[0]["profile_pic"]
+        profile_pic = currentProfileEntry[0]["profile_pic"]
     print("topTracks user: ", topTracks)
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
-    for row in rows:
+    for row in loggedInUserEntry:
         userNumber = row["id"]
         friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
     if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
-    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks, profile_pic=profile_pic)
+    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
+                topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic)
+
+def getIDFromUserTable(userID):
+    insertedID = (db(db.dbUser.userID == userID).select().as_list())
+    if (insertedID is not None) and (insertedID != []):
+        return insertedID[0]["id"]
+    return None
 
 # Returns whether the user can edit a profile
 @action.uses(session)
@@ -244,17 +297,46 @@ def getTopTracksFunction():
     results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
     #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
+    # Initialize Lists for each field
     TopSongsString= ""
     TopSongsList = []
+    TopArtistsList = []
+    ImgLinkList = []
+    TLinkList = []
+    ALinkList = []
+    BigList = []
     for idx, item in enumerate(results['items']):
+        # Get items from correct place in given Spotipy dictionary
         track = item['name']
+        trackInfo = item['album']['artists'][0]['name']
+        icon = item['album']['images'][2]['url']
+        trLink = item['external_urls']['spotify']
+        artLink = item['album']['artists'][0]['external_urls']['spotify']
         TopSongsList.append(track)
         TopSongsString = TopSongsString + str(track) + "<br>"
-
+        TopArtistsList.append(trackInfo)
+        ImgLinkList.append(icon)
+        TLinkList.append(trLink)
+        ALinkList.append(artLink)
+    # Avoid empty lists
     if TopSongsList == []:
         TopSongsList = ""
+    if TopArtistsList == []:
+        TopArtistsList= ""
+    if ImgLinkList == []:
+        ImgLinkList = ""
+    if TLinkList == []:
+        TLinkList = ""
+    if TLinkList == []:
+        ALinkList = ""
+    # Add all to list to be returned
+    BigList.append(TopSongsList)
+    BigList.append(TopArtistsList)
+    BigList.append(ImgLinkList)
+    BigList.append(TLinkList)
+    BigList.append(ALinkList)
     # Returned to the user profile
-    return TopSongsList
+    return BigList
 
 @action('groupSession')
 @action.uses(db, auth, 'groupSession.html', session)
@@ -269,6 +351,22 @@ def groupSession():
 def getSettings():
     return dict(session=session, editable=False)
 
+# Haanah: There isn't an add friend page right now
+@action('add_friend', method=["GET", "POST"])
+@action.uses(db, auth, 'add_friend.html', session)
+def addFriend():
+    userID = session.get("userID")
+    form = Form([Field('userID', notnull=True)], session=session, formstyle=FormStyleBulma)
+    if form.accepted:
+        dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
+        if dbUserEntry == []:
+            print ("Yo this person doesn't even exist")
+            redirect(URL('user', session.get("userID")))
+        db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(userID), 
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
+        redirect(URL('user', session.get("userID")))
+    return dict(form = form, session=session, editable=False)
+
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
 @action.uses(session)
@@ -280,3 +378,8 @@ def sign_out():
     except OSError as e:
         print ("Error: %s - %s." % (e.filename, e.strerror))
     return redirect(URL('index'))
+
+fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs to see results",  
+"Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
+ "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", 
+  "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", ]
