@@ -2,8 +2,14 @@
 <script src="js/searchbar.js"></script>
 
 <div>
+<<<<<<< HEAD
     <div id="friends" class="friend_bar panel_spec"> 
         <p class="labels">Frands</p>
+=======
+<div class="background_page_color" id="userpage">
+    <div id="friendbar" class="friend_bar panel_spec" style="background-color: white"> 
+        <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
+>>>>>>> cdc9f8e6a6876076ec85d686afe6a1d9ed80d366
         <!-- Field for search bar -->
         <div class="tile is-parent">
             <div class="field is-pulled-right">
@@ -20,19 +26,19 @@
         [[for row in friendsList:]]
             <li>
                 <div class="tile is-parent">
-                    <div id="friendtile0" class="tile is-child notification is-primary">
+                    <div id="friendtile" class="tile is-child notification" style="background-color: #4FE383">
                         <div class="columns">
                             <div class="column">
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
-                                <img src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                <img class="is-rounded" src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                 [[else:]]
                                 <img class="is-rounded" src=[[=(row["profile_pic"]) ]]>
                                 [[pass]]
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-                                <a href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-                                <p>Listening to Song - Artist</p>
+                                <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
+                                <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
                             </div>
                         </div>
                     </div>
@@ -40,6 +46,7 @@
             </li>
         [[pass]]
         </ul>
+        <a class="button is-primary" href="[[=URL('add_friend')]]">Add a friend!</a>
     </div>
     
     <div class="main_profile">
@@ -185,14 +192,15 @@
         </section>
     </div>
 
-    <div class="group_bar panel_spec">
+    <div id="groupSideButton" class="group_bar panel_spec" style="background-color: white;">
         <a class="group_button" href="[[=URL('groupSession')]]"></a>
     </div>
+</div>
 </div>
 
 <style>
     .columns .is-variable {
-        gap: 0.25rem;
+        gap: 0.25rem;   
     }
 </style>
 

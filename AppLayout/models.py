@@ -23,13 +23,17 @@ db.define_table(
 
 db.define_table(
     'dbFriends',
-    Field('userID', notnull=True, unique=True),
+    Field('userID', notnull=True),
     Field('display_name'),
     Field('profile_pic'),
     #Ash: This should connect the friends table to the user table
     Field('friendToWhoID', db.dbUser)
 )
 
+# Ash: Might be okay to remove this but I haven't tested it
+db.dbFriends.profile_pic.readable = db.dbFriends.profile_pic.writable = False
+db.dbFriends.display_name.readable = db.dbFriends.display_name.writable = False
+db.dbFriends.friendToWhoID.readable = db.dbFriends.friendToWhoID.writable = False
 
 # Table to store the short_term tracks, medium_term and long_term should have their own tables
 db.define_table(
