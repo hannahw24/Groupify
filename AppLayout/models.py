@@ -42,6 +42,7 @@ db.define_table(
     Field('topTracksOfWho', db.dbUser)
 )
 
+<<<<<<< HEAD
 db.define_table(
     'mediumTerm',
     Field('topTracks', 'list:string'),
@@ -62,6 +63,8 @@ db.define_table(
     Field('topTracksOfWho', db.dbUser)
 )
 
+=======
+>>>>>>> c7740d847b72e43e4461c92bf7c4ea7ad678cebf
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}
 
