@@ -1,16 +1,10 @@
 [[extend 'layout.html']]
 <script src="js/searchbar.js"></script>
 
-
 <div>
-<<<<<<< HEAD
-    <div class="friend_bar panel_spec"> 
-        <p class="labels">Following</p>
-=======
 <div class="background_page_color" id="userpage">
     <div id="friendbar" class="friend_bar panel_spec" style="background-color: white"> 
         <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
->>>>>>> c7740d847b72e43e4461c92bf7c4ea7ad678cebf
         <!-- Field for search bar -->
         <div class="tile is-parent">
             <div class="field is-pulled-right">
@@ -38,13 +32,8 @@
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-<<<<<<< HEAD
-                                <a href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-                                <p>Listening to Song - Artist</p>
-=======
                                 <a class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
->>>>>>> c7740d847b72e43e4461c92bf7c4ea7ad678cebf
                             </div>
                         </div>
                     </div>
@@ -202,7 +191,6 @@
     </div>
 </div>
 </div>
-
 
 <style>
     .columns .is-variable {

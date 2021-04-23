@@ -28,11 +28,6 @@ p.labels{
     box-shadow: 7px 7px 15px 1px #55555569;
 }
 
-body {
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-
 
 /* ********************** HOME PAGE ********************** */
 
@@ -90,6 +85,7 @@ body{
     z-index: 1; 
     top: 10%; 
     left: 27%;
+    /* background-color: */
     padding-left: 2px;
     padding-right: 2px;
     overflow-x: hidden; 
