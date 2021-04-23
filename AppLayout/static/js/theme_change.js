@@ -172,3 +172,30 @@ function lofiTheme(){
     // change side group button to metal-gray
     document.getElementById("groupSideButton").style.backgroundColor = friend_purple; 
 }
+
+function metalTheme(){
+    const back_black = '#191414';
+    const metal_gray = '#919191';
+    const text_white = 'white';
+
+    // change background of profile page to gradient of red to black
+    document.body.style.backgroundImage = 'linear-gradient('+text_white+' 0%, '+back_black +' 25%)'; //'linear-gradient('+back_black+' 85%, '+text_white +')';
+
+    // change background of friend side bar metal-gray, text to ______
+    document.getElementById("friendbar").style.backgroundColor = metal_gray;
+    document.getElementById("follwingfriendtitle").style.color = back_black;
+
+    // change each friend tile to soft red 
+    for(let i=0; document.getElementsByClassName("tile is-child notification")[i]; i++){
+        document.getElementsByClassName("tile is-child notification")[i].style.backgroundColor = back_black;
+        document.getElementsByClassName("friendname")[i].style.color = text_white;
+        document.getElementsByClassName("friendtext")[i].style.color = text_white;
+    }
+
+    // change each profile and bio tile to metal-gray
+    for(let i=0; document.getElementsByClassName("tile is-child box")[i]; i++){
+        document.getElementsByClassName("tile is-child box")[i].style.backgroundColor = metal_gray;
+    }
+    // change side group button to metal-gray
+    document.getElementById("groupSideButton").style.backgroundColor = metal_gray; 
+}
