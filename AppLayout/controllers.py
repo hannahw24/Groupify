@@ -25,9 +25,10 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL
+from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
+from py4web.utils.form import Form, FormStyleBulma
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -98,7 +99,7 @@ def getCallback():
     auth_manager.get_access_token(code)
     return redirect("getUserInfo")
 
-# After callback, the user goes to this function and has thier info made/updated
+# After callback, the user goes to this function and has their info made/updated
 # Places a User's info in the database and then sends them to their profile.
 @action('getUserInfo')
 @action.uses(db, session)
@@ -136,6 +137,8 @@ def getUserInfo():
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    # This takes all the instances of the logged in user in the friends database. 	
+    # This is so we can update their information.
     friendsEntries =  (db(db.dbFriends.userID == userID).select().as_list())
 
     # Not sure if returns as None or an empty list if user is new.
@@ -223,7 +226,7 @@ def getUserProfile(userID=None):
     friendsList = []
     for row in loggedInUserEntry:
         userNumber = row["id"]
-        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
+        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
     if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
@@ -347,6 +350,22 @@ def groupSession():
 @action.uses(db, auth, 'settings.html', session)
 def getSettings():
     return dict(session=session, editable=False)
+
+# Haanah: There isn't an add friend page right now
+@action('add_friend', method=["GET", "POST"])
+@action.uses(db, auth, 'add_friend.html', session)
+def addFriend():
+    userID = session.get("userID")
+    form = Form([Field('userID', notnull=True)], session=session, formstyle=FormStyleBulma)
+    if form.accepted:
+        dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
+        if dbUserEntry == []:
+            print ("Yo this person doesn't even exist")
+            redirect(URL('user', session.get("userID")))
+        db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(userID), 
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
+        redirect(URL('user', session.get("userID")))
+    return dict(form = form, session=session, editable=False)
 
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')

@@ -32,7 +32,7 @@
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-                                <a class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
+                                <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
                             </div>
                         </div>
@@ -41,6 +41,7 @@
             </li>
         [[pass]]
         </ul>
+        <a class="button is-primary" href="[[=URL('add_friend')]]">Add a friend!</a>
     </div>
     
     <div class="main_profile">
@@ -194,7 +195,7 @@
 
 <style>
     .columns .is-variable {
-        gap: 0.25rem;
+        gap: 0.25rem;   
     }
 </style>
 
