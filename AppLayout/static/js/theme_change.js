@@ -115,10 +115,10 @@ function popTheme(){
 }
 
 function rnbTheme(){
-    const back_black = '#2E0052';
-    const back_vio = '#DCADFF';
-    const friend_purple = '#CA85FF';
-    const tile_pink = '#FED7ED';
+    const back_black = '#12006e';
+    const back_vio = '#942ec8';
+    const friend_purple = '#8961d8';
+    const tile_pink = '#d9dddc';
     const text_black = '#221B1B';
 
     // change background of profile page to gradient of red to black
