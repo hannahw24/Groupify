@@ -7,7 +7,7 @@
 /* general panel formatting */
 .panel_spec {
     position: fixed;
-    background-color: #d9dddc;
+    /* background-color: #d9dddc; */
     overflow-x: hidden; /* Disable horizontal scroll */
     padding: 20px;
     z-index: 1; /* Stay on top */
@@ -30,12 +30,34 @@ p.labels{
 
 
 /* ********************** HOME PAGE ********************** */
+
+body{
+    background-image: linear-gradient(#4fe38300,#191414);
+    background-color: #4FE383;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    
+    font-size: 16px;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    min-width: 300px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+        -moz-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;  
+}
+
 /* home page friend left panel  */
 .friend_bar {
     height: 85%; 
     width: 25%; 
     top: 10%; 
     left: 0;
+    /* background-image: linear-gradient(red, yellow); */
+
 }
 
 /* home page right panel group bar */

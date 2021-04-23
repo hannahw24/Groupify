@@ -2,8 +2,9 @@
 <script src="js/searchbar.js"></script>
 
 <div>
-    <div id="friends" class="friend_bar panel_spec"> 
-        <p class="labels">Frands</p>
+<div class="background_page_color" id="userpage">
+    <div id="friendbar" class="friend_bar panel_spec" style="background-color: white"> 
+        <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
         <!-- Field for search bar -->
         <div class="tile is-parent">
             <div class="field is-pulled-right">
@@ -20,7 +21,7 @@
         [[for row in friendsList:]]
             <li>
                 <div class="tile is-parent">
-                    <div id="friendtile0" class="tile is-child notification is-primary">
+                    <div id="friendtile" class="tile is-child notification" style="background-color: #4FE383">
                         <div class="columns">
                             <div class="column">
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
@@ -31,8 +32,8 @@
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-                                <a href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-                                <p>Listening to Song - Artist</p>
+                                <a class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
+                                <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
                             </div>
                         </div>
                     </div>
@@ -185,9 +186,10 @@
         </section>
     </div>
 
-    <div class="group_bar panel_spec">
+    <div id="groupSideButton" class="group_bar panel_spec" style="background-color: white;">
         <a class="group_button" href="[[=URL('groupSession')]]"></a>
     </div>
+</div>
 </div>
 
 <style>
