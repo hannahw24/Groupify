@@ -178,6 +178,21 @@ def getUserInfo():
     
     return redirect(profileURL)
 
+# change the db.user's perfered theme
+@action('user/<userID>/<theme_id:int>')
+@action.uses(db, session, auth.user)
+def update_theme(userID=None, theme_id=None):
+    assert theme_id is not None
+    assert userID is not None
+    print(theme_id)
+    print(userID)
+    user_data = db.dbUser[getIDFromUserTable(userID)]
+    # bird = db.bird[bird_id]
+    db(db.user_data.id == getIDFromUserTable(userID).update(chosen_theme=theme_id))
+
+    profileURL = "user/" + userID
+    redirect(profileURL)
+
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
 # http://127.0.0.1:8000/AppLayout/user/wjmmbwcxcja7s2acm9clcydkb    Ash's Test Account
@@ -356,7 +371,7 @@ def getSettings():
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
     userID = session.get("userID")
-    form = Form([Field('userID', notnull=True)], session=session, formstyle=FormStyleBulma)
+    form = Form([Field('userID', notnull=True)], formstyle=FormStyleBulma)
     if form.accepted:
         dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
         if dbUserEntry == []:
