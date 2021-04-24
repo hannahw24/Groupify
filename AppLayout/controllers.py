@@ -165,7 +165,8 @@ def getUserInfo():
         insertedID = getIDFromUserTable(userID)
         print("insertedID ", insertedID)
         db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
-                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID, 
+                            editable=editable_profile(userID))
     # If it is update it
     else:
         insertedID = getIDFromUserTable(userID)
@@ -202,6 +203,9 @@ def getUserProfile(userID=None):
 
     # Declared early for checking an error where a user hasn't listened to songs, do not remove
     topTracks = None
+        
+    # To see if the button "Unfollow" or "Follow" appears
+    isFriend = False
 
     # Get the fields from the shortTermList, but only if they have a reference in it 
     if shortTermList != []:
@@ -225,13 +229,16 @@ def getUserProfile(userID=None):
         profile_pic = currentProfileEntry[0]["profile_pic"]
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
-    for row in loggedInUserEntry:
-        userNumber = row["id"]
-        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
+    userNumber = loggedInUserEntry[0]["id"]
+    friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
+    # To see if the button "Unfollow" or "Follow" appears
+    isFriend = db((db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID"))) & (db.dbFriends.userID == userID)).select().as_list()
+    if (isFriend != []):
+        isFriend=True
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
     return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
                 topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic,
-                )
+                userID=userID, isFriend=isFriend)
 
 def getIDFromUserTable(userID):
     insertedID = (db(db.dbUser.userID == userID).select().as_list())
@@ -463,7 +470,7 @@ def getSettings():
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
-    userID = session.get("userID")
+    loggedInUserId = session.get("userID")
     form = Form([Field('userID', notnull=True)], session=session, formstyle=FormStyleBulma)
     if form.accepted:
         dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
@@ -471,12 +478,48 @@ def addFriend():
             return dict(form = form, session=session, editable=False, nullError=True, alreadyFriend=False, CannotAddSelf=False)
         if (checkIfFriendDuplicate(form.vars["userID"])):
             return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=True, CannotAddSelf=False)
-        if (form.vars["userID"] == userID):
+        if (form.vars["userID"] == loggedInUserId):
             return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True)
-        db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(userID), 
+        db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(loggedInUserId), 
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
         redirect(URL('user', session.get("userID")))
     return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False)
+
+@action('addFriendFromProfile/<userID>', method=["GET"])
+@action.uses(db, session)
+def addFriendFromProfile(userID=None):
+    loggedInUserId = session.get("userID")
+    if (loggedInUserId == None) or (loggedInUserId == ""):
+        return redirect(URL('index'))
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    if dbUserEntry == []:
+        return redirect(URL('user', userID))
+    if (checkIfFriendDuplicate(userID)):
+        return redirect(URL('user', userID))
+    if (userID == loggedInUserId):
+        return redirect(URL('user', userID))
+    db.dbFriends.insert(userID=userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
+    return redirect(URL('user', userID))
+
+
+
+@action('unfollowProfile/<userID>', method=['GET'])
+@action.uses(session, db)
+def delete_contact(userID=None):
+    person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
+    print("userID is ", userID)
+    print("person is ", person)
+    if person is None:
+        # Nothing to edit.  This should happen only if you tamper manually with the URL.
+        redirect(URL('user', userID))
+    else:
+        person = person[0]
+        friendToWhoID = person["friendToWhoID"]
+        if friendToWhoID == getIDFromUserTable(session.get("userID")):
+            print("Testing ", db(db.dbFriends.id == person["id"]).select().as_list())
+            db(db.dbFriends.id == person["id"]).delete()
+        redirect(URL('user', userID))
 
 @action('unfollow/<ID>', method=['GET'])
 @action.uses(session, db)
