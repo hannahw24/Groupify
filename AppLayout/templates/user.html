@@ -34,6 +34,9 @@
                                 [[ profileURL = "user/" + row["userID"] ]]
                                 <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
+                                <a class="button is-small is-white" href="[[=URL('unfollow', row['id'])]]">
+                                    <i class="fa fa-fw fa-trash"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
