@@ -1,0 +1,36 @@
+[[extend 'layout.html']]
+[[=form]]
+<div class="tile is-parent">
+    <div class="tile is-child box"> 
+        <!-- Panel title -->
+        <strong>Top 10 Songs</strong>
+            <!-- For each top song -->
+            [[if trackLinks != "":]]
+            [[for i in range(len(trackLinks)):]]
+            <section>
+                <div class="columns">
+                    <div class="column">
+                        <!-- Album art image with link to track -->
+                        <a href=[[=(trackLinks[i])]] target="_blank"><img src=[[=(imgList[i])]]></a>
+                    </div>
+                    <div class="column is-9">
+                        <div>
+                            <!-- Song title with link to track -->
+                            <a href=[[=(trackLinks[i])]] target="_blank" style="color:#000000"><strong>[[=(topTracks[i])]]</strong></a>
+                        </div>
+                        <div>
+                            <!-- Artist name with link to their Spotify page -->
+                            <a href=[[=(artistLinks[i])]] target="_blank" style="color:#000000">[[=(topArtists[i])]]</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            [[pass]]
+            [[pass]]
+    </div>
+</div>
+
+<div class = "has-text-white has-text-weight-bold">
+    okay so right now it really focuses on songs instead of albums because i copy and pasted some of the top 10 songs code
+    <p>[[=(topTracks)]]</p>
+</div>        

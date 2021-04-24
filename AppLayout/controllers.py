@@ -29,6 +29,7 @@ from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
 from py4web.utils.form import Form, FormStyleBulma
+from py4web.utils.url_signer import URLSigner
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -50,6 +51,7 @@ def session_cache_path():
 # Ash: Permissions needed to be accepted by the user at login. There are more but these are the ones
 # we use right now, so they are the only ones we ask.
 scopes = "user-library-read user-read-private user-follow-read user-follow-modify user-top-read"
+
 
 @action('index', method='GET')
 @action.uses('index.html', session)
@@ -221,18 +223,15 @@ def getUserProfile(userID=None):
     if (currentProfileEntry != None) and (currentProfileEntry != []):
         # Setting the top tracks and profile pic variables
         profile_pic = currentProfileEntry[0]["profile_pic"]
-    print("topTracks user: ", topTracks)
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
     for row in loggedInUserEntry:
         userNumber = row["id"]
         friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
-    if ((friendsList != None) and len(friendsList) > 0):
-        print ("friendsList ", friendsList)
-        print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
     return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
-                topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic)
+                topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic,
+                )
 
 def getIDFromUserTable(userID):
     insertedID = (db(db.dbUser.userID == userID).select().as_list())
@@ -255,16 +254,85 @@ def editable_profile(userID):
     return profileOwner
 
 # https://jsonformatter.curiousconcept.com/
-@action.uses(session)
+@action('search', method=["GET", "POST"])
+@action.uses('search.html', session)
 def search():
-    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
-    if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
-    results = spotify.search("The Strokes", limit=1)
-    print (results)
-    return
+    form = Form([Field('Search', notnull=True)], session=session, formstyle=FormStyleBulma)
+    # Probably super inefficient to set all these but 500 errors if we dont right now
+    topTracks = ""
+    topArtists = ""
+    imgList = ""
+    trackLinks = ""
+    artistLinks = ""   
+    totalResults = 0
+    if form.accepted:
+        if form.vars["Search"] == "":
+            print ("empty input")
+            return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+            
+        cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+        if not auth_manager.validate_token(cache_handler.get_cached_token()):
+            return redirect('login')
+        spotify = spotipy.Spotify(auth_manager=auth_manager)
+        # Input what you want to see, see the spotipy API for parameters you can place to specify output
+        results = spotify.search(form.vars["Search"], limit=5)
+        print (results)
+        stored = results
+        totalResults = results["tracks"]["total"]
+        if (totalResults == 0):
+            print ("No results found or empty input")
+            return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+        print("totalResults ", totalResults)
+        results = results["tracks"]
+        biglist = getSearchResults(results)
+        #print ("BIG LIST IS : ", biglist)
+
+        # The number after ["items"] determines which results you see (ex [3] would be the 4th result) keep this in mind when setting limit
+        #results = results["tracks"]["items"][0]
+        # See length of items when looping through items to avoid out of bounds. 
+        #print ("Artist is ", results["album"]["artists"][0]["name"])
+        #print ("Artist URL is ", results["album"]["artists"][0]["external_urls"]["spotify"])
+        #print ("Album URL is ", results["album"]["external_urls"]["spotify"])
+        #print ("Album Images are ", results["album"]["images"])
+        #print ("Album Name is ", results["album"]["name"])
+        # Different way to find artist name
+        #print ("Artist is also ", results["artists"][0]["name"])
+        #print ("Track URL is ", results["external_urls"]["spotify"])
+        #print ("Track Name is ", results["name"])
+        topTracks = biglist[0]
+        print ("topTracks ", topTracks)
+        topArtists = biglist[1]
+        print ("topArtists ", topArtists)
+        imgList = biglist[2]
+        print ("imgList ", imgList)
+        trackLinks = biglist[3]
+        print ("trackLinks", trackLinks)
+        artistLinks = biglist[4]
+        print ("artistLinks ", artistLinks)
+        return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+    else:
+        print("Not accepted")
+        return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+
+@action('user/<userID>/<theme_id:int>')
+@action.uses(db, session)
+def update_theme(userID=None, theme_id=None):
+    assert theme_id is not None
+    assert userID is not None
+    print(theme_id)
+    print(userID)
+    user_data = db.dbUser[getIDFromUserTable(userID)]
+    # bird = db.bird[bird_id]
+    db(db.user_data.id == getIDFromUserTable(userID).update(chosen_theme=theme_id))
+
+    profileURL = "user/" + userID
+    redirect(profileURL)
+    return dict(session=session)
 
 # AppLayout/getLikedTracks
 # Returns the most recent 20 liked songs
@@ -284,6 +352,46 @@ def getLikedTracks():
         LikedSongsString = LikedSongsString + str((idx, track['artists'][0]['name'], " – ", track['name'])) + "<br>"
     return LikedSongsString
 
+def getSearchResults(results):
+    TopSongsString= ""
+    TopSongsList = []
+    TopArtistsList = []
+    ImgLinkList = []
+    TLinkList = []
+    ALinkList = []
+    BigList = []
+    for idx, item in enumerate(results['items']):
+        # Get items from correct place in given Spotipy dictionary
+        track = item['name']
+        trackInfo = item['album']['artists'][0]['name']
+        icon = item['album']['images'][2]['url']
+        trLink = item['external_urls']['spotify']
+        artLink = item['album']['artists'][0]['external_urls']['spotify']
+        TopSongsList.append(track)
+        TopSongsString = TopSongsString + str(track) + "<br>"
+        TopArtistsList.append(trackInfo)
+        ImgLinkList.append(icon)
+        TLinkList.append(trLink)
+        ALinkList.append(artLink)
+    # Avoid empty lists
+    if TopSongsList == []:
+        TopSongsList = ""
+    if TopArtistsList == []:
+        TopArtistsList= ""
+    if ImgLinkList == []:
+        ImgLinkList = ""
+    if TLinkList == []:
+        TLinkList = ""
+    if TLinkList == []:
+        ALinkList = ""
+    # Add all to list to be returned
+    BigList.append(TopSongsList)
+    BigList.append(TopArtistsList)
+    BigList.append(ImgLinkList)
+    BigList.append(TLinkList)
+    BigList.append(ALinkList)
+    # Returned to the user profile
+    return BigList
 def getTopTracksFunction():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
@@ -360,12 +468,28 @@ def addFriend():
     if form.accepted:
         dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
         if dbUserEntry == []:
-            print ("Yo this person doesn't even exist")
-            redirect(URL('user', session.get("userID")))
+            return dict(form = form, session=session, editable=False, nullError=True, alreadyFriend=False, CannotAddSelf=False)
+        if (checkIfFriendDuplicate(form.vars["userID"])):
+            return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=True, CannotAddSelf=False)
+        if (form.vars["userID"] == userID):
+            return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True)
         db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(userID), 
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
         redirect(URL('user', session.get("userID")))
-    return dict(form = form, session=session, editable=False)
+    return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False)
+
+@action('unfollow/<ID>', method=['GET'])
+@action.uses(session, db)
+def delete_contact(ID=None):
+    person = db.dbFriends[ID]
+    if person is None:
+        # Nothing to edit.  This should happen only if you tamper manually with the URL.
+        redirect(URL('user', session.get("userID")))
+    else:
+        friendToWhoID = person["friendToWhoID"]
+        if friendToWhoID == getIDFromUserTable(session.get("userID")):
+            db(db.dbFriends.id == ID).delete()
+        redirect(URL('user', session.get("userID")))
 
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
@@ -378,6 +502,14 @@ def sign_out():
     except OSError as e:
         print ("Error: %s - %s." % (e.filename, e.strerror))
     return redirect(URL('index'))
+
+def checkIfFriendDuplicate(inputID):
+    friendsEntries = (db(db.dbFriends.userID == inputID).select().as_list())
+    friendtowhoID = getIDFromUserTable(session.get("userID"))
+    for entry in friendsEntries:
+        if (entry["friendToWhoID"] == friendtowhoID):
+            return True
+    return False
 
 fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs to see results",  
 "Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
