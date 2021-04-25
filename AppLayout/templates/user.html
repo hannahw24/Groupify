@@ -122,7 +122,7 @@
                     Edit Profile
                 </a>
             [[elif isFriend==True:]]
-                <a class="button is-danger" href="[[=URL('unfollowProfile', userID)]]">
+                <a class="button is-danger" href="[[=URL('unfollowProfile', userID, signer=url_signer)]]">
                     Unfollow
                 </a>
             [[else:]]

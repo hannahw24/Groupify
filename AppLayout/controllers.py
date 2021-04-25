@@ -52,11 +52,12 @@ def session_cache_path():
 # we use right now, so they are the only ones we ask.
 scopes = "user-library-read user-read-private user-follow-read user-follow-modify user-top-read"
 
+url_signer = URLSigner(session)
 
 @action('index', method='GET')
 @action.uses('index.html', session)
 def getIndex():
-    return dict(session=session, editable=False)
+    return dict(session=session, editable=False, url_signer=url_signer)
 
 # https://github.com/plamere/spotipy/blob/master/examples/search.py
 # Emulates the caching, authentication managing, and uuid assigning as 
@@ -238,7 +239,7 @@ def getUserProfile(userID=None):
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
     return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
                 topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic,
-                userID=userID, isFriend=isFriend)
+                userID=userID, isFriend=isFriend, url_signer=url_signer)
 
 def getIDFromUserTable(userID):
     insertedID = (db(db.dbUser.userID == userID).select().as_list())
@@ -264,7 +265,7 @@ def editable_profile(userID):
 @action('search', method=["GET", "POST"])
 @action.uses('search.html', session)
 def search():
-    form = Form([Field('Search', notnull=True)], session=session, formstyle=FormStyleBulma)
+    form = Form([Field('Search', notnull=True)], csrf_session=session, formstyle=FormStyleBulma)
     # Probably super inefficient to set all these but 500 errors if we dont right now
     topTracks = ""
     topArtists = ""
@@ -399,6 +400,7 @@ def getSearchResults(results):
     BigList.append(ALinkList)
     # Returned to the user profile
     return BigList
+
 def getTopTracksFunction():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
@@ -471,7 +473,7 @@ def getSettings():
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
     loggedInUserId = session.get("userID")
-    form = Form([Field('userID', notnull=True)], session=session, formstyle=FormStyleBulma)
+    form = Form([Field('userID', notnull=True)], csrf_session=session, formstyle=FormStyleBulma)
     if form.accepted:
         dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
         if dbUserEntry == []:
@@ -510,7 +512,7 @@ def delete_contact(userID=None):
     person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
     print("userID is ", userID)
     print("person is ", person)
-    if person is None:
+    if person is None or person == []:
         # Nothing to edit.  This should happen only if you tamper manually with the URL.
         redirect(URL('user', userID))
     else:
@@ -520,19 +522,6 @@ def delete_contact(userID=None):
             print("Testing ", db(db.dbFriends.id == person["id"]).select().as_list())
             db(db.dbFriends.id == person["id"]).delete()
         redirect(URL('user', userID))
-
-@action('unfollow/<ID>', method=['GET'])
-@action.uses(session, db)
-def delete_contact(ID=None):
-    person = db.dbFriends[ID]
-    if person is None:
-        # Nothing to edit.  This should happen only if you tamper manually with the URL.
-        redirect(URL('user', session.get("userID")))
-    else:
-        friendToWhoID = person["friendToWhoID"]
-        if friendToWhoID == getIDFromUserTable(session.get("userID")):
-            db(db.dbFriends.id == ID).delete()
-        redirect(URL('user', session.get("userID")))
 
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
