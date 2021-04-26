@@ -26,7 +26,7 @@ db.define_table(
 
 db.define_table(
     'dbFriends',
-    Field('userID', notnull=True, unique=True),
+    Field('userID', notnull=True),
     Field('display_name'),
     Field('profile_pic'),
     #Ash: This should connect the friends table to the user table
@@ -38,6 +38,10 @@ db.dbFriends.profile_pic.readable = db.dbFriends.profile_pic.writable = False
 #db.dbFriends.friendToWhoID.label = T('Friend ID')
 db.dbFriends.friendToWhoID.readable = db.dbFriends.friendToWhoID.writable = False
 
+# Ash: Might be okay to remove this but I haven't tested it
+db.dbFriends.profile_pic.readable = db.dbFriends.profile_pic.writable = False
+db.dbFriends.display_name.readable = db.dbFriends.display_name.writable = False
+db.dbFriends.friendToWhoID.readable = db.dbFriends.friendToWhoID.writable = False
 
 # Table to store the short_term tracks, medium_term and long_term should have their own tables
 db.define_table(
@@ -49,6 +53,7 @@ db.define_table(
     Field('artistLinks', 'list:string'), 
     Field('topTracksOfWho', db.dbUser)
 )
+
 
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}

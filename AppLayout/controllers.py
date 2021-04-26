@@ -25,10 +25,11 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL
+from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
 from py4web.utils.form import Form, FormStyleBulma
+from py4web.utils.url_signer import URLSigner
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -50,6 +51,7 @@ def session_cache_path():
 # Ash: Permissions needed to be accepted by the user at login. There are more but these are the ones
 # we use right now, so they are the only ones we ask.
 scopes = "user-library-read user-read-private user-follow-read user-follow-modify user-top-read"
+
 
 @action('index', method='GET')
 @action.uses('index.html', session)
@@ -99,7 +101,7 @@ def getCallback():
     auth_manager.get_access_token(code)
     return redirect("getUserInfo")
 
-# After callback, the user goes to this function and has thier info made/updated
+# After callback, the user goes to this function and has their info made/updated
 # Places a User's info in the database and then sends them to their profile.
 @action('getUserInfo')
 @action.uses(db, session)
@@ -137,6 +139,8 @@ def getUserInfo():
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    # This takes all the instances of the logged in user in the friends database. 	
+    # This is so we can update their information.
     friendsEntries =  (db(db.dbFriends.userID == userID).select().as_list())
 
     # Not sure if returns as None or an empty list if user is new.
@@ -224,13 +228,14 @@ def getUserProfile(userID=None):
     friendsList = []
     for row in loggedInUserEntry:
         userNumber = row["id"]
-        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select().as_list()
+        friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
     if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
     return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
-                topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic)
+                topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic,
+                )
 
 def getIDFromUserTable(userID):
     insertedID = (db(db.dbUser.userID == userID).select().as_list())
@@ -353,13 +358,36 @@ def getSettings():
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
-    form = Form(db.dbFriends, session=session, formstyle=FormStyleBulma)
+    userID = session.get("userID")
+    form = Form([Field('userID', notnull=True)], session=session, formstyle=FormStyleBulma)
     if form.accepted:
-        #Edit already happened
-        #db.dbUser.insert(request.json.get('friendToWhoID'))
+        dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
+        if dbUserEntry == []:
+            print ("Yo this person doesn't even exist")
+            return dict(form = form, session=session, editable=False, nullError=True, alreadyFriend=False, CannotAddSelf=False)
+        if (checkIfFriendDuplicate(form.vars["userID"])):
+            print ("Yo this person ALREADY exists in friends list")
+            return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=True, CannotAddSelf=False)
+        if (form.vars["userID"] == userID):
+            print ("Yo you can't add yourself exists in friends list")
+            return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True)
+        db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(userID), 
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
         redirect(URL('user', session.get("userID")))
-    return dict(form = form, session=session, editable=False)
-    # return dict(session=session, editable=False)
+    return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False)
+
+@action('unfollow/<ID>', method=['GET'])
+@action.uses(session, db)
+def delete_contact(ID=None):
+    person = db.dbFriends[ID]
+    if person is None:
+        # Nothing to edit.  This should happen only if you tamper manually with the URL.
+        redirect(URL('user', session.get("userID")))
+    else:
+        friendToWhoID = person["friendToWhoID"]
+        if friendToWhoID == getIDFromUserTable(session.get("userID")):
+            db(db.dbFriends.id == ID).delete()
+        redirect(URL('user', session.get("userID")))
 
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
@@ -372,6 +400,14 @@ def sign_out():
     except OSError as e:
         print ("Error: %s - %s." % (e.filename, e.strerror))
     return redirect(URL('index'))
+
+def checkIfFriendDuplicate(inputID):
+    friendsEntries = (db(db.dbFriends.userID == inputID).select().as_list())
+    friendtowhoID = getIDFromUserTable(session.get("userID"))
+    for entry in friendsEntries:
+        if (entry["friendToWhoID"] == friendtowhoID):
+            return True
+    return False
 
 fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs to see results",  
 "Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
