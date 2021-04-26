@@ -1,4 +1,5 @@
 [[extend 'layout.html']]
+<div id="vue-target">
 <section>
     <div>
         <br>
@@ -25,29 +26,37 @@
             [[if trackLinks != "":]]
             [[for i in range(len(trackLinks)):]]
             <section>
-                <div class="columns">
-                    <div class="column">
-                        <!-- Album art image with link to track -->
-                        <a href=[[=(trackLinks[i])]] target="_blank"><img src=[[=(imgList[i])]]></a>
-                    </div>
-                    <div class="column is-9">
-                        <div>
-                            <!-- Song title with link to track -->
-                            <a href=[[=(trackLinks[i])]] target="_blank" style="color:#000000"><strong>[[=(topTracks[i])]]</strong></a>
+                <a @click="save_album('[[=(trackLinks[i])]]', '[[=(imgList[i])]]', '[[=(squareNumber)]]')">
+                    <div class="columns">
+                        <div class="column">
+                            <!-- Album art image with link to track -->
+                            <img src=[[=(imgList[i])]]>
                         </div>
-                        <div>
-                            <!-- Artist name with link to their Spotify page -->
-                            <a href=[[=(artistLinks[i])]] target="_blank" style="color:#000000">[[=(topArtists[i])]]</a>
+                        <div class="column is-9">
+                            <div>
+                                <!-- Song title with link to track -->
+                                <span target="_blank" style="color:#000000"><strong>[[=(topTracks[i])]]</strong></span>
+                            </div>
+                            <div>
+                                <!-- Artist name with link to their Spotify page -->
+                                <span target="_blank" style="color:#000000">[[=(topArtists[i])]]</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </section>
             [[pass]]
             [[pass]]
     </div>
+</div>   
+
 </div>
 
-<div class = "has-text-white has-text-weight-bold">
-    okay so right now it really focuses on songs instead of albums because i copy and pasted some of the top 10 songs code
-    <p>[[=(topTracks)]]</p>
-</div>        
+[[block page_scripts]]
+<script>
+    let inputAlbum = "[[=XML(inputAlbum)]]";
+    let profileURL = "[[=XML(profileURL)]]";
+</script>
+<!-- Loads the user-specific js for Vue -->
+<script src="js/user.js"></script>
+[[end]]

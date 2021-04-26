@@ -50,7 +50,7 @@ db.define_table(
     'squares',
     #Change this to one big field with 1 list with 6 index [0][1]...
     #Also just return the albumsOfWho ID for albumInput because it should be unique. 
-    Field('squaresList'), # Thinking this will work like squaresList[0]["albumCover"] for finding the first square's album cover
+    Field('squaresList', 'list:string'), # Thinking this will work like squaresList[0]["albumCover"] for finding the first square's album cover
     Field('albumsOfWho', db.dbUser)
 )
 

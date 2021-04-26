@@ -15,6 +15,22 @@ let init = (app) => {
         return a;
     };
 
+    app.save_album = (track, cover, squareNumber) => {
+        // Handler for "Save edit" button.
+        console.log("I'm in save_album");
+        axios.post(inputAlbum, null, {params: {
+            squareNumber: squareNumber,
+            cover: cover,
+            albumURL: track,
+            }}).then((result) => {
+                console.log("Received:", result.data);         
+                window.location.replace(profileURL);       
+            }).catch(() => {
+                console.log("Caught error");
+                // We stay in edit mode.
+            });
+        };
+
 
     app.controlEditButton = () => {
         editButton = document.getElementById('editButton');
@@ -31,6 +47,7 @@ let init = (app) => {
     // to the Vue app in a single blow.
     app.methods = {
         controlEditButton: app.controlEditButton,
+        save_album: app.save_album
     };
 
     // This creates the Vue instance.
@@ -42,15 +59,7 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
-        // TODO: Load the posts from the server instead.
-        // We set the posts.
-        
-        //posts_url is from previos HW must chage
-        axios.get(posts_url).then((result) => {
-            app.vue.posts = app.index("filler");
-            }).then(() => {
-                console.log("Begin");
-            });
+        console.log("Begin");
     };
 
     // Call to the initializer.
