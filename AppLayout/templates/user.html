@@ -34,6 +34,9 @@
                                 [[ profileURL = "user/" + row["userID"] ]]
                                 <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
+                                <a class="button is-small is-white" href="[[=URL('unfollow', row['id'])]]">
+                                    <i class="fa fa-fw fa-trash"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -49,7 +52,7 @@
         <section>
         <div class="row">
             <div class="columns is-mobile is-1">
-                <div class="column is-2 album_box">
+                <!--div class="column is-2 album_box">
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
@@ -78,7 +81,14 @@
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
+                </div-->
+                [[for i in range(6):]]
+                <div class="column is-2 album_box">
+                    <figure class="image">
+                        <img src="[[=(bannerImgs[i])]]">
+                    </figure>
                 </div>
+                [[pass]]
             </div>
         </div>
         </section>
@@ -86,7 +96,7 @@
         <section>
         <div class="row">
             <div class="columns is-mobile is-1">
-                <div class="column is-2 album_box">
+                <!--div class="column is-2 album_box">
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
@@ -115,7 +125,14 @@
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
+                </div-->
+                [[for i in range(6, 12):]]
+                <div class="column is-2 album_box">
+                    <figure class="image">
+                        <img src="[[=(bannerImgs[i])]]">
+                    </figure>
                 </div>
+                [[pass]]
             </div>
         </div>
         </section>

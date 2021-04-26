@@ -32,7 +32,8 @@ p.labels{
 /* ********************** HOME PAGE ********************** */
 
 body{
-    background-image: linear-gradient(#4FE383,#191414);
+    background-image: linear-gradient(#4fe38300,#191414);
+    background-color: #4FE383;
     background-repeat: no-repeat;
     background-attachment: fixed;
     

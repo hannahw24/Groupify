@@ -47,7 +47,6 @@
                   <a class="navbar-item" onclick="popTheme();">Pop</a>
                   <a class="navbar-item" onclick="rnbTheme();">R&B</a>
                   <a class="navbar-item" onclick="lofiTheme();">Lo-Fi</a>
-                  <a class="navbar-item" onclick="metalTheme();">Metal</a>
                 </div>
               </div>
             </nav>
@@ -57,6 +56,9 @@
             [[if session.get("userID") != None:]]
             <a class="navbar-item" href="[[=URL('groupSession')]]">group</a>
             <a class="navbar-item" href="[[=URL('settings')]]">settings</a>
+            <a class="navbar-item" href="[[=URL('search')]]">temp search</a>
+            [[userBanner = "banner/" + session.get("userID")]]
+            <a class="navbar-item" href="[[=URL(userBanner)]]">temp banner</a>
             [[pass]]
             <!-- Sign In/Sign Out -->
             <div class="navbar-item">

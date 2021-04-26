@@ -13,6 +13,14 @@ from pydal.validators import *
 #
 # db.commit()
 #
+
+def empty_albums():
+    square = 'https://bulma.io/images/placeholders/128x128.png'
+    bannerList = []
+    for i in range(12):
+        bannerList.append(square)
+    return bannerList
+
 db.define_table(
     'dbUser',
     Field('userID', notnull=True, unique=True),
@@ -45,6 +53,14 @@ db.define_table(
     Field('artistLinks', 'list:string'), 
     Field('topTracksOfWho', db.dbUser)
 )
+
+db.define_table(
+    'banner',
+    Field('imgList', 'list:string', default=empty_albums()),
+    Field('links', 'list:string'),
+    Field('bannerOfWho', db.dbUser)
+)
+
 
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}

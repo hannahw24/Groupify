@@ -1,0 +1,65 @@
+[[extend 'layout.html']]
+
+<section>
+        <div class="row">
+            <div class="columns is-mobile is-1">
+                [[for i in range(6):]]
+                <div class="column is-2 album_box">
+                    <figure class="image">
+                        <img src="[[=(bannerImgs[i])]]">
+                    </figure>
+                </div>
+                [[pass]]
+            </div>
+        </div>
+        </section>
+
+        <section>
+        <div class="row">
+            <div class="columns is-mobile is-1">
+                [[for i in range(6, 12):]]
+                <div class="column is-2 album_box">
+                    <figure class="image">
+                        <img src="[[=(bannerImgs[i])]]">
+                    </figure>
+                </div>
+                [[pass]]
+            </div>
+        </div>
+        </section>
+
+[[=form]]
+<div class="tile is-parent">
+    <div class="tile is-child box"> 
+        <!-- Panel title -->
+        <strong>Top 10 Songs</strong>
+            <!-- For each top song -->
+            [[if albumLinks != "":]]
+            [[for i in range(len(albumLinks)):]]
+            <section>
+                <div class="columns">
+                    <div class="column">
+                        <!-- Album art image with link to track -->
+                        <a href=[[=(albumLinks[i])]] target="_blank"><img src=[[=(imgList[i])]]></a>
+                    </div>
+                    <div class="column is-9">
+                        <div>
+                            <!-- Song title with link to track -->
+                            <a href=[[=(albumLinks[i])]] target="_blank" style="color:#000000"><strong>[[=(topAlbums[i])]]</strong></a>
+                        </div>
+                        <div>
+                            <!-- Artist name with link to their Spotify page -->
+                            <a href=[[=(albumLinks[i])]] target="_blank" style="color:#000000">[[=(topArtists[i])]]</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            [[pass]]
+            [[pass]]
+    </div>
+</div>
+
+<div class = "has-text-white has-text-weight-bold">
+    okay so right now it really focuses on songs instead of albums because i copy and pasted some of the top 10 songs code
+    <p>[[=(topAlbums)]]</p>
+</div>        
