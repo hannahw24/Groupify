@@ -341,18 +341,23 @@ def getTopTracksFunction():
     # Returned to the user profile
     return BigList
 
-@action('groupSession')
+@action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
-def groupSession():
+def groupSession(userID=None):
     # Ash: set editable to False for now, not sure if setting the theme
     #      on the groupSession page will change it for everyone
     return dict(session=session, editable=False)
 
 # Ash: There isn't a settings page right now
-@action('settings')
+@action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
-def getSettings():
-    return dict(session=session, editable=False)
+def getSettings(userID=None):
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
+    profile_pic = ""
+    if (currentProfileEntry != None) and (currentProfileEntry != []):
+        # Setting the top tracks and profile pic variables
+        profile_pic = currentProfileEntry[0]["profile_pic"]
+    return dict(session=session, editable=False, profile_pic=profile_pic)
 
 # Haanah: There isn't an add friend page right now
 @action('add_friend', method=["GET", "POST"])
