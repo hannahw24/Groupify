@@ -1,9 +1,26 @@
 [[extend 'layout.html']]
-[[=form]]
+<section>
+    <div>
+        <br>
+        <h1 class="title has-text-centered">
+            Search For Cover Art
+        </h1>
+    </div>
+    <form action="[[=URL('user', userID, 'edit', squareNumber)]]" method="POST">
+        <div class="container">
+            <br>
+            <div class="field">
+                <input class="input" type="text" name="Search" placeholder="Enter an artist/album/song" />
+                <input type="submit" class="button" value="Submit" />
+            </div>
+        </div>
+    </form>
+
+</section>
+
 <div class="tile is-parent">
     <div class="tile is-child box"> 
         <!-- Panel title -->
-        <strong>Top 10 Songs</strong>
             <!-- For each top song -->
             [[if trackLinks != "":]]
             [[for i in range(len(trackLinks)):]]

@@ -140,9 +140,11 @@ def getUserInfo():
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    squareEntries = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
     # This takes all the instances of the logged in user in the friends database. 	
     # This is so we can update their information.
     friendsEntries =  (db(db.dbFriends.userID == userID).select().as_list())
+
 
     # Not sure if returns as None or an empty list if user is new.
     if (dbUserEntry == None) or dbUserEntry == []:
@@ -164,14 +166,11 @@ def getUserInfo():
     # Is there shortTerm top tracks populated?
     if (shortTermEntry == None) or (shortTermEntry == []):
         insertedID = getIDFromUserTable(userID)
-        print("insertedID ", insertedID)
         db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
-                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID, 
-                            editable=editable_profile(userID))
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
     # If it is update it
     else:
         insertedID = getIDFromUserTable(userID)
-        print("insertedID ", insertedID)
         # Updates their songs of the past 4 weeks. 
         dbRow =  db(db.shortTerm.topTracksOfWho == insertedID)
         dbRow.update(topTracks=topTracks)
@@ -179,7 +178,11 @@ def getUserInfo():
         dbRow.update(imgList=imgList)
         dbRow.update(trackLinks=trackLinks)
         dbRow.update(artistLinks=artistLinks)
-    
+    if (squareEntries == None) or (squareEntries == []):
+        print("Has no square entires")
+        insertedID = getIDFromUserTable(userID)
+        emptyList = ["",""]
+        db.squares.insert(squaresList = [ ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]], albumsOfWho=insertedID)
     return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
@@ -201,6 +204,9 @@ def getUserProfile(userID=None):
     loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     shortTermList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+
+    if currentProfileEntry == []:
+        return userNotFound(session.get("userID"))
 
     # Declared early for checking an error where a user hasn't listened to songs, do not remove
     topTracks = None
@@ -226,7 +232,7 @@ def getUserProfile(userID=None):
 
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
-        # Setting the top tracks and profile pic variables
+        # Setting profile pic variable to display on page
         profile_pic = currentProfileEntry[0]["profile_pic"]
     #Avoid the for loop errors in user.html that would occur if friendsList is None
     friendsList = []
@@ -241,31 +247,11 @@ def getUserProfile(userID=None):
                 topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic,
                 userID=userID, isFriend=isFriend, url_signer=url_signer)
 
-def getIDFromUserTable(userID):
-    insertedID = (db(db.dbUser.userID == userID).select().as_list())
-    if (insertedID is not None) and (insertedID != []):
-        return insertedID[0]["id"]
-    return None
-
-# Returns whether the user can edit a profile
-@action.uses(session)
-def editable_profile(userID):
-    profileOwner = False
-    if userID == None:
-        return profileOwner
-    profile_info = session.get("userID")
-    # Checking if the session already has a token stored
-    if profile_info != userID:
-        return profileOwner
-
-    profileOwner = True
-    return profileOwner
-
-# https://jsonformatter.curiousconcept.com/
-@action('search', method=["GET", "POST"])
+@action('user/<userID>/edit/<squareNumber>', method=["GET", "POST"])
 @action.uses('search.html', session)
-def search():
-    form = Form([Field('Search', notnull=True)], csrf_session=session, formstyle=FormStyleBulma)
+def editUserSquare(userID, squareNumber):
+    print(userID)
+    print(squareNumber)
     # Probably super inefficient to set all these but 500 errors if we dont right now
     topTracks = ""
     topArtists = ""
@@ -273,28 +259,37 @@ def search():
     trackLinks = ""
     artistLinks = ""   
     totalResults = 0
-    if form.accepted:
-        if form.vars["Search"] == "":
+    if request.method == "GET":
+        return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
+        url_signer=url_signer, userID=userID, squareNumber=squareNumber)
+    else:
+        print("please1")
+        form_SearchValue = request.params.get("Search")
+        if form_SearchValue == "":
             print ("empty input")
-            return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
-            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
-            
+            return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
+            url_signer=url_signer, userID=userID, squareNumber=squareNumber)
         cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
         auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
         if not auth_manager.validate_token(cache_handler.get_cached_token()):
             return redirect('login')
         spotify = spotipy.Spotify(auth_manager=auth_manager)
         # Input what you want to see, see the spotipy API for parameters you can place to specify output
-        results = spotify.search(form.vars["Search"], limit=5)
-        print (results)
-        stored = results
-        totalResults = results["tracks"]["total"]
-        if (totalResults == 0):
-            print ("No results found or empty input")
-            return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
-            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
-        print("totalResults ", totalResults)
-        results = results["tracks"]
+        results = spotify.search(form_SearchValue, limit=5)
+        print("please2")
+        try:
+            totalResults = results["tracks"]["total"]
+            if (totalResults == 0):
+                print ("No results found or empty input")
+                return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+                imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
+                url_signer=url_signer, userID=userID, squareNumber=squareNumber)
+            results = results["tracks"]
+        except:
+            print(results)
+        print("please3")
         biglist = getSearchResults(results)
         #print ("BIG LIST IS : ", biglist)
 
@@ -320,11 +315,113 @@ def search():
         print ("trackLinks", trackLinks)
         artistLinks = biglist[4]
         print ("artistLinks ", artistLinks)
-        return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
-        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+        return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
+        url_signer=url_signer, userID=userID, squareNumber=squareNumber)
+
+@action('inputAlbum')
+@action.uses(session)
+def inputAlbum(trackLink, albumArt, userID, squareNumber):
+    print ("trackLink is ", trackLink)
+    print ("albumArt is ", albumArt)
+    squareEntries = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
+    print ("squareEntries = ", squareEntries)
+    squareEntries = squareEntries[squareNumber]
+    #This might be a better place to redirect to 
+    if squareEntries == []:
+        print("It's empty")
+        redirect(URL('user', userID))
     else:
-        print("Not accepted")
-        return dict(form = form, session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+        db(db.dbUser.userID == userID).update(display_name=display_name)
+    return dict(session=session, editable=False, url_signer=url_signer)
+
+def getIDFromUserTable(userID):
+    insertedID = (db(db.dbUser.userID == userID).select().as_list())
+    if (insertedID is not None) and (insertedID != []):
+        return insertedID[0]["id"]
+    return None
+
+@action('userNotFound', method='GET')
+@action.uses('user_not_found.html', session)
+def userNotFound(userID):
+    return dict(session=session, editable=False, userID=userID, url_signer=url_signer)
+
+# Returns whether the user can edit a profile
+@action.uses(session)
+def editable_profile(userID):
+    profileOwner = False
+    if userID == None:
+        return profileOwner
+    profile_info = session.get("userID")
+    # Checking if the session already has a token stored
+    if profile_info != userID:
+        return profileOwner
+
+    profileOwner = True
+    return profileOwner
+
+# https://jsonformatter.curiousconcept.com/
+@action('search', method=["GET", "POST"])
+@action.uses('search.html', session)
+def search():
+    # Probably super inefficient to set all these but 500 errors if we dont right now
+    topTracks = ""
+    topArtists = ""
+    imgList = ""
+    trackLinks = ""
+    artistLinks = ""   
+    totalResults = 0
+    if request.method == "GET":
+        return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+    else:
+        form_SearchValue = request.params.get("Search")
+        if form_SearchValue == "":
+            print ("empty input")
+            return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+        cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+        if not auth_manager.validate_token(cache_handler.get_cached_token()):
+            return redirect('login')
+        spotify = spotipy.Spotify(auth_manager=auth_manager)
+        # Input what you want to see, see the spotipy API for parameters you can place to specify output
+        results = spotify.search(form_SearchValue, limit=5)
+        try:
+            totalResults = results["tracks"]["total"]
+            if (totalResults == 0):
+                print ("No results found or empty input")
+                return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
+                imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+            results = results["tracks"]
+        except:
+            print(results)
+        biglist = getSearchResults(results)
+        #print ("BIG LIST IS : ", biglist)
+
+        # The number after ["items"] determines which results you see (ex [3] would be the 4th result) keep this in mind when setting limit
+        #results = results["tracks"]["items"][0]
+        # See length of items when looping through items to avoid out of bounds. 
+        #print ("Artist is ", results["album"]["artists"][0]["name"])
+        #print ("Artist URL is ", results["album"]["artists"][0]["external_urls"]["spotify"])
+        #print ("Album URL is ", results["album"]["external_urls"]["spotify"])
+        #print ("Album Images are ", results["album"]["images"])
+        #print ("Album Name is ", results["album"]["name"])
+        # Different way to find artist name
+        #print ("Artist is also ", results["artists"][0]["name"])
+        #print ("Track URL is ", results["external_urls"]["spotify"])
+        #print ("Track Name is ", results["name"])
+        topTracks = biglist[0]
+        print ("topTracks ", topTracks)
+        topArtists = biglist[1]
+        print ("topArtists ", topArtists)
+        imgList = biglist[2]
+        print ("imgList ", imgList)
+        trackLinks = biglist[3]
+        print ("trackLinks", trackLinks)
+        artistLinks = biglist[4]
+        print ("artistLinks ", artistLinks)
+        return dict(session=session, editable=False, topTracks=topTracks, topArtists=topArtists,
         imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
 @action('user/<userID>/<theme_id:int>')
@@ -472,20 +569,21 @@ def getSettings():
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
-    loggedInUserId = session.get("userID")
-    form = Form([Field('userID', notnull=True)], csrf_session=session, formstyle=FormStyleBulma)
-    if form.accepted:
-        dbUserEntry = (db(db.dbUser.userID == form.vars["userID"]).select().as_list())
+    if request.method == "GET":
+        return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False)
+    else:
+        loggedInUserId = session.get("userID")
+        form_userID = request.params.get("userID")
+        dbUserEntry = (db(db.dbUser.userID == form_userID).select().as_list())
         if dbUserEntry == []:
-            return dict(form = form, session=session, editable=False, nullError=True, alreadyFriend=False, CannotAddSelf=False)
-        if (checkIfFriendDuplicate(form.vars["userID"])):
-            return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=True, CannotAddSelf=False)
-        if (form.vars["userID"] == loggedInUserId):
-            return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True)
-        db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(loggedInUserId), 
+            return dict(session=session, editable=False, nullError=True, alreadyFriend=False, CannotAddSelf=False)
+        if (checkIfFriendDuplicate(form_userID)):
+            return dict(session=session, editable=False, nullError=False, alreadyFriend=True, CannotAddSelf=False)
+        if (form_userID == loggedInUserId):
+            return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True)
+        db.dbFriends.insert(userID=form_userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
-        redirect(URL('user', session.get("userID")))
-    return dict(form = form, session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False)
+        return redirect(URL('user', session.get("userID")))
 
 @action('addFriendFromProfile/<userID>', method=["GET"])
 @action.uses(db, session)

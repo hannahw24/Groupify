@@ -56,7 +56,6 @@
             [[if session.get("userID") != None:]]
             <a class="navbar-item" href="[[=URL('groupSession')]]">group</a>
             <a class="navbar-item" href="[[=URL('settings')]]">settings</a>
-            <a class="navbar-item" href="[[=URL('search')]]">temp search</a>
             [[pass]]
             <!-- Sign In/Sign Out -->
             <div class="navbar-item">
@@ -86,5 +85,7 @@
     <script src="js/axios.min.js"></script>
     <script src="js/vue.min.js"></script>
     <script src="js/theme_change.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/utils.js"></script>
     [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
   </html>
