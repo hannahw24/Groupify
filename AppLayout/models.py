@@ -13,6 +13,7 @@ from pydal.validators import *
 #
 # db.commit()
 #
+
 db.define_table(
     'dbUser',
     Field('userID', notnull=True, unique=True),
@@ -50,7 +51,8 @@ db.define_table(
     'squares',
     #Change this to one big field with 1 list with 6 index [0][1]...
     #Also just return the albumsOfWho ID for albumInput because it should be unique. 
-    Field('squaresList', 'list:string'), # Thinking this will work like squaresList[0]["albumCover"] for finding the first square's album cover
+    Field('coverList', 'list:string'), 
+    Field('urlList', 'list:string'),
     Field('albumsOfWho', db.dbUser)
 )
 

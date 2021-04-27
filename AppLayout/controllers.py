@@ -181,8 +181,7 @@ def getUserInfo():
     if (squareEntries == None) or (squareEntries == []):
         print("Has no square entires")
         insertedID = getIDFromUserTable(userID)
-        emptyList = ["",""]
-        db.squares.insert(squaresList = [ ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]], albumsOfWho=insertedID)
+        db.squares.insert(coverList = ["x", "x", "x", "x", "x", "x"], urlList = [ "x", "x", "x", "x", "x", "x"], albumsOfWho=insertedID)
     return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
@@ -204,7 +203,9 @@ def getUserProfile(userID=None):
     loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     shortTermList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
-
+    squareEntries = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
+    coverList = squareEntries[0]["coverList"]
+    urlList = squareEntries[0]["urlList"]
     if currentProfileEntry == []:
         return userNotFound(session.get("userID"))
 
@@ -245,7 +246,7 @@ def getUserProfile(userID=None):
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
     return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
                 topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic,
-                userID=userID, isFriend=isFriend, url_signer=url_signer)
+                userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList)
 
 @action('user/<userID>/edit/<squareNumber>', method=["GET", "POST"])
 @action.uses('search.html', session)
@@ -326,14 +327,24 @@ def inputAlbum():
     print("squareNumber", squareNumber)
     print("cover", cover)
     print("albumURL", albumURL)
-    squareEntriesList = squareEntries[0]["squaresList"]
-    print("squareEntriesList", squareEntriesList)
-    for item in squareEntriesList:
-        print (item)
-    print("squareEntriesList[squareNumber] ", squareEntriesList[int(squareNumber)])
-    squareEntriesList[int(squareNumber)] = [cover, albumURL]
-    print("squareEntriesList", squareEntriesList)
-    dbSquareEntry.update(squaresList=squareEntriesList)
+    coverList = squareEntries[0]["coverList"]
+    urlList = squareEntries[0]["urlList"]
+    print("coverList", coverList)
+    print("urlList", urlList)
+
+    print("coverList[squareNumber] ", coverList[int(squareNumber)])
+    print("urlList[squareNumber] ", urlList[int(squareNumber)])
+
+    coverList[int(squareNumber)] = cover
+    urlList[int(squareNumber)] = cover
+    dbSquareEntry.update(coverList=coverList, urlList=urlList)
+    print("update ", dbSquareEntry)
+
+    squareEntries = dbSquareEntry.select().as_list()
+    coverList = squareEntries[0]["coverList"]
+    urlList = squareEntries[0]["urlList"]
+    print("coverList[squareNumber] ", coverList[int(squareNumber)])
+    print("urlList[squareNumber] ", urlList[int(squareNumber)])
     return "lmao"
     #redirect(URL('user', userID))
 
