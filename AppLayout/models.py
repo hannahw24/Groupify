@@ -2,7 +2,7 @@
 This file defines the database models
 """
 
-from .common import db, Field, T, session, auth
+from .common import db, Field
 from pydal.validators import *
 
 ### Define your table below
@@ -13,8 +13,6 @@ from pydal.validators import *
 #
 # db.commit()
 #
-def get_session_user():
-    return auth.current_user.get('user_id') if auth.current_user else None 
 
 def empty_albums():
     bannerList = []
@@ -27,6 +25,7 @@ db.define_table(
     Field('userID', notnull=True, unique=True),
     Field('display_name'),
     #Ash: email may be unnecessary. 
+    Field('bio_status'),
     Field('profile_pic'),
 )
 
@@ -35,14 +34,10 @@ db.define_table(
     Field('userID', notnull=True),
     Field('display_name'),
     Field('profile_pic'),
+    Field('bio_status'),
     #Ash: This should connect the friends table to the user table
-    Field('friendToWhoID', default = get_session_user)
+    Field('friendToWhoID', db.dbUser)
 )
-db.dbFriends.profile_pic.readable = db.dbFriends.profile_pic.writable = False
-#db.dbFriends.userID.readable = db.dbFriends.userID.writable = False
-#db.dbFriends.display_name.readable = db.dbFriends.display_name.writable = False
-#db.dbFriends.friendToWhoID.label = T('Friend ID')
-db.dbFriends.friendToWhoID.readable = db.dbFriends.friendToWhoID.writable = False
 
 # Ash: Might be okay to remove this but I haven't tested it
 db.dbFriends.profile_pic.readable = db.dbFriends.profile_pic.writable = False

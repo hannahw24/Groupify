@@ -34,9 +34,6 @@
                                 [[ profileURL = "user/" + row["userID"] ]]
                                 <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
                                 <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
-                                <a class="button is-small is-white" href="[[=URL('unfollow', row['id'])]]">
-                                    <i class="fa fa-fw fa-trash"></i>
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -144,7 +141,7 @@
         <section>
         <div class="row">
             <div class="columns is-mobile is-1">
-                <div class="column is-2 album_box">
+                <!-- <div class="column is-2 album_box">
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
@@ -173,7 +170,36 @@
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
-                </div>
+                </div> -->
+                [[for i in range(6, 12):]]
+                    [[if coverList[i] != "x": ]]
+                        <div v-if = "isEditing===1" class="column is-2 album_box">
+                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                                <figure class="image">
+                                    <img src="[[=(coverList[i])]]">
+                                </figure>
+                            </a>
+                        </div>
+                        <div v-else class="column is-2 album_box">
+                            <figure class="image">
+                                <img src="[[=(coverList[i])]]">
+                            </figure>
+                        </div>
+                    [[else:]]
+                    <div v-if = "isEditing===1" class="column is-2 album_box">
+                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                            <figure class="image">
+                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                            </figure>
+                        </a>
+                    </div>
+                    <div v-else class="column is-2 album_box">
+                        <figure class="image">
+                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                        </figure>
+                    </div>
+                    [[pass]]
+                [[pass]]
             </div>
             [[if (editable==True):]]
                 <div id="editButton">
@@ -184,8 +210,8 @@
                     </div>
                     <div v-else class="level-item">
                         <button @click="controlEditButton()" class="button is-link">
-
-                            Edit Profile &nbsp; <i class="fa fa-check-square"></i>
+                            Edit Profile
+                            <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
                         </button>
                     </div>
                 </div>
@@ -222,7 +248,14 @@
                             <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
                             [[pass]]
                         </figure>
-                        <p>bio and status</p>
+                        <!-- <p>Bio and Status</p> -->
+                        <form action="[[=URL('bio_and_status')]]" method="POST"  style="padding-left: 15px; width: 78%;">
+                            <div class="field">
+                                <div class="control is-small">
+                                  <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat"></textarea>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     
                 </article>

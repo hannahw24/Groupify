@@ -1632,3 +1632,20 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+success!
+timestamp: 2021-04-27T12:08:49.711886
+ALTER TABLE "dbUser" ADD "bio_status" CHAR(512);
+success!
+timestamp: 2021-04-27T12:08:49.719253
+ALTER TABLE "dbFriends" ADD "bio_status" CHAR(512);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
