@@ -298,11 +298,16 @@ def editUserSquare(userID, squareNumber):
     trackLinks = ""
     artistLinks = ""   
     totalResults = 0
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
     if request.method == "GET":
         return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
         imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
         url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
-        profileURL=profileURL)
+        profileURL=profileURL, background_bot=theme_colors[0],
+        background_top=theme_colors[1],
+        friend_tile=theme_colors[2],
+        tile_color=theme_colors[3],
+        text_color=theme_colors[4],)
     else:
         print("please1")
         form_SearchValue = request.params.get("Search")
@@ -311,7 +316,11 @@ def editUserSquare(userID, squareNumber):
             return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
             imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
             url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber,
-            profileURL=profileURL)
+            profileURL=profileURL, background_bot=theme_colors[0],
+            background_top=theme_colors[1],
+            friend_tile=theme_colors[2],
+            tile_color=theme_colors[3],
+            text_color=theme_colors[4],)
         cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
         auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
         if not auth_manager.validate_token(cache_handler.get_cached_token()):
@@ -327,7 +336,11 @@ def editUserSquare(userID, squareNumber):
                 return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
                 imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
                 url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber,
-                profileURL=profileURL)
+                profileURL=profileURL, background_bot=theme_colors[0],
+                background_top=theme_colors[1],
+                friend_tile=theme_colors[2],
+                tile_color=theme_colors[3],
+                text_color=theme_colors[4],)
             results = results["albums"]
         except:
             print(results)
@@ -346,7 +359,11 @@ def editUserSquare(userID, squareNumber):
         return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
         imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
         url_signer=url_signer, userID=userID, squareNumber=squareNumber, inputAlbum=URL('inputAlbum'),
-        profileURL=profileURL)
+        profileURL=profileURL, background_bot=theme_colors[0],
+        background_top=theme_colors[1],
+        friend_tile=theme_colors[2],
+        tile_color=theme_colors[3],
+        text_color=theme_colors[4],)
 
 @action('inputAlbum', method="POST")
 @action.uses(session)
