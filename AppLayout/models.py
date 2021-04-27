@@ -24,6 +24,7 @@ db.define_table(
     'dbUser',
     Field('userID', notnull=True, unique=True),
     Field('display_name'),
+    Field('chosen_theme'),
     #Ash: email may be unnecessary. 
     Field('bio_status'),
     Field('profile_pic'),
