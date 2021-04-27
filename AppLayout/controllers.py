@@ -297,7 +297,8 @@ def search():
         return redirect('login')
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.search("The Strokes", limit=1)
-    print (results)
+    # print (results)
+    
     return
 
 # AppLayout/getLikedTracks
@@ -374,16 +375,30 @@ def getTopTracksFunction():
 
 @action('groupSession')
 @action.uses(db, auth, 'groupSession.html', session)
-def groupSession():
+def groupSession(userID=None):
     # Ash: set editable to False for now, not sure if setting the theme
     #      on the groupSession page will change it for everyone
-    return dict(session=session, editable=False)
+    if userID is not None:
+        user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
+        theme_colors = return_theme(user_from_table.chosen_theme)
+        return dict( session=session, editable=False,
+            background_bot=theme_colors[0],background_top=theme_colors[1],)
+    else:
+        return dict( session=session, editable=False, 
+            background_bot=None, background_top=None,)
 
 # Ash: There isn't a settings page right now
 @action('settings')
 @action.uses(db, auth, 'settings.html', session)
-def getSettings():
-    return dict(session=session, editable=False)
+def getSettings(userID=None):
+    if userID is not None:
+        user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
+        theme_colors = return_theme(user_from_table.chosen_theme)
+        return dict( session=session, editable=False,
+            background_bot=theme_colors[0],background_top=theme_colors[1],)
+    else:
+        return dict( session=session, editable=False, 
+            background_bot=None, background_top=None,)
 
 # Haanah: There isn't an add friend page right now
 @action('add_friend', method=["GET", "POST"])
@@ -399,7 +414,16 @@ def addFriend():
         db.dbFriends.insert(userID=form.vars["userID"], friendToWhoID=getIDFromUserTable(userID), 
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
         redirect(URL('user', session.get("userID")))
-    return dict(form = form, session=session, editable=False)
+    return dict(form = form, session=session, editable=False, background_bot=None, background_top=None)
+    # return statemnt for background change
+    # if userID is not None:
+    #     user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
+    #     theme_colors = return_theme(user_from_table.chosen_theme)
+    #     return dict( session=session, editable=False,
+    #         background_bot=theme_colors[0],background_top=theme_colors[1],)
+    # else:
+    #     return dict( session=session, editable=False, 
+    #         background_bot=None, background_top=None,)
 
 # change the db.user's perfered theme
 @action('user/<userID>/theme/<theme_id:int>')
@@ -417,7 +441,7 @@ def update_db_theme(userID=None, theme_id=None):
 
 # returns the 4 color values for db.user's selected mode
 def return_theme(chosen_theme=None):
-    assert chosen_theme is not None
+    # assert chosen_theme is not None
 
     # will return an array of strings representing the color hex 
     # values of each theme in a format reflecting the following 
@@ -429,18 +453,18 @@ def return_theme(chosen_theme=None):
     # rapTheme black, red, soft red, metal gray, white
     if chosen_theme == "3": 
         return ['#191414', '#800000', '#993333', '#919191', '#FFFFFF']
-    # popTheme pink, blue, pink, white, 
+    # popTheme pink, blue, pink, white, black
     if chosen_theme == "4": 
-        return ['#ffaff6', '#0080fe', '#FFFFFF', '#ffaff6', '#221B1B']
-    # rnbTheme black, purple, pink, purple, black
+        return ['#ffaff6', '#0080fe', '#ffaff6', '#FFFFFF', '#221B1B']
+    # rnbTheme dark purple, light purple, soft purple, soft gray, black
     if chosen_theme == "5": 
         return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#221B1B']
-    # lofiTheme blue, mint, purple, white, black
+    # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
-        return ['#89cfef', '#d0f0c0', '#E5DAFB', '#F5F5F5', '#221B1B']
-    # defaultTheme black, green, green, white, black
+        return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
+    # defaultTheme black, green, green, soft gray, black
     else: 
-        return ['#191414', '#4FE383', '#4FE383', '#FFFFFF', '#221B1B']
+        return ['#191414', '#4FE383', '#4FE383', '#d9dddc', '#221B1B']
 
 
 # Taken from the spotipy examples page referenced above.
