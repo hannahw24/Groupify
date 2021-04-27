@@ -3,7 +3,9 @@
 
 <div>
 <div class="background_page_color" id="userpage">
-    <div id="friendbar" class="friend_bar panel_spec" style="background-color: white"> 
+    <!-- Color onload -->
+   
+    <div id="friendbar" class="friend_bar panel_spec" style="background-Color:[[=tile_color]]"> 
         <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
         <!-- Field for search bar -->
         <div class="tile is-parent">
@@ -21,7 +23,7 @@
         [[for row in friendsList:]]
             <li>
                 <div class="tile is-parent">
-                    <div id="friendtile" class="tile is-child notification" style="background-color: #4FE383">
+                    <div id="friendtile" class="tile is-child notification" style="background-Color:[[=friend_tile]]">
                         <div class="columns">
                             <div class="column">
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
@@ -32,8 +34,9 @@
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-                                <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-                                <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
+                                <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
+                                    <strong>[[=(row["display_name"])]]</strong></a>
+                                <p class="friendtext" style="color:[[=text_color]]">Listening to Song - Artist</p>
                             </div>
                         </div>
                     </div>
@@ -125,9 +128,9 @@
         
         <!-- profile features -->
         <section>
-        <div class="tile is-ancestor">
+        <div class="tile is-ancestor" >
             <div class="tile is-vertical is-parent is-8">
-                <article class="tile is-child box">
+                <article class="tile is-child box"  style="background-Color:[[=tile_color]]">
                     <div class="tile">
                         <figure class="image is-128x128 profile_photo index_pfp">
                             [[if (profile_pic != ""):]]
@@ -140,9 +143,9 @@
                     </div>
                     
                 </article>
-                <div class="tile is-ancestor">
-                    <div class="tile is-parent">
-                        <div class="tile is-child box"> 
+                <div class="tile is-ancestor" >
+                    <div class="tile is-parent" >
+                        <div class="tile is-child box" style="background-Color:[[=tile_color]]"> 
                             <!-- Panel title -->
                             <strong>Top 10 Songs</strong>
                                 <!-- For each top song -->
@@ -169,17 +172,17 @@
                         </div>
                     </div>
                     <div class="tile is-vertical is-parent">
-                        <div class="tile is-child box">
-                            song of the day
+                        <div class="tile is-child box" style="background-Color:[[=tile_color]]">
+                            Song of the day
                         </div>
-                        <div class="tile is-child box">
-                            recommended songs
+                        <div class="tile is-child box" style="background-Color:[[=tile_color]]">
+                            Public Playlists
                         </div>
                     </div>
                 </div>
             </div>
             <div class="tile is-parent">
-                <article class="tile is-child box">
+                <article class="tile is-child box" style="background-Color:[[=tile_color]]">
                     Analytics
                 </article>
             </div>
@@ -187,7 +190,7 @@
         </section>
     </div>
 
-    <div id="groupSideButton" class="group_bar panel_spec" style="background-color: white;">
+    <div id="groupSideButton" class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
         <a class="group_button" href="[[=URL('groupSession')]]"></a>
     </div>
 </div>

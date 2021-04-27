@@ -53,8 +53,22 @@ scopes = "user-library-read user-read-private user-follow-read user-follow-modif
 
 @action('index', method='GET')
 @action.uses('index.html', session)
-def getIndex():
-    return dict(session=session, editable=False)
+def getIndex(userID=None):
+    if userID is not None:
+        user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
+        theme_colors = return_theme(user_from_table.chosen_theme)
+
+        return dict(
+            session=session, 
+            editable=False,
+            background_bot=theme_colors[0], 
+            background_top=theme_colors[1],
+            )
+    else:
+        return dict( 
+            session=session, editable=False, 
+            background_bot=None, 
+            background_top=None,)
 
 # https://github.com/plamere/spotipy/blob/master/examples/search.py
 # Emulates the caching, authentication managing, and uuid assigning as 
@@ -178,21 +192,6 @@ def getUserInfo():
     
     return redirect(profileURL)
 
-# change the db.user's perfered theme
-@action('user/<userID>/<theme_id:int>')
-@action.uses(db, session, auth.user)
-def update_theme(userID=None, theme_id=None):
-    assert theme_id is not None
-    assert userID is not None
-    print(theme_id)
-    print(userID)
-    user_data = db.dbUser[getIDFromUserTable(userID)]
-    # bird = db.bird[bird_id]
-    db(db.user_data.id == getIDFromUserTable(userID).update(chosen_theme=theme_id))
-
-    profileURL = "user/" + userID
-    redirect(profileURL)
-
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
 # http://127.0.0.1:8000/AppLayout/user/wjmmbwcxcja7s2acm9clcydkb    Ash's Test Account
@@ -245,9 +244,29 @@ def getUserProfile(userID=None):
     if ((friendsList != None) and len(friendsList) > 0):
         print ("friendsList ", friendsList)
         print (friendsList[0]["display_name"])
+
+    # get the current chosen theme in the db.user, and set 5 varibles to be passed to html
+    # [background_bot, background_top, friend_tile, tile_color, text_color]
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
-    return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
-                topArtists=topArtists, imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, profile_pic=profile_pic)
+    return dict(
+        session=session, 
+        editable=editable_profile(userID), 
+        friendsList=friendsList, 
+        topTracks=topTracks,
+        topArtists=topArtists, 
+        imgList=imgList, 
+        trackLinks=trackLinks, 
+        artistLinks=artistLinks, 
+        profile_pic=profile_pic,
+
+        background_bot=theme_colors[0],
+        background_top=theme_colors[1],
+        friend_tile=theme_colors[2],
+        tile_color=theme_colors[3],
+        text_color=theme_colors[4],
+    )
 
 def getIDFromUserTable(userID):
     insertedID = (db(db.dbUser.userID == userID).select().as_list())
@@ -382,6 +401,48 @@ def addFriend():
         redirect(URL('user', session.get("userID")))
     return dict(form = form, session=session, editable=False)
 
+# change the db.user's perfered theme
+@action('user/<userID>/theme/<theme_id:int>')
+@action.uses(db, session)
+def update_db_theme(userID=None, theme_id=None):
+    assert theme_id is not None
+    assert userID is not None
+    # print(theme_id)
+    # print(userID)
+    user_data = db.dbUser[getIDFromUserTable(userID)]
+    db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_theme=theme_id)
+
+    redirect(URL('user/'+userID))
+    dict(session=session)
+
+# returns the 4 color values for db.user's selected mode
+def return_theme(chosen_theme=None):
+    assert chosen_theme is not None
+
+    # will return an array of strings representing the color hex 
+    # values of each theme in a format reflecting the following 
+    # [background_bot, background_top, friend_tile, tile_color, text_color]
+
+    # countryTheme brown, yellow, soft brown, soft yellow, white
+    if chosen_theme == "2": 
+        return ['#420d09', '#f8e473', '#A07E54', '#FFFDD6', '#FFFFFF']
+    # rapTheme black, red, soft red, metal gray, white
+    if chosen_theme == "3": 
+        return ['#191414', '#800000', '#993333', '#919191', '#FFFFFF']
+    # popTheme pink, blue, pink, white, 
+    if chosen_theme == "4": 
+        return ['#ffaff6', '#0080fe', '#FFFFFF', '#ffaff6', '#221B1B']
+    # rnbTheme black, purple, pink, purple, black
+    if chosen_theme == "5": 
+        return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#221B1B']
+    # lofiTheme blue, mint, purple, white, black
+    if chosen_theme == "6": 
+        return ['#89cfef', '#d0f0c0', '#E5DAFB', '#F5F5F5', '#221B1B']
+    # defaultTheme black, green, green, white, black
+    else: 
+        return ['#191414', '#4FE383', '#4FE383', '#FFFFFF', '#221B1B']
+
+
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
 @action.uses(session)
@@ -398,3 +459,11 @@ fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs 
 "Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
  "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", 
   "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", ]
+
+# @action('')
+# @action.uses(db, session)
+# def updateLayout(userID=None):
+#     if userID is not None:
+#         dict(userID=userID)
+#     else:
+#         dict(session=session)
