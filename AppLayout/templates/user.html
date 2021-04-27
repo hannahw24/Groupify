@@ -145,6 +145,32 @@
                         <div class="tile is-child box"> 
                             <!-- Panel title -->
                             <strong>Top 10 Songs</strong>
+                            <!-- toggle top songs length -->
+                            <div class="dropdown is-hoverable is-pulled-right is-right">
+                                <div class="dropdown-trigger">
+                                  <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                                    <span>last 4 weeks</span>
+                                    <span class="icon is-small">
+                                      <i class="fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                  </button>
+                                </div>
+                                <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+                                  <div class="dropdown-content">
+                                    <a class="dropdown-item">
+                                      <p>last 4 weeks</p>
+                                    </a>
+                                    <a class="dropdown-item">
+                                      <p>last 6 months</p>
+                                    </a>
+                                    <a class="dropdown-item">
+                                      <p>of all time</p>
+                                    </a>
+                                  </div>
+                                </div>
+                              </div>
+                            <br>
+                            <br>
                                 <!-- For each top song -->
                                 [[for i in range(10):]]
                                 <section>

@@ -127,19 +127,13 @@ def getUserInfo():
     session["userID"] = userID
     # Gets the URL ready for the redirect
     profileURL = "user/" + userID
-    # Gets the User's top tracks
-    tracksList = getTopTracksFunction()
-    topTracks = tracksList[0]
-    topArtists = tracksList[1]
-    imgList = tracksList[2]
-    trackLinks = tracksList[3]
-    artistLinks = tracksList[4]
+
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
-    shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    
     # This takes all the instances of the logged in user in the friends database. 	
     # This is so we can update their information.
-    friendsEntries =  (db(db.dbFriends.userID == userID).select().as_list())
+    friendsEntries = (db(db.dbFriends.userID == userID).select().as_list())
 
     # Not sure if returns as None or an empty list if user is new.
     if (dbUserEntry == None) or dbUserEntry == []:
@@ -158,25 +152,59 @@ def getUserInfo():
                 dbRow = db(db.dbFriends.id == row["id"])
                 dbRow.update(profile_pic=profile_pic)
                 dbRow.update(display_name=display_name)
-    # Is there shortTerm top tracks populated?
-    if (shortTermEntry == None) or (shortTermEntry == []):
+
+    getTopTracksLen(userID, "short_term")
+    getTopTracksLen(userID, "medium_term")
+    getTopTracksLen(userID, "long_term")
+    
+    return redirect(profileURL)
+
+def getTopTracksLen(userID, term):
+    # Gets the User's top tracks by length picked
+    tracksList = getTopTracksFunction(term)
+    topTracks = tracksList[0]
+    topArtists = tracksList[1]
+    imgList = tracksList[2]
+    trackLinks = tracksList[3]
+    artistLinks = tracksList[4]
+
+    if term == 'short_term':
+        termEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    elif term == 'medium_term':
+        termEntry = (db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    elif term == 'long_term':
+        termEntry = (db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+
+    # Is there _____Term top tracks populated?
+    if (termEntry == None) or (termEntry == []):
         insertedID = getIDFromUserTable(userID)
-        print("insertedID ", insertedID)
-        db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+
+        if term == 'short_term':
+            db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
                             trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+        elif term == 'medium_term':
+            db.mediumTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+        elif term == 'long_term':
+            db.longTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+
     # If it is update it
     else:
         insertedID = getIDFromUserTable(userID)
-        print("insertedID ", insertedID)
-        # Updates their songs of the past 4 weeks. 
-        dbRow =  db(db.shortTerm.topTracksOfWho == insertedID)
+        # Updates their songs 
+        if term == 'short_term':
+            dbRow = db(db.shortTerm.topTracksOfWho == insertedID)
+        elif term == 'medium_term':
+            dbRow = db(db.mediumTerm.topTracksOfWho == insertedID)
+        elif term == 'long_term':
+            dbRow = db(db.longTerm.topTracksOfWho == insertedID)
+
         dbRow.update(topTracks=topTracks)
         dbRow.update(topArtists=topArtists)
         dbRow.update(imgList=imgList)
         dbRow.update(trackLinks=trackLinks)
         dbRow.update(artistLinks=artistLinks)
-    
-    return redirect(profileURL)
 
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
@@ -284,7 +312,7 @@ def getLikedTracks():
         LikedSongsString = LikedSongsString + str((idx, track['artists'][0]['name'], " – ", track['name'])) + "<br>"
     return LikedSongsString
 
-def getTopTracksFunction():
+def getTopTracksFunction(term):
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
@@ -294,7 +322,7 @@ def getTopTracksFunction():
     # long_term = all time
     # medium_term = 6 months
     # short_term = 4 weeks
-    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
+    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range=term)
     #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
     # Initialize Lists for each field

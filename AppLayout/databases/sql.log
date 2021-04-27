@@ -996,3 +996,61 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2021-04-26T11:26:24.457154
+CREATE TABLE "mediumTerm"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "toptracks" TEXT,
+    "topartists" TEXT,
+    "imglist" TEXT,
+    "tracklinks" TEXT,
+    "artistlinks" TEXT,
+    "toptracksofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
+);
+success!
+timestamp: 2021-04-26T11:26:24.460156
+CREATE TABLE "longTerm"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "toptracks" TEXT,
+    "topartists" TEXT,
+    "imglist" TEXT,
+    "tracklinks" TEXT,
+    "artistlinks" TEXT,
+    "toptracksofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
