@@ -16,6 +16,12 @@ from pydal.validators import *
 def get_session_user():
     return auth.current_user.get('user_id') if auth.current_user else None 
 
+def empty_albums():
+    bannerList = []
+    for i in range(12):
+        bannerList.append("x")
+    return bannerList
+
 db.define_table(
     'dbUser',
     Field('userID', notnull=True, unique=True),
@@ -54,6 +60,14 @@ db.define_table(
     Field('topTracksOfWho', db.dbUser)
 )
 
+db.define_table(
+    'squares',
+    #Change this to one big field with 1 list with 6 index [0][1]...
+    #Also just return the albumsOfWho ID for albumInput because it should be unique. 
+    Field('coverList', 'list:string', default=empty_albums()), 
+    Field('urlList', 'list:string', default=empty_albums()),
+    Field('albumsOfWho', db.dbUser)
+)
 
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}
