@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="css/bulma.css">
     <link rel="stylesheet" href="../static/css/groupify_style.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <!-- <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/social-media-icons-the-circle-set/48/twitter_circle-512.png"> -->
+    <link rel="shortcut icon" type="image/png" href="images/round-logo.png">
     [[block page_head]]<!-- individual pages can customize header here -->[[end]]
   </head>
-  <body id="body"> 
+  <!-- add style for background here -->
+  <body style="background-image: linear-gradient([[=background_top]],[[=background_bot]])"> 
+  
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation"> <!-- is-fixed-top -->
       <div class="navbar-brand">
         <a class="navbar-item" href=".">
@@ -41,22 +45,22 @@
               <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">theme</a>
                 <div class="navbar-dropdown">
-                  <a class="navbar-item" onclick="defaultTheme();">Default</a>
-                  <a class="navbar-item" onclick="countryTheme();">Country</a>
-                  <a class="navbar-item" onclick="rapTheme();">Rap</a>
-                  <a class="navbar-item" onclick="popTheme();">Pop</a>
-                  <a class="navbar-item" onclick="rnbTheme();">R&B</a>
-                  <a class="navbar-item" onclick="lofiTheme();">Lo-Fi</a>
-                  <a class="navbar-item" onclick="metalTheme();">Metal</a>
+                  <a class="navbar-item" href="[[=URL('user', session.get('userID'), 'theme', 1)]]" onclick="defaultTheme();">Default</a>
+                  <a class="navbar-item" href="[[=URL('user', session.get('userID'), 'theme', 2)]]" onclick="countryTheme();">Country</a>
+                  <a class="navbar-item" href="[[=URL('user', session.get('userID'), 'theme', 3)]]" onclick="rapTheme();">Rap</a>
+                  <a class="navbar-item" href="[[=URL('user', session.get('userID'), 'theme', 4)]]" onclick="popTheme();">Pop</a>
+                  <a class="navbar-item" href="[[=URL('user', session.get('userID'), 'theme', 5)]]" onclick="rnbTheme();">R&B</a>
+                  <a class="navbar-item" href="[[=URL('user', session.get('userID'), 'theme', 6)]]" onclick="lofiTheme();">Lo-Fi</a>
                 </div>
               </div>
             </nav>
             [[pass]]
             <!-- Home, settings, group -->
             <!-- <img src=[[=URL('static', 'images/icon.png')]] style="width:30px;height:57px;"> -->
-            [[if session.get("userID") != None:]]
-            <a class="navbar-item" href="[[=URL('groupSession')]]">group</a>
-            <a class="navbar-item" href="[[=URL('settings')]]">settings</a>
+            [[if session.get("userID") != None:
+                user = session.get("userID")]]
+            <a class="navbar-item" href="[[=URL('groupSession', user)]]">group</a>
+            <a class="navbar-item" href="[[=URL('settings', user)]]">settings</a>
             [[pass]]
             <!-- Sign In/Sign Out -->
             <div class="navbar-item">
@@ -68,8 +72,8 @@
                 [[pass]]
               </div>
             </div>
-          </div>
         </div>
+      </div>
       </nav>
       <div>
         <!-- beginning of HTML inserted by extending template -->
@@ -84,7 +88,10 @@
   </body>
     <script src="js/sugar.min.js"></script>
     <script src="js/axios.min.js"></script>
+    <script src="js/axios.js"></script>
     <script src="js/vue.min.js"></script>
     <script src="js/theme_change.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/utils.js"></script>
     [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
   </html>

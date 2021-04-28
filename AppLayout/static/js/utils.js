@@ -130,7 +130,7 @@ utils.app = function() {
                 self.v.state = state;
             }); 
     };
-    // Restores state when navigating history
+    // restores state when navigaing history
     self.onpopstate = function(event) {
         for(var key in event.state) self.v[key] = event.state[key];
     };
