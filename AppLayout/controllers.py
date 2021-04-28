@@ -228,7 +228,7 @@ def getTopTracksLen(userID, term):
         dbRow.update(trackLinks=trackLinks)
         dbRow.update(artistLinks=artistLinks)
         
-    return
+    return 
 
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
@@ -250,7 +250,21 @@ def getUserProfile(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     if currentProfileEntry == []:
         return userNotFound(session.get("userID"))
-    shortTermList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+
+    currentChosenTerm = (db.dbUser[getIDFromUserTable(userID)]).chosen_term
+    if currentChosenTerm == '1':
+        term_str = 'last 4 weeks'
+        termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+    elif currentChosenTerm == '2':
+        term_str = 'last 6 months'
+        termList = db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+    elif currentChosenTerm == '3':
+        term_str = 'of all time'
+        termList = db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+    else:
+        term_str = 'last 4 weeks'
+        termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+
     squareEntries = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
     coverList = squareEntries[0]["coverList"]
     urlList = squareEntries[0]["urlList"]
@@ -262,12 +276,12 @@ def getUserProfile(userID=None):
     isFriend = False
 
     # Get the fields from the shortTermList, but only if they have a reference in it 
-    if shortTermList != []:
-        topTracks = shortTermList[0]["topTracks"]
-        topArtists = shortTermList[0]["topArtists"]
-        imgList = shortTermList[0]["imgList"]
-        trackLinks = shortTermList[0]["trackLinks"]
-        artistLinks = shortTermList[0]["artistLinks"]
+    if termList != []:
+        topTracks = termList[0]["topTracks"]
+        topArtists = termList[0]["topArtists"]
+        imgList = termList[0]["imgList"]
+        trackLinks = termList[0]["trackLinks"]
+        artistLinks = termList[0]["artistLinks"]
 
     # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
     if (topTracks == None) or len(topTracks) < 10:
@@ -300,6 +314,7 @@ def getUserProfile(userID=None):
         editable=editable_profile(userID), 
         friendsList=friendsList, 
         topTracks=topTracks,
+        term_str=term_str,
         topArtists=topArtists, 
         imgList=imgList, 
         trackLinks=trackLinks, 
@@ -469,7 +484,6 @@ def update_theme(userID=None, theme_id=None):
     print(theme_id)
     print(userID)
     user_data = db.dbUser[getIDFromUserTable(userID)]
-    # bird = db.bird[bird_id]
     db(db.user_data.id == getIDFromUserTable(userID).update(chosen_theme=theme_id))
 
     profileURL = "user/" + userID
@@ -720,8 +734,6 @@ def addFriendFromProfile(userID=None):
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
     return redirect(URL('user', userID))
 
-
-
 @action('unfollowProfile/<userID>', method=['GET'])
 @action.uses(session, db)
 def delete_contact(userID=None):
@@ -770,9 +782,9 @@ def return_theme(chosen_theme=None):
     # popTheme pink, blue, pink, white, black
     if chosen_theme == "4": 
         return ['#ffaff6', '#0080fe', '#ffaff6', '#FFFFFF', '#221B1B']
-    # rnbTheme dark purple, light purple, soft purple, soft gray, black
+    # rnbTheme dark purple, light purple, soft purple, soft gray, white
     if chosen_theme == "5": 
-        return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#221B1B']
+        return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#FFFFFF']
     # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
         return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
@@ -782,7 +794,18 @@ def return_theme(chosen_theme=None):
     else: 
         return ['#191414', '#4FE383', '#4FE383', '#d9dddc', '#221B1B']
 
+# change the db.user's perfered top 10 term
+@action('user/<userID>/top10len/<term_id:int>')
+@action.uses(db, session)
+def update_term_len(userID=None, term_id=None):
+    assert term_id is not None
+    assert userID is not None
+    user_data = db.dbUser[getIDFromUserTable(userID)]
+    db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term_id)
 
+    redirect(URL('user/'+userID))
+    dict(session=session)
+    
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')
 @action.uses(session)
