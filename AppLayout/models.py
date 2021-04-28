@@ -57,6 +57,27 @@ db.define_table(
 )
 
 db.define_table(
+    'mediumTerm',
+    Field('topTracks', 'list:string'),
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('trackLinks', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('topTracksOfWho', db.dbUser)
+)
+
+db.define_table(
+    'longTerm',
+    Field('topTracks', 'list:string'),
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('trackLinks', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('topTracksOfWho', db.dbUser)
+)
+
+
+db.define_table(
     'squares',
     #Change this to one big field with 1 list with 6 index [0][1]...
     #Also just return the albumsOfWho ID for albumInput because it should be unique. 

@@ -11,7 +11,7 @@
         <div class="container">
             <br>
             <div class="field">
-                <input class="input" type="text" name="Search" placeholder="Enter an artist/album/song" />
+                <input class="input" type="text" name="Search" placeholder="Enter an album or artist" />
                 <input type="submit" class="button" value="Submit" />
             </div>
         </div>
@@ -19,12 +19,12 @@
 
 </section>
 
+[[if trackLinks != "":]]
+[[for i in range(len(trackLinks)):]]
 <div class="tile is-parent">
     <div class="tile is-child box"> 
         <!-- Panel title -->
             <!-- For each top song -->
-            [[if trackLinks != "":]]
-            [[for i in range(len(trackLinks)):]]
             <section>
                 <a @click="save_album('[[=(trackLinks[i])]]', '[[=(imgList[i])]]', '[[=(squareNumber)]]')">
                     <div class="columns">
@@ -45,11 +45,10 @@
                     </div>
                 </a>
             </section>
-            [[pass]]
-            [[pass]]
     </div>
 </div>   
-
+[[pass]]
+[[pass]]
 </div>
 
 [[block page_scripts]]

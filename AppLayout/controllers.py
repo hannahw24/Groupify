@@ -145,15 +145,8 @@ def getUserInfo():
     # Gets the URL ready for the redirect
     profileURL = "user/" + userID
     # Gets the User's top tracks
-    tracksList = getTopTracksFunction()
-    topTracks = tracksList[0]
-    topArtists = tracksList[1]
-    imgList = tracksList[2]
-    trackLinks = tracksList[3]
-    artistLinks = tracksList[4]
     # Checks to see if it can get the user from the database
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
-    shortTermEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
     squareEntries = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
     # This takes all the instances of the logged in user in the friends database. 	
     # This is so we can update their information.
@@ -177,26 +170,65 @@ def getUserInfo():
                 dbRow = db(db.dbFriends.id == row["id"])
                 dbRow.update(profile_pic=profile_pic)
                 dbRow.update(display_name=display_name)
-    # Is there shortTerm top tracks populated?
-    if (shortTermEntry == None) or (shortTermEntry == []):
-        insertedID = getIDFromUserTable(userID)
-        db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
-                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
-    # If it is update it
-    else:
-        insertedID = getIDFromUserTable(userID)
-        # Updates their songs of the past 4 weeks. 
-        dbRow =  db(db.shortTerm.topTracksOfWho == insertedID)
-        dbRow.update(topTracks=topTracks)
-        dbRow.update(topArtists=topArtists)
-        dbRow.update(imgList=imgList)
-        dbRow.update(trackLinks=trackLinks)
-        dbRow.update(artistLinks=artistLinks)
+                
+    getTopTracksLen(userID, "short_term")	
+    getTopTracksLen(userID, "medium_term")	
+    getTopTracksLen(userID, "long_term")
+
     if (squareEntries == None) or (squareEntries == []):
         print("Has no square entires")
         insertedID = getIDFromUserTable(userID)
         db.squares.insert(albumsOfWho=insertedID)
     return redirect(profileURL)
+
+def getTopTracksLen(userID, term):
+    # Gets the User's top tracks by length picked
+    tracksList = getTopTracksFunction(term)
+    topTracks = tracksList[0]
+    topArtists = tracksList[1]
+    imgList = tracksList[2]
+    trackLinks = tracksList[3]
+    artistLinks = tracksList[4]
+
+    if term == 'short_term':
+        termEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    elif term == 'medium_term':
+        termEntry = (db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+    elif term == 'long_term':
+        termEntry = (db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+
+    # Is there _____Term top tracks populated?
+    if (termEntry == None) or (termEntry == []):
+        insertedID = getIDFromUserTable(userID)
+
+        if term == 'short_term':
+            db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+        elif term == 'medium_term':
+            db.mediumTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+        elif term == 'long_term':
+            db.longTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
+                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+
+    # If it is update it
+    else:
+        insertedID = getIDFromUserTable(userID)
+        # Updates their songs 
+        if term == 'short_term':
+            dbRow = db(db.shortTerm.topTracksOfWho == insertedID)
+        elif term == 'medium_term':
+            dbRow = db(db.mediumTerm.topTracksOfWho == insertedID)
+        elif term == 'long_term':
+            dbRow = db(db.longTerm.topTracksOfWho == insertedID)
+
+        dbRow.update(topTracks=topTracks)
+        dbRow.update(topArtists=topArtists)
+        dbRow.update(imgList=imgList)
+        dbRow.update(trackLinks=trackLinks)
+        dbRow.update(artistLinks=artistLinks)
+        
+    return
 
 # Profile tests (currently no difference between them)
 # http://127.0.0.1:8000/AppLayout/user/1228586386           Ash's Main Account
@@ -298,8 +330,7 @@ def editUserSquare(userID, squareNumber):
     trackLinks = ""
     artistLinks = ""   
     totalResults = 0
-    user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
-    theme_colors = return_theme(user_from_table.chosen_theme)
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
     if request.method == "GET":
         return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
         imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
@@ -389,7 +420,7 @@ def inputAlbum():
     print("urlList[squareNumber] ", urlList[int(squareNumber)])
 
     coverList[int(squareNumber)] = cover
-    urlList[int(squareNumber)] = cover
+    urlList[int(squareNumber)] = albumURL
     dbSquareEntry.update(coverList=coverList, urlList=urlList)
     print("update ", dbSquareEntry)
 
@@ -546,7 +577,7 @@ def getAlbumResults(results):
     # Returned to the user profile
     return BigList  
 
-def getTopTracksFunction():
+def getTopTracksFunction(term):
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
@@ -556,8 +587,7 @@ def getTopTracksFunction():
     # long_term = all time
     # medium_term = 6 months
     # short_term = 4 weeks
-    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range="short_term")
-    #Taken from the quick start of Spotipy authorization flow
+    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range=term)    #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
     # Initialize Lists for each field
     TopSongsString= ""
@@ -633,19 +663,26 @@ def getSettings(userID=None):
             background_bot=None, background_top=None,profile_pic=profile_pic)
     #return dict(session=session, editable=False, profile_pic=profile_pic)
 
-@action('bio_and_status', method=["POST"])
+@action('bio_and_status/<userID>', method=["GET", "POST"])
 @action.uses(db, auth, session)
-def bioStatus():
+def bioStatus(userID=None):
     loggedInUserId = session.get("userID")
     form_bio = request.params.get("bio&stat")
-    db(db.dbUser.userID == loggedInUserId.update(bio_status=form_bio))
-    return redirect(URL('user', session.get("userID")))
+    if userID is not None:
+        db(db.dbUser.userID == loggedInUserId.update(bio_status=form_bio))
+        return dict( session=session,
+            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic, bio=form_bio)
+    else:
+        dbFriendEntry = db(db.dbFriends.userID == userID).select()
+        friend_bio = dbFriendEntry.bio_status
+        return dict( session=session, editable=False, 
+            background_bot=None, background_top=None,profile_pic=profile_pic, bio=friend_bio)
+    #return redirect(URL('user', session.get("userID")))
 
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
-    user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
-    theme_colors = return_theme(user_from_table.chosen_theme)    
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(session.get("userID"))]).chosen_theme)
     if request.method == "GET":
         return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False, background_bot=theme_colors[0], 
                 background_top=theme_colors[1])
@@ -679,7 +716,6 @@ def addFriendFromProfile(userID=None):
         return redirect(URL('user', userID))
     if (userID == loggedInUserId):
         return redirect(URL('user', userID))
-    theme_colors = return_theme(user_from_table.chosen_theme)
     db.dbFriends.insert(userID=userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
     return redirect(URL('user', userID))
@@ -740,6 +776,8 @@ def return_theme(chosen_theme=None):
     # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
         return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
+    if chosen_theme =="7":
+        return ['#191414', '#B3B3B3', '#191414', '#B3B3B3', "#FFFFFF"]
     # defaultTheme black, green, green, soft gray, black
     else: 
         return ['#191414', '#4FE383', '#4FE383', '#d9dddc', '#221B1B']
@@ -769,11 +807,3 @@ fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs 
 "Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
  "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", 
   "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", ]
-
-# @action('')
-# @action.uses(db, session)
-# def updateLayout(userID=None):
-#     if userID is not None:
-#         dict(userID=userID)
-#     else:
-#         dict(session=session)

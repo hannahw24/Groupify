@@ -213,7 +213,7 @@
                     </div>
                     <div v-else class="level-item">
                         <button @click="controlEditButton()" class="button is-link">
-                            Edit Profile
+                            Stop Editing
                             <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
                         </button>
                     </div>
@@ -252,13 +252,19 @@
                             [[pass]]
                         </figure>
                         <!-- <p>Bio and Status</p> -->
-                        <form action="[[=URL('bio_and_status')]]" method="POST"  style="padding-left: 15px; width: 78%;">
+                        [[if (editable==True):]]
+                        <form action="[[=URL('bio_and_status', userID)]]" method="POST"  style="padding-left: 15px; width: 78%;">
                             <div class="field">
                                 <div class="control is-small">
                                   <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat"></textarea>
                                 </div>
                             </div>
                         </form>
+                        [[else:]]
+                        <div class="control" style="padding-left: 15px; width: 78%;">
+                            <textarea class="textarea" readonly>Bio is readonly</textarea>
+                        </div>
+                        [[pass]]
                     </div>
                     
                 </article>
@@ -268,6 +274,33 @@
                             <!-- Panel title -->
                             <strong>Top 10 Songs</strong>
                                 <!-- For each top song -->
+	                            <!-- toggle top songs length -->	
+                                <div class="dropdown is-hoverable is-pulled-right is-right">	
+                                    <div class="dropdown-trigger">	
+                                      <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
+                                        <span>last 4 weeks</span>	
+                                        <span class="icon is-small">	
+                                          <i class="fas fa-angle-down" aria-hidden="true"></i>	
+                                        </span>	
+                                      </button>	
+                                    </div>	
+                                    <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
+                                      <div class="dropdown-content">	
+                                        <a class="dropdown-item">	
+                                          <p>last 4 weeks</p>	
+                                        </a>	
+                                        <a class="dropdown-item">	
+                                          <p>last 6 months</p>	
+                                        </a>	
+                                        <a class="dropdown-item">	
+                                          <p>of all time</p>	
+                                        </a>	
+                                      </div>	
+                                    </div>	
+                                  </div>	
+                                <br>	
+                                <br>
+                                <br>
                                 [[for i in range(10):]]
                                 <section>
                                     <div class="columns">
