@@ -4,10 +4,32 @@
     <div>
         <br>
         <h1 class="title has-text-centered">
-            Add a friend!
+            Follow a User
         </h1>
     </div>
     <div class="container">
-        [[=form]]
+        <br>
+        <form action="[[=URL('add_friend')]]" method="POST">
+            <div class="field">
+                <input class="input" type="text" name="userID" placeholder="Enter a userID" />
+                <input type="submit" class="button" value="Submit" />
+            </div>
+        </form>
+        [[if nullError==True:]]
+            <div class = "has-text-danger has-text-weight-bold">
+                <p>This person does not exist</p>
+            </div>        
+        [[pass]]
+        [[if alreadyFriend==True:]]
+            <div class = "has-text-danger has-text-weight-bold">
+                <p>You already follow this user<p>
+            </div>        
+        [[pass]]
+        [[if CannotAddSelf==True:]]
+        <div class = "has-text-danger has-text-weight-bold">
+            <p>You cannot follow yourself</p>
+        </div>        
+        [[pass]]
     </div>
 </section>
+

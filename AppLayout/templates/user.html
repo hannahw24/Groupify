@@ -1,9 +1,11 @@
 [[extend 'layout.html']]
 <script src="js/searchbar.js"></script>
 
-<div>
+<div id="vue-target">
 <div class="background_page_color" id="userpage">
-    <div id="friendbar" class="friend_bar panel_spec" style="background-color: white"> 
+    <!-- Color onload -->
+   
+    <div id="friendbar" class="friend_bar panel_spec" style="background-Color:[[=tile_color]]"> 
         <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
         <!-- Field for search bar -->
         <div class="tile is-parent">
@@ -21,7 +23,7 @@
         [[for row in friendsList:]]
             <li>
                 <div class="tile is-parent">
-                    <div id="friendtile" class="tile is-child notification" style="background-color: #4FE383">
+                    <div id="friendtile" class="tile is-child notification" style="background-Color:[[=friend_tile]]">
                         <div class="columns">
                             <div class="column">
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
@@ -32,8 +34,9 @@
                             </div>
                             <div class="column is-9">
                                 [[ profileURL = "user/" + row["userID"] ]]
-                                <a  class="friendname"  style="color:#221B1B" href=[[=URL(profileURL)]]><strong>[[=(row["display_name"])]]</strong></a>
-                                <p class="friendtext" style="color:#221B1B">Listening to Song - Artist</p>
+                                <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
+                                    <strong>[[=(row["display_name"])]]</strong></a>
+                                <p class="friendtext" style="color:[[=text_color]]">Listening to Song - Artist</p>
                             </div>
                         </div>
                     </div>
@@ -41,15 +44,46 @@
             </li>
         [[pass]]
         </ul>
-        <a class="button is-primary" href="[[=URL('add_friend')]]">Add a friend!</a>
+        <a class="button is-primary" href="[[=URL('add_friend')]]">
+            <i class="fa fa-plus-square" aria-hidden="true"></i>
+        </a>
     </div>
-    
+
     <div class="main_profile">
         <!-- albumns features -->
         <section>
         <div class="row">
             <div class="columns is-mobile is-1">
-                <div class="column is-2 album_box">
+                [[for i in range(6):]]
+                    [[if coverList[i] != "x": ]]
+                        <div v-if = "isEditing===1" class="column is-2 album_box">
+                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                                <figure class="image">
+                                    <img src="[[=(coverList[i])]]">
+                                </figure>
+                            </a>
+                        </div>
+                        <div v-else class="column is-2 album_box">
+                            <figure class="image">
+                                <img src="[[=(coverList[i])]]">
+                            </figure>
+                        </div>
+                    [[else:]]
+                    <div v-if = "isEditing===1" class="column is-2 album_box">
+                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                            <figure class="image">
+                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                            </figure>
+                        </a>
+                    </div>
+                    <div v-else class="column is-2 album_box">
+                        <figure class="image">
+                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                        </figure>
+                    </div>
+                    [[pass]]
+                [[pass]]
+                <!--div class="column is-2 album_box">
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
@@ -73,12 +107,36 @@
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
-                </div>
-                <div class="column is-2 album_box">
-                    <figure class="image">
-                        <img src="https://bulma.io/images/placeholders/128x128.png">
-                    </figure>
-                </div>
+                </div-->
+                [[for i in range(6, 12):]]
+                    [[if coverList[i] != "x": ]]
+                        <div v-if = "isEditing===1" class="column is-2 album_box">
+                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                                <figure class="image">
+                                    <img src="[[=(coverList[i])]]">
+                                </figure>
+                            </a>
+                        </div>
+                        <div v-else class="column is-2 album_box">
+                            <figure class="image">
+                                <img src="[[=(coverList[i])]]">
+                            </figure>
+                        </div>
+                    [[else:]]
+                    <div v-if = "isEditing===1" class="column is-2 album_box">
+                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                            <figure class="image">
+                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                            </figure>
+                        </a>
+                    </div>
+                    <div v-else class="column is-2 album_box">
+                        <figure class="image">
+                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                        </figure>
+                    </div>
+                    [[pass]]
+                [[pass]]
             </div>
         </div>
         </section>
@@ -86,7 +144,7 @@
         <section>
         <div class="row">
             <div class="columns is-mobile is-1">
-                <div class="column is-2 album_box">
+                <!-- <div class="column is-2 album_box">
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
@@ -115,8 +173,65 @@
                     <figure class="image">
                         <img src="https://bulma.io/images/placeholders/128x128.png">
                     </figure>
-                </div>
+                </div> -->
+                [[for i in range(6, 12):]]
+                    [[if coverList[i] != "x": ]]
+                        <div v-if = "isEditing===1" class="column is-2 album_box">
+                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                                <figure class="image">
+                                    <img src="[[=(coverList[i])]]">
+                                </figure>
+                            </a>
+                        </div>
+                        <div v-else class="column is-2 album_box">
+                            <figure class="image">
+                                <img src="[[=(coverList[i])]]">
+                            </figure>
+                        </div>
+                    [[else:]]
+                    <div v-if = "isEditing===1" class="column is-2 album_box">
+                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
+                            <figure class="image">
+                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                            </figure>
+                        </a>
+                    </div>
+                    <div v-else class="column is-2 album_box">
+                        <figure class="image">
+                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                        </figure>
+                    </div>
+                    [[pass]]
+                [[pass]]
             </div>
+            [[if (editable==True):]]
+                <div id="editButton">
+                    <div v-if="isEditing === 0" class="level-item">
+                        <button @click="controlEditButton()" class="button is-link">
+                            Edit Profile
+                        </button>
+                    </div>
+                    <div v-else class="level-item">
+                        <button @click="controlEditButton()" class="button is-link">
+                            Stop Editing
+                            <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
+                        </button>
+                    </div>
+                </div>
+            [[elif isFriend==True:]]
+                <div class="level-item">
+                    <a class="button is-danger" href="[[=URL('unfollowProfile', userID, signer=url_signer)]]">
+                        Unfollow
+                    </a>
+                </div>
+            [[else:]]
+                <div class="level-item">
+                    <a class="button is-primary level-item" href="[[=URL('addFriendFromProfile', userID)]]">
+                        Follow
+                    </a>
+                </div>
+            [[pass]]
+
         </div>
         </section>
         
@@ -125,9 +240,9 @@
         
         <!-- profile features -->
         <section>
-        <div class="tile is-ancestor">
+        <div class="tile is-ancestor" >
             <div class="tile is-vertical is-parent is-8">
-                <article class="tile is-child box">
+                <article class="tile is-child box"  style="background-Color:[[=tile_color]]">
                     <div class="tile">
                         <figure class="image is-128x128 profile_photo index_pfp">
                             [[if (profile_pic != ""):]]
@@ -136,42 +251,56 @@
                             <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
                             [[pass]]
                         </figure>
-                        <p>bio and status</p>
+                        <!-- <p>Bio and Status</p> -->
+                        [[if (editable==True):]]
+                        <form action="[[=URL('bio_and_status', userID)]]" method="POST"  style="padding-left: 15px; width: 78%;">
+                            <div class="field">
+                                <div class="control is-small">
+                                  <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                        [[else:]]
+                        <div class="control" style="padding-left: 15px; width: 78%;">
+                            <textarea class="textarea" readonly>Bio is readonly</textarea>
+                        </div>
+                        [[pass]]
                     </div>
                     
                 </article>
-                <div class="tile is-ancestor">
-                    <div class="tile is-parent">
-                        <div class="tile is-child box"> 
+                <div class="tile is-ancestor" >
+                    <div class="tile is-parent" >
+                        <div class="tile is-child box" style="background-Color:[[=tile_color]]"> 
                             <!-- Panel title -->
                             <strong>Top 10 Songs</strong>
-                            <!-- toggle top songs length -->
-                            <div class="dropdown is-hoverable is-pulled-right is-right">
-                                <div class="dropdown-trigger">
-                                  <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
-                                    <span>last 4 weeks</span>
-                                    <span class="icon is-small">
-                                      <i class="fas fa-angle-down" aria-hidden="true"></i>
-                                    </span>
-                                  </button>
-                                </div>
-                                <div class="dropdown-menu" id="dropdown-menu4" role="menu">
-                                  <div class="dropdown-content">
-                                    <a class="dropdown-item">
-                                      <p>last 4 weeks</p>
-                                    </a>
-                                    <a class="dropdown-item">
-                                      <p>last 6 months</p>
-                                    </a>
-                                    <a class="dropdown-item">
-                                      <p>of all time</p>
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>
-                            <br>
-                            <br>
                                 <!-- For each top song -->
+	                            <!-- toggle top songs length -->	
+                                <div class="dropdown is-hoverable is-pulled-right is-right">	
+                                    <div class="dropdown-trigger">	
+                                      <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
+                                        <span>last 4 weeks</span>	
+                                        <span class="icon is-small">	
+                                          <i class="fas fa-angle-down" aria-hidden="true"></i>	
+                                        </span>	
+                                      </button>	
+                                    </div>	
+                                    <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
+                                      <div class="dropdown-content">	
+                                        <a class="dropdown-item">	
+                                          <p>last 4 weeks</p>	
+                                        </a>	
+                                        <a class="dropdown-item">	
+                                          <p>last 6 months</p>	
+                                        </a>	
+                                        <a class="dropdown-item">	
+                                          <p>of all time</p>	
+                                        </a>	
+                                      </div>	
+                                    </div>	
+                                  </div>	
+                                <br>	
+                                <br>
+                                <br>
                                 [[for i in range(10):]]
                                 <section>
                                     <div class="columns">
@@ -195,17 +324,17 @@
                         </div>
                     </div>
                     <div class="tile is-vertical is-parent">
-                        <div class="tile is-child box">
-                            song of the day
+                        <div class="tile is-child box" style="background-Color:[[=tile_color]]">
+                            Song of the day
                         </div>
-                        <div class="tile is-child box">
-                            recommended songs
+                        <div class="tile is-child box" style="background-Color:[[=tile_color]]">
+                            Public Playlists
                         </div>
                     </div>
                 </div>
             </div>
             <div class="tile is-parent">
-                <article class="tile is-child box">
+                <article class="tile is-child box" style="background-Color:[[=tile_color]]">
                     Analytics
                 </article>
             </div>
@@ -213,7 +342,7 @@
         </section>
     </div>
 
-    <div id="groupSideButton" class="group_bar panel_spec" style="background-color: white;">
+    <div id="groupSideButton" class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
         <a class="group_button" href="[[=URL('groupSession')]]"></a>
     </div>
 </div>
@@ -224,5 +353,10 @@
         gap: 0.25rem;   
     }
 </style>
+
+[[block page_scripts]]
+<!-- Loads the user-specific js for Vue -->
+<script src="js/user.js"></script>
+[[end]]
 
 <!-- profile picture that doesnt work -->
