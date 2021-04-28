@@ -696,13 +696,21 @@ def getSettings(userID=None):
             background_bot=None, background_top=None,profile_pic=profile_pic)
     #return dict(session=session, editable=False, profile_pic=profile_pic)
 
-@action('bio_and_status', method=["POST"])
+@action('bio_and_status/<userID>', method=["GET", "POST"])
 @action.uses(db, auth, session)
-def bioStatus():
+def bioStatus(userID=None):
     loggedInUserId = session.get("userID")
     form_bio = request.params.get("bio&stat")
-    db(db.dbUser.userID == loggedInUserId.update(bio_status=form_bio))
-    return redirect(URL('user', session.get("userID")))
+    if userID is not None:
+        db(db.dbUser.userID == loggedInUserId.update(bio_status=form_bio))
+        return dict( session=session,
+            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic, bio=form_bio)
+    else:
+        dbFriendEntry = db(db.dbFriends.userID == userID).select()
+        friend_bio = dbFriendEntry.bio_status
+        return dict( session=session, editable=False, 
+            background_bot=None, background_top=None,profile_pic=profile_pic, bio=friend_bio)
+    #return redirect(URL('user', session.get("userID")))
 
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)

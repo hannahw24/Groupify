@@ -252,13 +252,19 @@
                             [[pass]]
                         </figure>
                         <!-- <p>Bio and Status</p> -->
-                        <form action="[[=URL('bio_and_status')]]" method="POST"  style="padding-left: 15px; width: 78%;">
-                            <div class="field">
-                                <div class="control is-small">
-                                  <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat"></textarea>
+                        [[if (editable==True):]]
+                            <form action="[[=URL('bio_and_status', userID)]]" method="POST"  style="padding-left: 15px; width: 78%;">
+                                <div class="field">
+                                    <div class="control is-small">
+                                        <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat"></textarea>
+                                    </div>
                                 </div>
+                            </form>
+                        [[else:]]
+                            <div class="control" style="padding-left: 15px; width: 78%;">
+                                <textarea class="textarea" readonly>Bio is readonly</textarea>
                             </div>
-                        </form>
+                        [[pass]]
                     </div>
                     
                 </article>
