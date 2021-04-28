@@ -392,7 +392,7 @@ def inputAlbum():
     print("urlList[squareNumber] ", urlList[int(squareNumber)])
 
     coverList[int(squareNumber)] = cover
-    urlList[int(squareNumber)] = cover
+    urlList[int(squareNumber)] = albumURL
     dbSquareEntry.update(coverList=coverList, urlList=urlList)
     print("update ", dbSquareEntry)
 

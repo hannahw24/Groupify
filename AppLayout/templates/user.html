@@ -64,9 +64,11 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
+                            </a>
                         </div>
                     [[else:]]
                     <div v-if = "isEditing===1" class="column is-2 album_box">
@@ -118,9 +120,11 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
+                            </a>
                         </div>
                     [[else:]]
                     <div v-if = "isEditing===1" class="column is-2 album_box">
@@ -184,9 +188,11 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
+                            </a>
                         </div>
                     [[else:]]
                     <div v-if = "isEditing===1" class="column is-2 album_box">
@@ -212,8 +218,8 @@
                         </button>
                     </div>
                     <div v-else class="level-item">
-                        <button @click="controlEditButton()" class="button is-link">
-                            Edit Profile
+                        <button @click="controlEditButton()" class="button is-link is-warning">
+                            Select Album
                             <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
                         </button>
                     </div>
