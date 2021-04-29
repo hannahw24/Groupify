@@ -312,7 +312,10 @@ def getUserProfile(userID=None):
         tile_color=theme_colors[3],
         text_color=theme_colors[4],
 
-        userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList
+        userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
+        userBio=URL("userBio", userID)
+
+
     )
     # returns editable for the "[[if (editable==True):]]" statement in layout.html
     # return dict(session=session, editable=editable_profile(userID), friendsList=friendsList, topTracks=topTracks,
@@ -340,10 +343,8 @@ def editUserSquare(userID, squareNumber):
         background_bot=theme_colors[0],
         background_top=theme_colors[1])
     else:
-        print("please1")
         form_SearchValue = request.params.get("Search")
         if form_SearchValue == "":
-            print ("empty input")
             return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
             imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
             url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
@@ -358,7 +359,6 @@ def editUserSquare(userID, squareNumber):
         spotify = spotipy.Spotify(auth_manager=auth_manager)
         # Input what you want to see, see the spotipy API for parameters you can place to specify output
         results = spotify.search(form_SearchValue, type='album', limit=10)
-        print("please2")
         try:
             totalResults = results["albums"]["total"]
             if (totalResults == 0):
@@ -373,18 +373,12 @@ def editUserSquare(userID, squareNumber):
             results = results["albums"]
         except:
             print(results)
-        print("please3")
         biglist = getAlbumResults(results)
         topAlbums = biglist[0]
-        print ("topAlbums ", topAlbums)
         topArtists = biglist[1]
-        print ("topArtists ", topArtists)
         imgList = biglist[2]
-        print ("imgList ", imgList)
         trackLinks = biglist[3]
-        print ("trackLinks", trackLinks)
         artistLinks = biglist[4]
-        print ("artistLinks ", artistLinks)
         return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
         imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
         url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
@@ -406,30 +400,18 @@ def inputAlbum():
 
     if squareEntries == []:
         return redirect(URL('user', userID))
-    print(squareEntries)
-    print(squareEntries[0])
-    print("squareNumber", squareNumber)
-    print("cover", cover)
-    print("albumURL", albumURL)
     coverList = squareEntries[0]["coverList"]
     urlList = squareEntries[0]["urlList"]
-    print("coverList", coverList)
-    print("urlList", urlList)
-
-    print("coverList[squareNumber] ", coverList[int(squareNumber)])
-    print("urlList[squareNumber] ", urlList[int(squareNumber)])
 
     coverList[int(squareNumber)] = cover
     urlList[int(squareNumber)] = albumURL
     dbSquareEntry.update(coverList=coverList, urlList=urlList)
-    print("update ", dbSquareEntry)
 
     squareEntries = dbSquareEntry.select().as_list()
     coverList = squareEntries[0]["coverList"]
     urlList = squareEntries[0]["urlList"]
-    print("coverList[squareNumber] ", coverList[int(squareNumber)])
-    print("urlList[squareNumber] ", urlList[int(squareNumber)])
-    return "lmao"
+    # Returning something for user.js
+    return ""
     #redirect(URL('user', userID))
 
 def getIDFromUserTable(userID):
@@ -663,22 +645,6 @@ def getSettings(userID=None):
             background_bot=None, background_top=None,profile_pic=profile_pic)
     #return dict(session=session, editable=False, profile_pic=profile_pic)
 
-@action('bio_and_status/<userID>', method=["GET", "POST"])
-@action.uses(db, auth, session)
-def bioStatus(userID=None):
-    loggedInUserId = session.get("userID")
-    form_bio = request.params.get("bio&stat")
-    if userID is not None:
-        db(db.dbUser.userID == loggedInUserId.update(bio_status=form_bio))
-        return dict( session=session,
-            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic, bio=form_bio)
-    else:
-        dbFriendEntry = db(db.dbFriends.userID == userID).select()
-        friend_bio = dbFriendEntry.bio_status
-        return dict( session=session, editable=False, 
-            background_bot=None, background_top=None,profile_pic=profile_pic, bio=friend_bio)
-    #return redirect(URL('user', session.get("userID")))
-
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
@@ -721,13 +687,29 @@ def addFriendFromProfile(userID=None):
     return redirect(URL('user', userID))
 
 
+# Retrieves the bio of the user, used in user.js to display the bio
+@action('userBio/<userID>', method=["GET"])
+@action.uses(session)
+def getUserBio(userID=None):
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
+    print("currentProfileEntry[0][bio_status]: ", currentProfileEntry[0]["bio_status"])
+    return dict(userBio=currentProfileEntry[0]["bio_status"])
+
+# Makes a request to user.js for the content in the text area after a user hits the save button
+# Then updates the bio in the database
+# ASH: WARNING -- MAY BE UNSAFE/EDITABLE BY OTHERS -- NEEDS TESTING
+@action('userBio/<userID>', method=["POST"])
+@action.uses(session)
+def postUserBio(userID=None):
+    dbBioEntry = db(db.dbUser.userID == userID)
+    content = request.params.get('content')
+    dbBioEntry.update(bio_status=content)
+    return dict(content=content)
 
 @action('unfollowProfile/<userID>', method=['GET'])
 @action.uses(session, db)
 def delete_contact(userID=None):
     person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
-    print("userID is ", userID)
-    print("person is ", person)
     if person is None or person == []:
         # Nothing to edit.  This should happen only if you tamper manually with the URL.
         redirect(URL('user', userID))
@@ -735,7 +717,6 @@ def delete_contact(userID=None):
         person = person[0]
         friendToWhoID = person["friendToWhoID"]
         if friendToWhoID == getIDFromUserTable(session.get("userID")):
-            print("Testing ", db(db.dbFriends.id == person["id"]).select().as_list())
             db(db.dbFriends.id == person["id"]).delete()
         redirect(URL('user', userID))
 
