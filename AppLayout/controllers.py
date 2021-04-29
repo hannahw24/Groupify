@@ -832,11 +832,12 @@ def return_theme(chosen_theme=None):
     # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
         return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
+    # metalTheme black, gray, black, gray, white
     if chosen_theme =="7":
         return ['#191414', '#B3B3B3', '#191414', '#B3B3B3', "#FFFFFF"]
     # defaultTheme black, green, green, soft gray, black
     else: 
-        return ['#191414', '#4FE383', '#4FE383', '#d9dddc', '#221B1B']
+        return ['#191414', '#4FE383', '#4FE383', '#f0f0f0', '#221B1B']
 
 # change the db.user's perfered top 10 term	
 @action('user/<userID>/top10len/<term_id:int>')	
