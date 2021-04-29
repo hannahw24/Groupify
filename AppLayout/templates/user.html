@@ -4,6 +4,7 @@
 <div id="vue-target">
 <div class="background_page_color" id="userpage">
     <!-- Color onload -->
+   
     <div id="friendbar" class="friend_bar panel_spec" style="background-Color:[[=tile_color]]"> 
         <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
         <!-- Field for search bar -->
@@ -55,7 +56,7 @@
             <div class="columns is-mobile is-1">
                 [[for i in range(6):]]
                     [[if coverList[i] != "x": ]]
-                        <div v-if = "isEditing===1" class="column is-2 album_box">
+                        <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                             <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                                 <figure class="image">
                                     <img src="[[=(coverList[i])]]">
@@ -63,41 +64,14 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">	
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
-                        </div>
-                    [[else:]]
-                    <div v-if = "isEditing===1" class="column is-2 album_box">
-                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
-                            <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
-                            </figure>
-                        </a>
-                    </div>
-                    <div v-else class="column is-2 album_box">
-                        <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
-                        </figure>
-                    </div>
-                    [[pass]]
-                [[pass]]
-                [[for i in range(6, 12):]]
-                    [[if coverList[i] != "x": ]]
-                        <div v-if = "isEditing===1" class="column is-2 album_box">
-                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
-                                <figure class="image">
-                                    <img src="[[=(coverList[i])]]">
-                                </figure>
                             </a>
                         </div>
-                        <div v-else class="column is-2 album_box">
-                            <figure class="image">
-                                <img src="[[=(coverList[i])]]">
-                            </figure>
-                        </div>
                     [[else:]]
-                    <div v-if = "isEditing===1" class="column is-2 album_box">
+                    <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
                                 <img src="https://bulma.io/images/placeholders/128x128.png">
@@ -120,7 +94,7 @@
             <div class="columns is-mobile is-1">
                 [[for i in range(6, 12):]]
                     [[if coverList[i] != "x": ]]
-                        <div v-if = "isEditing===1" class="column is-2 album_box">
+                        <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                             <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                                 <figure class="image">
                                     <img src="[[=(coverList[i])]]">
@@ -128,12 +102,14 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">	
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
+                            </a>
                         </div>
                     [[else:]]
-                    <div v-if = "isEditing===1" class="column is-2 album_box">
+                    <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
                                 <img src="https://bulma.io/images/placeholders/128x128.png">
@@ -150,14 +126,14 @@
             </div>
             [[if (editable==True):]]
                 <div id="editButton">
-                    <div v-if="isEditing === 0" class="level-item">
+                    <div v-if="isEditingAlbums === 0" class="level-item">
                         <button @click="controlEditButton()" class="button is-link">
                             Edit Profile
                         </button>
                     </div>
                     <div v-else class="level-item">
-                        <button @click="controlEditButton()" class="button is-link">
-                            Stop Editing
+                        <button @click="controlEditButton()" class="button is-link is-warning">	
+                            Select Album
                             <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
                         </button>
                     </div>
@@ -197,19 +173,36 @@
                         </figure>
                         <!-- <p>Bio and Status</p> -->
                         [[if (editable==True):]]
-                        <form action="[[=URL('bio_and_status', userID)]]" method="POST"  style="padding-left: 15px; width: 78%;">
-                            <div class="field">
-                                <div class="control is-small">
-                                  <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat"></textarea>
+                            <div style="padding-left: 15px; width: 78%;">
+                                <div v-if="true" @click="isEditingBio = 1" class="control is-small">
+                                    <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat" v-model="bio">
+                                    </textarea>
                                 </div>
                             </div>
-                        </form>
                         [[else:]]
-                        <div class="control" style="padding-left: 15px; width: 78%;">
-                            <textarea class="textarea" readonly>Bio is readonly</textarea>
+                        <div style="padding-left: 15px; width: 78%;">
+                            <div v-if="true" class="control is-small">
+                                <textarea class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
+                                </textarea>
+                            </div>
                         </div>
                         [[pass]]
                     </div>
+
+                    <nav class="level is-mobile">
+                        <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
+                        <div class="level-left"></div>
+                        <div class="level-right">
+                            <!-- Save button -->
+                            <div v-if="isEditingBio === 1" class="level-item">
+                                <button @click="save_bio(bio)" class="button is-primary">
+                                    <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
+                            <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
+                            <div v-if="isEditingBio === 1" class="level-item">
+                                <button @click="cancel_bio" class="button is-danger">
+                                    <i class="fa fa-window-close" aria-hidden="true"></i></button></div>
+                        </div>
+                    </nav>
                     
                 </article>
                 <div class="tile is-ancestor" >
@@ -289,7 +282,7 @@
     </div>
 
     <div id="groupSideButton" class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
-        <a class="group_button" href="[[=URL('groupSession')]]"></a>
+        <a class="group_button" href="[[=URL('groupSession', user)]]"></a>
     </div>
 </div>
 </div>
@@ -301,8 +294,9 @@
 </style>
 
 [[block page_scripts]]
+<script>
+    let userBio = "[[=XML(userBio)]]";
+</script>
 <!-- Loads the user-specific js for Vue -->
 <script src="js/user.js"></script>
 [[end]]
-
-<!-- profile picture that doesnt work -->
