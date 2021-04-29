@@ -64,9 +64,11 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">	
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
+                            </a>
                         </div>
                     [[else:]]
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
@@ -100,9 +102,11 @@
                             </a>
                         </div>
                         <div v-else class="column is-2 album_box">
+                            <a href="[[=(urlList[i])]]" target="_blank">	
                             <figure class="image">
                                 <img src="[[=(coverList[i])]]">
                             </figure>
+                            </a>
                         </div>
                     [[else:]]
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
@@ -128,8 +132,8 @@
                         </button>
                     </div>
                     <div v-else class="level-item">
-                        <button @click="controlEditButton()" class="button is-link">
-                            Stop Editing
+                        <button @click="controlEditButton()" class="button is-link is-warning">	
+                            Select Album
                             <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
                         </button>
                     </div>
@@ -184,6 +188,7 @@
                         </div>
                         [[pass]]
                     </div>
+
                     <nav class="level is-mobile">
                         <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
                         <div class="level-left"></div>
@@ -198,6 +203,7 @@
                                     <i class="fa fa-window-close" aria-hidden="true"></i></button></div>
                         </div>
                     </nav>
+                    
                 </article>
                 <div class="tile is-ancestor" >
                     <div class="tile is-parent" >
@@ -205,30 +211,32 @@
                             <!-- Panel title -->
                             <strong>Top 10 Songs</strong>
                                 <!-- For each top song -->
-	                            <!-- toggle top songs length -->	
+	                            <!-- toggle top songs length -->
+                                [[if (editable==True):]]	
                                 <div class="dropdown is-hoverable is-pulled-right is-right">	
                                     <div class="dropdown-trigger">	
                                       <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
-                                        <span>last 4 weeks</span>	
+                                        <span>[[=term_str]]</span>	
                                         <span class="icon is-small">	
                                           <i class="fas fa-angle-down" aria-hidden="true"></i>	
                                         </span>	
                                       </button>	
-                                    </div>	
+                                    </div>
                                     <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
                                       <div class="dropdown-content">	
-                                        <a class="dropdown-item">	
+                                        <a class="dropdown-item" href="[[=URL('user', session.get('userID'), 'top10len', 1)]]">	
                                           <p>last 4 weeks</p>	
                                         </a>	
-                                        <a class="dropdown-item">	
+                                        <a class="dropdown-item" href="[[=URL('user', session.get('userID'), 'top10len', 2)]]">	
                                           <p>last 6 months</p>	
                                         </a>	
-                                        <a class="dropdown-item">	
+                                        <a class="dropdown-item" href="[[=URL('user', session.get('userID'), 'top10len', 3)]]">	
                                           <p>of all time</p>	
                                         </a>	
                                       </div>	
-                                    </div>	
-                                  </div>	
+                                    </div>
+                                  </div>
+                                [[pass]]	
                                 <br>	
                                 <br>
                                 <br>

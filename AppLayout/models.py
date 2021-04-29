@@ -28,6 +28,7 @@ db.define_table(
     #Ash: email may be unnecessary. 
     Field('bio_status'),
     Field('profile_pic'),
+    Field('chosen_term'),   
 )
 
 db.define_table(

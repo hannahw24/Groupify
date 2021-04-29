@@ -13,6 +13,7 @@
             <div class="field">
                 <input class="input" type="text" name="Search" placeholder="Enter an album or artist" />
                 <input type="submit" class="button" value="Search" />
+                <button class="button is-danger" @click="save_album('x', 'x', '[[=(squareNumber)]]')">Clear Album</button>
             </div>
         </div>
     </form>
@@ -20,34 +21,35 @@
 </section>
 
 [[if trackLinks != "":]]
-[[for i in range(len(trackLinks)):]]
-<div class="tile is-parent">
-    <div class="tile is-child box"> 
-        <!-- Panel title -->
-            <!-- For each top song -->
-            <section>
-                <a @click="save_album('[[=(trackLinks[i])]]', '[[=(imgList[i])]]', '[[=(squareNumber)]]')">
-                    <div class="columns">
-                        <div class="column">
-                            <!-- Album art image with link to track -->
-                            <img src=[[=(imgList[i])]] width="64" height="64">
-                        </div>
-                        <div class="column is-9">
-                            <div>
-                                <!-- Song title with link to track -->
-                                <span target="_blank" style="color:#000000"><strong>[[=(topAlbums[i])]]</strong></span>
+<br>
+    <div class="container">
+    [[for i in range(len(trackLinks)):]]
+        <div class="tile is-child box"> 
+            <!-- Panel title -->
+                <!-- For each top song -->
+                <section>
+                    <a @click="save_album('[[=(trackLinks[i])]]', '[[=(imgList[i])]]', '[[=(squareNumber)]]')">
+                        <div class="columns">
+                            <div class="column">
+                                <!-- Album art image with link to track -->
+                                <img src=[[=(imgList[i])]] width="64" height="64">
                             </div>
-                            <div>
-                                <!-- Artist name with link to their Spotify page -->
-                                <span target="_blank" style="color:#000000">[[=(topArtists[i])]]</span>
+                            <div class="column is-9">
+                                <div>
+                                    <!-- Song title with link to track -->
+                                    <span target="_blank" style="color:#000000"><strong>[[=(topAlbums[i])]]</strong></span>
+                                </div>
+                                <div>
+                                    <!-- Artist name with link to their Spotify page -->
+                                    <span target="_blank" style="color:#000000">[[=(topArtists[i])]]</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </a>
-            </section>
+                    </a>
+                </section>
+        </div>
+    [[pass]]
     </div>
-</div>   
-[[pass]]
 [[pass]]
 </div>
 
