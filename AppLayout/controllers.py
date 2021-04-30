@@ -523,11 +523,19 @@ def update_theme(userID=None, theme_id=None):
     print(userID)
     user_data = db.dbUser[getIDFromUserTable(userID)]
     db(db.user_data.id == getIDFromUserTable(userID).update(chosen_theme=theme_id))
+<<<<<<< HEAD
 
     profileURL = "user/" + userID
     redirect(profileURL)
     return dict(session=session)
 
+=======
+
+    profileURL = "user/" + userID
+    redirect(profileURL)
+    return dict(session=session)
+
+>>>>>>> caa78cab4810c5f8cd3539a0fdce7c6cf4eb919f
 # UNUSED
 # Returns the most recent 20 liked songs
 @action('getLikedTracks')
@@ -705,7 +713,10 @@ def groupSession(userID=None):
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
 def getSettings(userID=None):
+<<<<<<< HEAD
     profileURL = "http://127.0.0.1:8000"+(URL("user", userID))
+=======
+>>>>>>> caa78cab4810c5f8cd3539a0fdce7c6cf4eb919f
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
@@ -714,6 +725,7 @@ def getSettings(userID=None):
     if userID is not None:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
+<<<<<<< HEAD
         return dict( session=session, editable=False, userID=userID, url_signer=url_signer,
             background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic, profileURL = profileURL)
     else:
@@ -729,6 +741,14 @@ def delete_profile(userID=None):
     os.remove(session_cache_path())
     session.clear()
     redirect(URL('index'))
+=======
+        return dict( session=session, editable=False,
+            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic)
+    else:
+        return dict( session=session, editable=False, 
+            background_bot=None, background_top=None,profile_pic=profile_pic)
+    #return dict(session=session, editable=False, profile_pic=profile_pic)
+>>>>>>> caa78cab4810c5f8cd3539a0fdce7c6cf4eb919f
 
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
@@ -842,12 +862,19 @@ def return_theme(chosen_theme=None):
     # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
         return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
+<<<<<<< HEAD
     # metalTheme black, gray, black, gray, white
+=======
+>>>>>>> caa78cab4810c5f8cd3539a0fdce7c6cf4eb919f
     if chosen_theme =="7":
         return ['#191414', '#B3B3B3', '#191414', '#B3B3B3', "#FFFFFF"]
     # defaultTheme black, green, green, soft gray, black
     else: 
+<<<<<<< HEAD
         return ['#191414', '#4FE383', '#4FE383', '#f0f0f0', '#221B1B']
+=======
+        return ['#191414', '#4FE383', '#4FE383', '#d9dddc', '#221B1B']
+>>>>>>> caa78cab4810c5f8cd3539a0fdce7c6cf4eb919f
 
 # change the db.user's perfered top 10 term	
 @action('user/<userID>/top10len/<term_id:int>')	
