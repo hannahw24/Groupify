@@ -705,6 +705,7 @@ def groupSession(userID=None):
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
 def getSettings(userID=None):
+    profileURL = "http://127.0.0.1:8000"+(URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
@@ -713,12 +714,21 @@ def getSettings(userID=None):
     if userID is not None:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
-        return dict( session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic)
+        return dict( session=session, editable=False, userID=userID, url_signer=url_signer,
+            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic, profileURL = profileURL)
     else:
-        return dict( session=session, editable=False, 
-            background_bot=None, background_top=None,profile_pic=profile_pic)
-    #return dict(session=session, editable=False, profile_pic=profile_pic)
+        return dict( session=session, editable=False, userID=userID, url_signer=url_signer,
+            background_bot=None, background_top=None,profile_pic=profile_pic, profileURL=profileURL)
+
+@action('deleteProfile/<userID>', method=['GET'])
+@action.uses(session, db)
+def delete_profile(userID=None):
+    assert userID is not None
+    db(db.dbUser.userID == userID).delete()
+    db(db.dbFriends.userID == userID).delete()
+    os.remove(session_cache_path())
+    session.clear()
+    redirect(URL('index'))
 
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)

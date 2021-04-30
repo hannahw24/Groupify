@@ -9,6 +9,30 @@
            <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
            [[pass]]
        </figure>
-       <p class="labels">Settings Page</p>
+       <br>
+       <div class="container">
+           <br>
+           <br>
+           <h1 class="title">Share My Profile</h1>
+            <input type="text" value="[[=(profileURL)]]" id="myInput" style="width: 50%;">
+            <button onclick="myFunction()"><i class="fas fa-clipboard"></i></button>
+
+            <br>
+            <br>
+            <br>
+            <a class="button is-danger" href="[[=URL('deleteProfile', userID, signer=url_signer)]]">
+                Delete My Profile
+            </a>
+       </div>
    </div>
 </section>
+
+<script>
+    function myFunction() {
+        var copyText = document.getElementById("myInput");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999)
+        document.execCommand("copy");
+        alert("Copied the text: " + copyText.value);
+}
+</script>

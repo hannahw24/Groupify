@@ -43,10 +43,19 @@
                 </div>
             </li>
         [[pass]]
+            <div class="tile is-parent">
+                <div class="tile is-child notification" 
+                    style=" border-style: solid; border-radius: 7px; 
+                        opacity: 0.75; text-align: center;
+                        background-Color:[[=tile_color]]; 
+                        border-color:[[=friend_tile]]" >
+                        <a style="background-Color:[[=tile_color]]; color:[[=friend_tile]]; font-size:xx-large;" 
+                            href="[[=URL('add_friend')]]">
+                            <i class="fa fa-plus-square" aria-hidden="true"></i>
+                        </a>
+                </div>
+            </div>
         </ul>
-        <a class="button is-primary" href="[[=URL('add_friend')]]">
-            <i class="fa fa-plus-square" aria-hidden="true"></i>
-        </a>
     </div>
 
     <div class="main_profile">
@@ -282,7 +291,9 @@
     </div>
 
     <div id="groupSideButton" class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
-        <a class="group_button" href="[[=URL('groupSession', user)]]"></a>
+        <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', user)]]">
+            <i class="fa fa-forward" aria-hidden="true" ></i>
+        </a>
     </div>
 </div>
 </div>

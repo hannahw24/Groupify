@@ -71,12 +71,13 @@ body{
 }
 
 .group_button{
-    height: 10%;
-    width: 3px;
+    /* height: 10%; */
+    /* width: 3px; */
+    font-size:xx-large;
     position: fixed;
     top: 50%;
-    right: 4%;
-    background-color: #8f8f8f;
+    /* right: 4%; */
+    /* background-color: #8f8f8f; */
 }
 
 /* home page center panel */
