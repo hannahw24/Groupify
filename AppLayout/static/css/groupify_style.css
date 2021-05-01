@@ -60,6 +60,61 @@ body{
     border-bottom-right-radius: 6px;
 }
 
+/* for animated search bar */
+/* input[type=text] {
+    width: 130px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 16px;
+    
+    background-image: url('searchicon.png');
+    background-position: 10px 10px; 
+    background-repeat: no-repeat;
+    padding: 12px 20px 12px 40px;
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: width 0.4s ease-in-out;
+  }
+  
+  input[type=text]:focus {
+    width: 100%;
+    background-color: white;
+  } */
+
+.add_friend_button {
+    border-style: solid; 
+    border-radius: 7px; 
+    opacity: 1; 
+    text-align: center;
+    font-size: xx-large;
+}
+.add_friend_button span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.3s;
+}
+  
+.add_friend_button span:after {
+    content: 'Add Friend'; /* 'f0fe'add friend icon */
+    font-size: x-large;
+    font-style: italic;
+    padding-top: 5px;
+    position: absolute;
+    opacity: 0;
+    right: -20px;
+    /* transition: 0.5; */
+}
+
+.add_friend_button:hover span {
+    padding-right: 125px;
+}
+
+.add_friend_button:hover span:after {
+    transition: 1s;
+    opacity: 1;
+    right: 0;
+}
+
 /* home page right panel group bar */
 .group_bar {
     height: 85%;
@@ -71,14 +126,12 @@ body{
 }
 
 .group_button{
-    /* height: 10%; */
-    /* width: 3px; */
     font-size:xx-large;
     position: fixed;
     top: 50%;
-    /* right: 4%; */
-    /* background-color: #8f8f8f; */
+    opacity: 1;
 }
+.group_button:hover{ opacity: 0.75;}
 
 /* home page center panel */
 .main_profile{
@@ -95,14 +148,15 @@ body{
 }
 
 .album_box {
-    /* background-color: white; */
     border-radius: 0px; 
-    /* color: #4a4a4a; */
     display: block;
     padding: .25rem;
     margin-top: 4px;
     margin-bottom: 4px;
+    opacity: 1;
 }
+
+.album_box:hover{ opacity: 0.75;}
 
 .index_pfp {
     background-color: #8f8f8f

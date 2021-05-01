@@ -5,17 +5,19 @@
 <div class="background_page_color" id="userpage">
     <!-- Color onload -->
    
-    <div id="friendbar" class="friend_bar panel_spec" style="background-Color:[[=tile_color]]"> 
-        <p id="follwingfriendtitle" style="color:#221B1B" class="labels">Following</p>
+    <div class="friend_bar panel_spec" style="background-Color:[[=tile_color]]"> 
+        <p style="color:#221B1B; margin-left:4%; " class="labels">Following</p>
         <!-- Field for search bar -->
         <div class="tile is-parent">
-            <div class="field is-pulled-right">
+            <div class="tile is-child field is-pulled-left">
                 <div class="control has-icons-left has-icons-right">
                     <span class="icon is-small is-left">
                         <i class="fas fa-search"></i>
                     </span>
                     <!-- Calls function when something is entered -->
-                    <input id="barInput" class="input" type="text" onkeyup="searchBar()" placeholder="Search">
+                    <form>
+                        <input id="barInput" class="input" type="text" onkeyup="searchBar()" name="search" placeholder="Search">
+                    </form>
                 </div>
             </div>
         </div>
@@ -23,7 +25,7 @@
         [[for row in friendsList:]]
             <li>
                 <div class="tile is-parent">
-                    <div id="friendtile" class="tile is-child notification" style="background-Color:[[=friend_tile]]">
+                    <div class="tile is-child box" style="background-Color:[[=friend_tile]]">
                         <div class="columns">
                             <div class="column">
                                 [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
@@ -44,16 +46,11 @@
             </li>
         [[pass]]
             <div class="tile is-parent">
-                <div class="tile is-child notification" 
-                    style=" border-style: solid; border-radius: 7px; 
-                        opacity: 0.75; text-align: center;
-                        background-Color:[[=tile_color]]; 
-                        border-color:[[=friend_tile]]" >
-                        <a style="background-Color:[[=tile_color]]; color:[[=friend_tile]]; font-size:xx-large;" 
-                            href="[[=URL('add_friend')]]">
-                            <i class="fa fa-plus-square" aria-hidden="true"></i>
-                        </a>
-                </div>
+                <a class="tile is-child notification add_friend_button" 
+                   style="background-Color:[[=tile_color]]; border-color:[[=friend_tile]]; color:[[=friend_tile]];" 
+                   href="[[=URL('add_friend')]]">
+                    <span><i class="fa fa-plus-square" aria-hidden="true"></i></span>
+                </a>
             </div>
         </ul>
     </div>
@@ -181,38 +178,13 @@
                             [[pass]]
                         </figure>
                         <!-- <p>Bio and Status</p> -->
-                        [[if (editable==True):]]
-                            <div style="padding-left: 15px; width: 78%;">
-                                <div v-if="true" @click="isEditingBio = 1" class="control is-small">
-                                    <textarea class="textarea" placeholder="Bio and Status" name="bio&stat" id="bio&stat" v-model="bio">
-                                    </textarea>
-                                </div>
-                            </div>
-                        [[else:]]
                         <div style="padding-left: 15px; width: 78%;">
-                            <div v-if="true" class="control is-small">
-                                <textarea class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
-                                </textarea>
-                            </div>
+                            <p style="color:#221B1B; margin-left:4%;" class="labels">[[=display_name]]</p>
+                            <p style="color:#221B1B; margin-left:4%;">
+                                [[=bio_status]]
+                            </p>
                         </div>
-                        [[pass]]
                     </div>
-
-                    <nav class="level is-mobile">
-                        <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
-                        <div class="level-left"></div>
-                        <div class="level-right">
-                            <!-- Save button -->
-                            <div v-if="isEditingBio === 1" class="level-item">
-                                <button @click="save_bio(bio)" class="button is-primary">
-                                    <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
-                            <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
-                            <div v-if="isEditingBio === 1" class="level-item">
-                                <button @click="cancel_bio" class="button is-danger">
-                                    <i class="fa fa-window-close" aria-hidden="true"></i></button></div>
-                        </div>
-                    </nav>
-                    
                 </article>
                 <div class="tile is-ancestor" >
                     <div class="tile is-parent" >
@@ -290,9 +262,9 @@
         </section>
     </div>
 
-    <div id="groupSideButton" class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
+    <div class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
         <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', user)]]">
-            <i class="fa fa-forward" aria-hidden="true" ></i>
+            <i class="fa fa-forward" aria-hidden="true"></i>
         </a>
     </div>
 </div>

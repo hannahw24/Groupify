@@ -327,6 +327,10 @@ def getUserProfile(userID=None):
     # get the current chosen theme in the db.user, and set 5 varibles to be passed to html
     # [background_bot, background_top, friend_tile, tile_color, text_color]
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    display_name=dbUserEntry[0]["display_name"]
+    bio_status=dbUserEntry[0]["bio_status"]
+    print(bio_status)
 
     return dict(
         session=session, 
@@ -346,7 +350,13 @@ def getUserProfile(userID=None):
         tile_color=theme_colors[3],
         text_color=theme_colors[4],
 
-        userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
+        userID=userID, 
+        display_name=display_name,
+        bio_status=bio_status,
+        isFriend=isFriend, 
+        url_signer=url_signer, 
+        urlList=urlList, 
+        coverList=coverList,
         userBio=URL("userBio", userID))
 
 # After the user clicks on an album box to edit, this function is called. 
