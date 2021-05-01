@@ -701,10 +701,10 @@ def groupSession(userID=None):
         return dict( session=session, editable=False, 
             background_bot=None, background_top=None,)
 
-# Ash: There isn't a settings page right now
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
 def getSettings(userID=None):
+    profileURL = "http://127.0.0.1:8000"+(URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
@@ -713,12 +713,21 @@ def getSettings(userID=None):
     if userID is not None:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
-        return dict( session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic)
+        return dict( session=session, editable=False, userID=userID, url_signer=url_signer,
+            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic, profileURL = profileURL)
     else:
-        return dict( session=session, editable=False, 
-            background_bot=None, background_top=None,profile_pic=profile_pic)
-    #return dict(session=session, editable=False, profile_pic=profile_pic)
+        return dict( session=session, editable=False, userID=userID, url_signer=url_signer,
+            background_bot=None, background_top=None,profile_pic=profile_pic, profileURL=profileURL)
+
+@action('deleteProfile/<userID>', method=['GET'])
+@action.uses(session, db)
+def delete_profile(userID=None):
+    assert userID is not None
+    db(db.dbUser.userID == userID).delete()
+    db(db.dbFriends.userID == userID).delete()
+    os.remove(session_cache_path())
+    session.clear()
+    redirect(URL('index'))
 
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
@@ -832,11 +841,12 @@ def return_theme(chosen_theme=None):
     # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
         return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
+    # metalTheme black, gray, black, gray, white
     if chosen_theme =="7":
         return ['#191414', '#B3B3B3', '#191414', '#B3B3B3', "#FFFFFF"]
     # defaultTheme black, green, green, soft gray, black
     else: 
-        return ['#191414', '#4FE383', '#4FE383', '#d9dddc', '#221B1B']
+        return ['#191414', '#4FE383', '#4FE383', '#f0f0f0', '#221B1B']
 
 # change the db.user's perfered top 10 term	
 @action('user/<userID>/top10len/<term_id:int>')	
