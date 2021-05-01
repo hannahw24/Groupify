@@ -16,9 +16,7 @@
   
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation"> <!-- is-fixed-top -->
       <div class="navbar-brand">
-        <a class="navbar-item" href=".">
-          <!--strong>APP LOGO</strong-->
-        </a>
+        <!-- <a class="navbar-item" ></a> -->
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="left-navbar"
            onclick="this.classList.toggle('is-active');document.getElementById(this.dataset.target).classList.toggle('is-active');">
           <span aria-hidden="true"></span>
@@ -27,13 +25,13 @@
         </a>
       </div>
       <div id="left-navbar" class="navbar-menu">
-        <div class="navbar-start">   
+        <div class="navbar-start" style="margin-left: 1%;">   
             <img src=[[=URL('static', 'images/logo-circle.png')]] style="width:30px;height:57px;">
           [[if session.get("userID") is None:]]
-          <a class="navbar-item" href="[[=URL('index')]]">Group-ify</a>
+          <a class="navbar-item" href="[[=URL('index')]]">group-ify</a>
           [[else:
             userPage = "user/" + session.get("userID") ]]
-          <a class="navbar-item" href="[[=URL(userPage)]]" >Group-ify</a>
+          <a class="navbar-item" href="[[=URL(userPage)]]" >group-ify</a>
           [[pass]]
           [[block page_menu_items]]<!-- individual pages can add menu items here -->[[end]]
           </div>
@@ -67,9 +65,9 @@
             <div class="navbar-item">
               <div class="buttons">
                 [[if session.get("userID") is not None:]]
-                <a class="button is-primary" href="[[=URL('sign_out')]]">Sign out</a>
+                <a class="button" href="[[=URL('sign_out')]]">sign out</a>
                 [[else:]]
-                <a class="button is-light" href="[[=URL('login')]]">Sign in</a>
+                <a class="button is-light" href="[[=URL('login')]]">sign in</a>
                 [[pass]]
               </div>
             </div>
