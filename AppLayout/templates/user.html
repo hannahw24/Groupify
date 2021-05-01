@@ -224,7 +224,7 @@
                                 <div class="dropdown is-hoverable is-pulled-right is-right">	
                                     <div class="dropdown-trigger">	
                                       <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
-                                        <span>[[=term_str]]</span>	
+                                        <span>{{termString}}</span>	
                                         <span class="icon is-small">	
                                           <i class="fas fa-angle-down" aria-hidden="true"></i>	
                                         </span>	
@@ -232,13 +232,13 @@
                                     </div>
                                     <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
                                       <div class="dropdown-content">	
-                                        <a class="dropdown-item" href="[[=URL('user', session.get('userID'), 'top10len', 1)]]">	
+                                        <a class="dropdown-item" @click="changeTerm('1')">	
                                           <p>last 4 weeks</p>	
                                         </a>	
-                                        <a class="dropdown-item" href="[[=URL('user', session.get('userID'), 'top10len', 2)]]">	
+                                        <a class="dropdown-item" @click="changeTerm('2')">	
                                           <p>last 6 months</p>	
                                         </a>	
-                                        <a class="dropdown-item" href="[[=URL('user', session.get('userID'), 'top10len', 3)]]">	
+                                        <a class="dropdown-item" @click="changeTerm('3')">	
                                           <p>of all time</p>	
                                         </a>	
                                       </div>	
@@ -248,26 +248,27 @@
                                 <br>	
                                 <br>
                                 <br>
-                                [[for i in range(10):]]
+                                <!-- v-for wants to start at 1, "(n, i)" makes it start at 0-->
+                                <div v-for="(n, i) in 10">
                                 <section>
                                     <div class="columns">
                                         <div class="column">
                                             <!-- Album art image with link to track -->
-                                            <a href=[[=(trackLinks[i])]] target="_blank"><img src=[[=(imgList[i])]]></a>
+                                            <a :href="trackLinks[i]" target="_blank"><img :src="imgList[i]"></a>
                                         </div>
                                         <div class="column is-9">
                                             <div>
                                                 <!-- Song title with link to track -->
-                                                <a href=[[=(trackLinks[i])]] target="_blank" style="color:#000000"><strong>[[=(topTracks[i])]]</strong></a>
+                                                <a :href="trackLinks[i]" target="_blank" style="color:#000000"><strong>{{topTracks[i]}}</strong></a>
                                             </div>
                                             <div>
                                                 <!-- Artist name with link to their Spotify page -->
-                                                <a href=[[=(artistLinks[i])]] target="_blank" style="color:#000000">[[=(topArtists[i])]]</a>
+                                                <a :href="trackLinks[i]" target="_blank" style="color:#000000"> {{topArtists[i]}}</a>
                                             </div>
                                         </div>
                                     </div>
                                 </section>
-                                [[pass]]
+                                </div>
                         </div>
                     </div>
                     <div class="tile is-vertical is-parent">
@@ -306,6 +307,7 @@
 [[block page_scripts]]
 <script>
     let userBio = "[[=XML(userBio)]]";
+    let getTopSongs = "[[=XML(getTopSongs)]]";
 </script>
 <!-- Loads the user-specific js for Vue -->
 <script src="js/user.js"></script>

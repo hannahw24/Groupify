@@ -78,11 +78,12 @@ def getIndex(userID=None):
 # shown in the above git repository. It is an example of multi-person login
 # with spotipy. 
 # See License of code at https://github.com/plamere/spotipy/blob/master/LICENSE.md 
+# Step 0: Visitor is unknown, give random ID, then make them sign in 
+# with Spotify
 @action('login', method='GET')
 @action.uses('login.html', session)
 def userLogin():
     if not session.get('uuid'):
-        # Step 1. Visitor is unknown, give random ID
         session['uuid'] = str(uuid.uuid4())
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     # Magic code; takes in our client_id, secret_id, and redirect_uri and 
@@ -94,7 +95,7 @@ def userLogin():
     # In this case the auth_url is [localhost]/callback
     return redirect(auth_url)
 
-# Step 1: When you login, Spotify goes to this
+# Step 1: When you login, Spotify goes back to this
 @action('callback')
 @action.uses(session)
 def getCallback():
@@ -114,6 +115,7 @@ def getCallback():
         print(error)
         return redirect(URL('index'))
     auth_manager.get_access_token(code)
+    # Redirect to the function that stores user information in database tables.
     return redirect("getUserInfo")
 
 # Step 2: After callback, the user goes to this function and has their info made/updated
@@ -184,8 +186,11 @@ def getUserInfo():
     if (squareEntries == None) or (squareEntries == []):
         insertedID = getIDFromUserTable(userID)
         db.squares.insert(albumsOfWho=insertedID)
+    # After inserting/updating user information, send them to their 
+    # profile page
     return redirect(profileURL)
 
+# A function that updates the top songs table specified by "term".
 def getTopTracksLen(userID, term):
     # A list containing information about the User's top tracks. 
     # "term" is a period passed in to select the songs from a desired time.
@@ -229,12 +234,8 @@ def getTopTracksLen(userID, term):
         elif term == 'long_term':
             dbRow = db(db.longTerm.topTracksOfWho == insertedID)
 
-        dbRow.update(topTracks=topTracks)
-        dbRow.update(topArtists=topArtists)
-        dbRow.update(imgList=imgList)
-        dbRow.update(trackLinks=trackLinks)
-        dbRow.update(artistLinks=artistLinks)
-        
+        dbRow.update(topTracks=topTracks, topArtists=topArtists, 
+        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks)
     return
 
 # Profile tests (currently no difference between them)
@@ -265,19 +266,6 @@ def getUserProfile(userID=None):
 
     # Looks at the dbUser database to see what the chosen term of the top 10 songs are for
     # the profile the user wants to access
-    currentChosenTerm = (db.dbUser[getIDFromUserTable(userID)]).chosen_term	
-    if currentChosenTerm == '1':	
-        term_str = 'last 4 weeks'	
-        termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()	
-    elif currentChosenTerm == '2':	
-        term_str = 'last 6 months'	
-        termList = db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()	
-    elif currentChosenTerm == '3':	
-        term_str = 'of all time'	
-        termList = db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()	
-    else:	
-        term_str = 'last 4 weeks'	
-        termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
 
     # Obtains the album covers of the profile the user wants to vist
     squareEntries = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
@@ -286,28 +274,9 @@ def getUserProfile(userID=None):
     coverList = squareEntries[0]["coverList"]
     # a list of URLs to redirect users to the albums in each box
     urlList = squareEntries[0]["urlList"]
-
-    # Declared early for checking an error where a user hasn't listened to songs, do not remove
-    topTracks = None
         
     # To see if the button "Unfollow" or "Follow" appears
     isFriend = False
-
-    # Get the fields from the termList, but only if they have a reference in it 
-    if termList != []:
-        topTracks = termList[0]["topTracks"]
-        topArtists = termList[0]["topArtists"]
-        imgList = termList[0]["imgList"]
-        trackLinks = termList[0]["trackLinks"]
-        artistLinks = termList[0]["artistLinks"]
-
-    # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
-    if (topTracks == None) or len(topTracks) < 10:
-        topTracks = fillerTopTracks
-        topArtists = fillerTopTracks
-        imgList = fillerTopTracks
-        trackLinks = fillerTopTracks
-        artistLinks = fillerTopTracks
 
     # Sets the user's profile pic
     profile_pic = ""
@@ -332,12 +301,6 @@ def getUserProfile(userID=None):
         session=session, 
         editable=editable_profile(userID), 
         friendsList=friendsList, 
-        topTracks=topTracks,
-        term_str=term_str,
-        topArtists=topArtists, 
-        imgList=imgList, 
-        trackLinks=trackLinks, 
-        artistLinks=artistLinks, 
         profile_pic=profile_pic,
 
         background_bot=theme_colors[0],
@@ -347,7 +310,7 @@ def getUserProfile(userID=None):
         text_color=theme_colors[4],
 
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
-        userBio=URL("userBio", userID))
+        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID))
 
 # After the user clicks on an album box to edit, this function is called. 
 # It displays the search bar and results of the search.
@@ -770,6 +733,60 @@ def addFriendFromProfile(userID=None):
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
     return redirect(URL('user', userID))
 
+# Function used by seeTerm() in user.js to extract the top song information
+# from the correct table in the database. 
+@action('getTopSongs/<userID>', method=["GET"])
+@action.uses(session)
+def getTopSongs(userID=None):
+    # Finds the value of the term chosen by the user. 
+    # This "term" is about what period of top songs to display on 
+    # a user's profile.
+    term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term
+    # Obtains the whole entry of the user in the correct table.
+    # Also sets the term string to display on the dropdown menu.
+    if term == '1':	
+        term_str = 'last 4 weeks'	
+        termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()	
+    elif term == '2':	
+        term_str = 'last 6 months'	
+        termList = db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()	
+    elif term == '3':	
+        term_str = 'of all time'	
+        termList = db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()	
+    else:	
+        term_str = 'last 4 weeks'	
+        termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
+
+    # Get the fields from the termList, but only if they have a reference in it 
+    if termList != []:
+        topTracks = termList[0]["topTracks"]
+        topArtists = termList[0]["topArtists"]
+        imgList = termList[0]["imgList"]
+        trackLinks = termList[0]["trackLinks"]
+        artistLinks = termList[0]["artistLinks"]
+
+    # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
+    if (topTracks == None) or len(topTracks) < 10:
+        topTracks = fillerTopTracks
+        topArtists = fillerTopTracks
+        imgList = fillerTopTracks
+        trackLinks = fillerTopTracks
+        artistLinks = fillerTopTracks
+
+    return dict(term_str=term_str, topTracks=topTracks, topArtists=topArtists,
+    imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, session=session)
+
+# NEEDS SECURITY CHECK
+# Changes the chosen term for top tracks of the user. Posts the change
+# immediately to the user page
+@action('getTopSongs/<userID>', method=["POST"])
+@action.uses(session)
+def getTopSongsPost(userID=None):
+    # Gets the term selected by the user, which is currently in user.js 
+    # in the changeTerm() function
+    term = request.params.get('term')
+    db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term)	
+    return dict(session=session)	
 
 # Retrieves the bio of the user, used in user.js to display the bio
 @action('userBio/<userID>', method=["GET"])
@@ -847,18 +864,6 @@ def return_theme(chosen_theme=None):
     # defaultTheme black, green, green, soft gray, black
     else: 
         return ['#191414', '#4FE383', '#4FE383', '#f0f0f0', '#221B1B']
-
-# change the db.user's perfered top 10 term	
-@action('user/<userID>/top10len/<term_id:int>')	
-@action.uses(db, session)	
-def update_term_len(userID=None, term_id=None):	
-    assert term_id is not None	
-    assert userID is not None	
-    user_data = db.dbUser[getIDFromUserTable(userID)]	
-    db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term_id)	
-    redirect(URL('user/'+userID))	
-    dict(session=session)	
-
 
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')

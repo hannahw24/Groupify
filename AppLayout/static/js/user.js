@@ -12,6 +12,15 @@ let init = (app) => {
         isEditingBio: 0,
         bio: "",
         originalBio: "",
+        //To display in top songs dropdown
+        termString: "",
+        //1 is short term, 2 is medium term, 3 is long term
+        currentTerm: 0,
+        topTracks: [],
+        topArtists: [],
+        imgList: [],
+        trackLinks: [],
+        artistLinks: [],
     };
     
     //Used to save the album cover art for the user profiles. 
@@ -50,13 +59,43 @@ let init = (app) => {
             app.data.isEditingAlbums = 0;
         }
     };
+
+    app.seeTerm = () => {
+        console.log("I'm in seeTerm");
+        axios.get(getTopSongs).then((result) => {
+            app.data.termString = result.data.term_str;
+            app.data.topTracks = result.data.topTracks;
+            app.data.topArtists = result.data.topArtists;
+            app.data.imgList = result.data.imgList;
+            app.data.trackLinks = result.data.trackLinks;
+            app.data.artistLinks = result.data.artistLinks;
+            }).then(() => {
+                //show what the bio is.
+                console.log(app.data.termString);
+            });
+        }
     
+    app.changeTerm = (term) => {
+        console.log("I'm in changeTerm");
+        axios.post(getTopSongs, null, {params: {
+            term: term,
+            }}).then(() => {
+                console.log("Term changed to :", term); 
+                app.seeTerm(); 
+            }).catch(() => {
+                console.log("Caught error");
+            });
+        };
+
+
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
         controlEditButton: app.controlEditButton,
         save_bio: app.save_bio,
-        cancel_bio: app.cancel_bio
+        cancel_bio: app.cancel_bio,
+        seeTerm: app.seeTerm,
+        changeTerm: app.changeTerm
     };
 
     // This creates the Vue instance.
@@ -68,14 +107,17 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
+
         axios.get(userBio).then((result) => {
             let bio = result.data.userBio;
             app.data.bio = bio;
             app.data.originalBio = bio;
             }).then(() => {
-                console.log("Begin");
+                //show what the bio is.
                 console.log(app.data.bio);
+                app.seeTerm();
             });
+
     };
 
     // Call to the initializer.
