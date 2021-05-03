@@ -12,6 +12,7 @@
             <br>
             <div class="field">
                 <input class="input" type="text" name="Search" placeholder="Enter an album or artist" />
+                <button class="button is-success" href="[[=URL('user', userID)]]"> back </button>
                 <input type="submit" class="button" value="Search" />
                 <button class="button is-danger" @click="save_album('x', 'x', '[[=(squareNumber)]]')">Clear Album</button>
             </div>
@@ -19,12 +20,12 @@
     </form>
 
 </section>
-
+<!-- /* make it look more like a list than tile results */ -->
 [[if trackLinks != "":]]
 <br>
     <div class="container">
     [[for i in range(len(trackLinks)):]]
-        <div class="tile is-child box"> 
+        <div class="tile is-child box search_result"> 
             <!-- Panel title -->
                 <!-- For each top song -->
                 <section>
@@ -48,6 +49,7 @@
                     </a>
                 </section>
         </div>
+        <!-- <br/> -->
     [[pass]]
     </div>
 [[pass]]

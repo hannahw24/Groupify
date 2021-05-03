@@ -327,6 +327,10 @@ def getUserProfile(userID=None):
     # get the current chosen theme in the db.user, and set 5 varibles to be passed to html
     # [background_bot, background_top, friend_tile, tile_color, text_color]
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    display_name=dbUserEntry[0]["display_name"]
+    bio_status=dbUserEntry[0]["bio_status"]
+    print(bio_status)
 
     return dict(
         session=session, 
@@ -346,7 +350,13 @@ def getUserProfile(userID=None):
         tile_color=theme_colors[3],
         text_color=theme_colors[4],
 
-        userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
+        userID=userID, 
+        display_name=display_name,
+        bio_status=bio_status,
+        isFriend=isFriend, 
+        url_signer=url_signer, 
+        urlList=urlList, 
+        coverList=coverList,
         userBio=URL("userBio", userID))
 
 # After the user clicks on an album box to edit, this function is called. 
@@ -689,22 +699,34 @@ def getTopTracksFunction(term):
 def groupSession(userID=None):
     # Ash: set editable to False for now, not sure if setting the theme
     #      on the groupSession page will change it for everyone
+    profileURL = "http://127.0.0.1:8000"+(URL("user", userID))
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
+    profile_pic = ""
+    if (currentProfileEntry != None) and (currentProfileEntry != []):
+       # Setting the top tracks and profile pic variables
+       profile_pic = currentProfileEntry[0]["profile_pic"]
     if userID is not None:
         try:
             user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
             theme_colors = return_theme(user_from_table.chosen_theme)
         except:
             theme_colors = return_theme(0)
-        return dict( session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1],)
+        return dict( 
+            session=session, editable=False,
+            background_bot=theme_colors[0],background_top=theme_colors[1],
+            profile_pic=profile_pic, profileURL = profileURL,
+            )
     else:
-        return dict( session=session, editable=False, 
-            background_bot=None, background_top=None,)
+        return dict( 
+            session=session, editable=False, 
+            background_bot=None, background_top=None,
+            profile_pic=profile_pic, profileURL = profileURL,
+            )
 
-# Ash: There isn't a settings page right now
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
 def getSettings(userID=None):
+    profileURL = "http://127.0.0.1:8000"+(URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
@@ -713,12 +735,37 @@ def getSettings(userID=None):
     if userID is not None:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
-        return dict( session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1],profile_pic=profile_pic)
+        return dict( 
+            session=session, 
+            editable=False, 
+            userID=userID, 
+            url_signer=url_signer,
+            background_bot=theme_colors[0],
+            background_top=theme_colors[1],
+            profile_pic=profile_pic, 
+            profileURL = profileURL
+            )
     else:
-        return dict( session=session, editable=False, 
-            background_bot=None, background_top=None,profile_pic=profile_pic)
-    #return dict(session=session, editable=False, profile_pic=profile_pic)
+        return dict( 
+            session=session, 
+            editable=False, 
+            userID=userID, 
+            url_signer=url_signer,
+            background_bot=None, 
+            background_top=None,
+            profile_pic=profile_pic, 
+            profileURL=profileURL
+        )
+
+@action('deleteProfile/<userID>', method=['GET'])
+@action.uses(session, db)
+def delete_profile(userID=None):
+    assert userID is not None
+    db(db.dbUser.userID == userID).delete()
+    db(db.dbFriends.userID == userID).delete()
+    os.remove(session_cache_path())
+    session.clear()
+    redirect(URL('index'))
 
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
