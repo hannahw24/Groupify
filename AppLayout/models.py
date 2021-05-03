@@ -28,6 +28,7 @@ db.define_table(
     #Ash: email may be unnecessary. 
     Field('bio_status'),
     Field('profile_pic'),
+    Field('chosen_term'),   
 )
 
 db.define_table(
@@ -35,7 +36,6 @@ db.define_table(
     Field('userID', notnull=True),
     Field('display_name'),
     Field('profile_pic'),
-    Field('bio_status'),
     #Ash: This should connect the friends table to the user table
     Field('friendToWhoID', db.dbUser)
 )
@@ -55,6 +55,27 @@ db.define_table(
     Field('artistLinks', 'list:string'), 
     Field('topTracksOfWho', db.dbUser)
 )
+
+db.define_table(
+    'mediumTerm',
+    Field('topTracks', 'list:string'),
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('trackLinks', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('topTracksOfWho', db.dbUser)
+)
+
+db.define_table(
+    'longTerm',
+    Field('topTracks', 'list:string'),
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('trackLinks', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('topTracksOfWho', db.dbUser)
+)
+
 
 db.define_table(
     'squares',

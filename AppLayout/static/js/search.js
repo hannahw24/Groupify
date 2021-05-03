@@ -8,46 +8,39 @@ let init = (app) => {
 
     // This is the Vue data.
     app.data = {
-        isEditingAlbums: 0,
-        isEditingBio: 0,
+        isEditing: 0,
         bio: "",
-        originalBio: "",
     };
-    
+
+    app.index = (a) => {
+        return a;
+    };
+
     //Used to save the album cover art for the user profiles. 
-    app.save_bio = (content) => {
-        console.log("I'm in save_bio");
-        axios.post(userBio, null, {params: {
-            content: content,
+    app.save_album = (track, cover, squareNumber) => {
+        //console.log("I'm in save_album");
+        axios.post(inputAlbum, null, {params: {
+            squareNumber: squareNumber,
+            cover: cover,
+            albumURL: track,
             }}).then((result) => {
-                app.data.isEditingBio = 0;
-                console.log("Received:", result.data);
-                bio = content;
-                app.data.bio = content;
-                app.data.originalBio = content;
+                console.log("Received:", result.data);   
                 //Goes to userProfile      
-                //window.location.replace(profileURL);       
+                //window.location.replace(inputAlbum);       
             }).catch(() => {
                 console.log("Caught error");
                 //Stays in the current window
             });
         };
 
-    app.cancel_bio = () => {
-        console.log("I'm in cancel_bio");
-        app.data.bio = app.data.originalBio;
-        app.data.isEditingBio = 0;
-        //bio = app.data.originalBio;
-        };
-
     app.controlEditButton = () => {
         editButton = document.getElementById('editButton');
-        console.log(app.data.isEditingAlbums);
-        if (app.data.isEditingAlbums === 0) {
-            app.data.isEditingAlbums = 1;
+        console.log(app.data.isEditing);
+        if (app.data.isEditing === 0) {
+            app.data.isEditing = 1;
         }
         else {
-            app.data.isEditingAlbums = 0;
+            app.data.isEditing = 0;
         }
     };
     
@@ -55,8 +48,7 @@ let init = (app) => {
     // to the Vue app in a single blow.
     app.methods = {
         controlEditButton: app.controlEditButton,
-        save_bio: app.save_bio,
-        cancel_bio: app.cancel_bio
+        save_album: app.save_album
     };
 
     // This creates the Vue instance.
@@ -68,14 +60,7 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
-        axios.get(userBio).then((result) => {
-            let bio = result.data.userBio;
-            app.data.bio = bio;
-            app.data.originalBio = bio;
-            }).then(() => {
-                console.log("Begin");
-                console.log(app.data.bio);
-            });
+        console.log("Begin");
     };
 
     // Call to the initializer.
