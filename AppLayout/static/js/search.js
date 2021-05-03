@@ -26,7 +26,8 @@ let init = (app) => {
             }}).then((result) => {
                 console.log("Received:", result.data);   
                 //Goes to userProfile      
-                //window.location.replace(inputAlbum);       
+                //window.location.replace(inputAlbum);
+                window.location.reload();
             }).catch(() => {
                 console.log("Caught error");
                 //Stays in the current window
