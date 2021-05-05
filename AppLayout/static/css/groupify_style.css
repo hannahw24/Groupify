@@ -21,10 +21,10 @@ p.labels{
 }
 
 .profile_photo {
-    color: #818181;
+    /* color: #818181; */
     width: 100px;
     height: 100px;
-    background-color: #818181;
+    /* background-color: #818181; */
     border-radius:50%;
     box-shadow: 7px 7px 15px 1px #55555569;
 }
@@ -60,6 +60,59 @@ body{
     border-bottom-right-radius: 6px;
 }
 
+/* for animated search bar */
+/* input[type=text] {
+    width: 130px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 16px;
+    
+    background-image: url('searchicon.png');
+    background-position: 10px 10px; 
+    background-repeat: no-repeat;
+    padding: 12px 20px 12px 40px;
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: width 0.4s ease-in-out;
+  }
+  
+  input[type=text]:focus {
+    width: 100%;
+    background-color: white;
+  } */
+
+.add_friend_button {
+    border-style: solid; 
+    border-radius: 7px; 
+    opacity: 1; 
+    text-align: center;
+    font-size: xx-large;
+}
+.add_friend_button span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.3s;
+}
+.add_friend_button span:after {
+    content: 'Add Friend'; /* 'f0fe'add friend icon */
+    font-size: x-large;
+    /* font-style: italic; */
+    font-weight: bold;
+    padding-top: 5px;
+    position: absolute;
+    opacity: 0;
+    right: -20px;
+    /* transition: 0.5; */
+}
+.add_friend_button:hover span {
+    padding-right: 140px;
+}
+.add_friend_button:hover span:after {
+    transition: 1s;
+    opacity: 1;
+    right: 0;
+}
+
 /* home page right panel group bar */
 .group_bar {
     height: 85%;
@@ -68,16 +121,27 @@ body{
     right: 0;
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
+    transition: 0.3s; 
 }
 
+.group_bar:hover{
+    height: 85.25%;
+    width: 5.25%; 
+    top: 9.75%; 
+    right: 0;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    transition: 0.3s;
+}
+
+
 .group_button{
-    height: 10%;
-    width: 3px;
+    font-size:xx-large;
     position: fixed;
     top: 50%;
-    right: 4%;
-    background-color: #8f8f8f;
+    opacity: 1;
 }
+.group_button:hover{ opacity: 0.75;}
 
 /* home page center panel */
 .main_profile{
@@ -90,22 +154,42 @@ body{
     padding-left: 2px;
     padding-right: 2px;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
+}
+
+/* truncate to 3 lines */
+p.top_track_text {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 3; /* truncates at 3 lines */
+    -webkit-box-orient: vertical;
 }
 
 .album_box {
-    /* background-color: white; */
     border-radius: 0px; 
-    /* color: #4a4a4a; */
     display: block;
     padding: .25rem;
     margin-top: 4px;
     margin-bottom: 4px;
+    opacity: 1;
 }
 
-.index_pfp {
-    background-color: #8f8f8f
+.album_box:hover{ opacity: 0.75;}
+
+.search_result {
+    background-color: white;
+    border-radius: 0px;
+    box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+    color: #4a4a4a;
+    display: block;
+    padding: 1.25rem;
+  }
+
+/* make it look more like a list than tile results */
+.search_result:hover{
+    background-color: rgb(240, 240, 240);
 }
+
 
 /* ********************** GROUP PAGE ********************** */
 /* Group_Page sidebar  */
@@ -142,4 +226,9 @@ body{
     margin-left: auto;
     margin-right: auto;
     top: 5%;
+}
+
+.smallgreentext {
+    color: green;
+    font-size: small;
 }
