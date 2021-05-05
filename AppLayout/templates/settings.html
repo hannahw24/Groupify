@@ -1,6 +1,30 @@
 [[extend 'layout.html']]
  
 <section>
+    <div class="modal" id="delete_modal">
+        <div class="modal-background" onclick="show_modal()"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title">Are you sure?</p>
+            <button class="delete" onclick="show_modal()" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body">
+            <div class="tile is-info">
+                <span>If you delete your Groupify Profile, all of your friends will be removed, 
+                your customized profile page will be deleted, and you will be unable to 
+                recover your profile exactly as it is now.
+                </span>
+            </div>
+          </section>
+          <footer class="modal-card-foot">
+            <a class="button" onclick="show_modal()"> Cancel </a>
+            <a class="button is-danger" onclick="show_modal()" href="[[=URL('deleteProfile', userID, signer=url_signer)]]">
+                Delete Profile
+            </a>
+          </footer>
+        </div>
+    </div>
+
    <div class="settings_panel panel_spec" style="background-color: white;">
         <figure class="image is-128x128 profile_photo settings_pfp">
             [[if (profile_pic != ""):]]
@@ -9,44 +33,25 @@
             <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
             [[pass]]
         </figure>
-        <br>
-        <br>
-        <br>
+        <br><br><br>
+        <h1 class="title is-1" style="text-align: center;">Profile Settings </h1>
+
         <p style="color:#221B1B;" class="labels">Share My Profile</p>
-        <input type="text" value="[[=(profileURL)]]" id="myInput" style="width: 50%;">
+        <input type="text" value="[[=(profileURL)]]" id="myInput" readonly style="width: 50%;">
         <button onclick="myFunction()"><i class="fas fa-clipboard"></i></button>
-        <br>
-        <br>
-        <br>
-        <div style="width: 100%;">
-            <div v-if="true" @click="isEditingBio = 1" class="control is-small">
-                <textarea class="textarea" placeholder="Bio and Status" 
-                            name="bio&stat" id="bio&stat" v-model="bio">
-                </textarea>
-            </div>
-            <br>
-            <nav class="level is-mobile">
-                <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
-                <div class="level-left"></div>
-                <div class="level-right">
-                    <!-- Save button -->
-                    <div v-if="isEditingBio === 1" class="level-item">
-                        <button @click="save_bio(bio)" class="button is-primary">
-                            <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
-                    <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
-                    <div v-if="isEditingBio === 1" class="level-item">
-                        <button @click="cancel_bio" class="button is-danger">
-                            <i class="fa fa-window-close" aria-hidden="true"></i></button></div>
-                </div>
-            </nav>
-        </div>
-        <a class="button is-danger" href="[[=URL('deleteProfile', userID, signer=url_signer)]]">
-            Delete My Profile
-        </a>
+        <p class="smallgreentext"> Send your friends this link to share your profile!</p>
+        <br><br>
+        <a class="button is-danger" id="tog" onclick="show_modal()"> Delete My Profile </a>
    </div>
 </section>
 
 <script>
+    function show_modal(){
+        console.log("click");
+        var delete_modal = document.getElementById("delete_modal");
+        delete_modal.classList.toggle('is-active')
+    }
+
     function myFunction() {
         var copyText = document.getElementById("myInput");
         copyText.select();

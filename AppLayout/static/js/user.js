@@ -21,6 +21,9 @@ let init = (app) => {
         imgList: [],
         trackLinks: [],
         artistLinks: [],
+        playlistNames: [],
+        playlistImages: [],
+        playlistLinks: []
     };
     
     //Used to save the album cover art for the user profiles. 
@@ -60,6 +63,7 @@ let init = (app) => {
         }
     };
 
+    //Called to see the top 10 songs
     app.seeTerm = () => {
         console.log("I'm in seeTerm");
         axios.get(getTopSongs).then((result) => {
@@ -75,17 +79,32 @@ let init = (app) => {
             });
         }
     
+    //Called to change the term of top 10 songs
     app.changeTerm = (term) => {
         console.log("I'm in changeTerm");
         axios.post(getTopSongs, null, {params: {
             term: term,
             }}).then(() => {
-                console.log("Term changed to :", term); 
                 app.seeTerm(); 
             }).catch(() => {
                 console.log("Caught error");
             });
         };
+
+    /*
+    app.seePlaylists = () => {
+        console.log("I'm in seePlaylists");
+        axios.get(getPlaylists).then((result) => {
+            let bigList = result.data.bigList;
+            app.data.playlistNames = bigList[0];
+            app.data.playlistImages = bigList[1];
+            app.data.playlistLinks = bigList[2];
+            }).then(() => {
+                //show what the bio is.
+                console.log("see playlists success");
+            });
+        };
+    */
 
 
     // We form the dictionary of all methods, so we can assign them
@@ -95,7 +114,8 @@ let init = (app) => {
         save_bio: app.save_bio,
         cancel_bio: app.cancel_bio,
         seeTerm: app.seeTerm,
-        changeTerm: app.changeTerm
+        changeTerm: app.changeTerm,
+        //seePlaylists: app.seePlaylists
     };
 
     // This creates the Vue instance.
@@ -113,9 +133,11 @@ let init = (app) => {
             app.data.bio = bio;
             app.data.originalBio = bio;
             }).then(() => {
-                //show what the bio is.
                 console.log(app.data.bio);
+                //After setting the Bio move on to displaying top songs
+                //and user playlists
                 app.seeTerm();
+                //app.seePlaylists();
             });
 
     };

@@ -50,7 +50,7 @@ def session_cache_path():
 
 # Ash: Permissions needed to be accepted by the user at login. There are more but these are the ones
 # we use right now, so they are the only ones we ask.
-scopes = "user-library-read user-read-private user-follow-read user-follow-modify user-top-read"
+scopes = "user-library-read user-read-private user-follow-read user-follow-modify user-top-read streaming user-read-email"
 
 url_signer = URLSigner(session)
 
@@ -182,6 +182,9 @@ def getUserInfo():
     getTopTracksLen(userID, "medium_term")	
     getTopTracksLen(userID, "long_term")
 
+    # Stores/updates user playlists
+    storePlaylists(userID)
+
     # If the album covers table is empty, we insert it here
     if (squareEntries == None) or (squareEntries == []):
         insertedID = getIDFromUserTable(userID)
@@ -274,7 +277,19 @@ def getUserProfile(userID=None):
     coverList = squareEntries[0]["coverList"]
     # a list of URLs to redirect users to the albums in each box
     urlList = squareEntries[0]["urlList"]
-        
+
+    playlistEntry = (db(db.playlists.playlistsOfWho == getIDFromUserTable(userID)).select().as_list())
+    # Remove this later, is here to make it so accessing users who haven't logged do not crash
+    if playlistEntry == []:
+        playlistNames = []
+        playlistImages = []
+        playlistURLs = []
+        playlistDescriptions = []
+    else:
+        playlistNames = playlistEntry[0]["names"]
+        playlistImages = playlistEntry[0]["images"]
+        playlistURLs = playlistEntry[0]["links"]
+        playlistDescriptions = playlistEntry[0]["descriptions"]
     # To see if the button "Unfollow" or "Follow" appears
     isFriend = False
 
@@ -292,16 +307,21 @@ def getUserProfile(userID=None):
     isFriend = db((db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID"))) & (db.dbFriends.userID == userID)).select().as_list()
     if (isFriend != []):
         isFriend=True
-
+    
     # get the current chosen theme in the db.user, and set 5 varibles to be passed to html
     # [background_bot, background_top, friend_tile, tile_color, text_color]
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    display_name=dbUserEntry[0]["display_name"]
+    bio_status=dbUserEntry[0]["bio_status"]
 
     return dict(
         session=session, 
         editable=editable_profile(userID), 
         friendsList=friendsList, 
         profile_pic=profile_pic,
+        display_name=display_name,
+        bio_status=bio_status,
 
         background_bot=theme_colors[0],
         background_top=theme_colors[1],
@@ -309,8 +329,13 @@ def getUserProfile(userID=None):
         tile_color=theme_colors[3],
         text_color=theme_colors[4],
 
+        playlistNames=playlistNames,
+        playlistImages=playlistImages,
+        playlistURLs=playlistURLs,
+        playlistDescriptions=playlistDescriptions,
+
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
-        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID))
+        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"))
 
 # After the user clicks on an album box to edit, this function is called. 
 # It displays the search bar and results of the search.
@@ -378,7 +403,6 @@ def editUserSquare(userID, squareNumber):
             # Else begint to parse the JSON by looking at the albums
             results = results["albums"]
         except:
-            print(results)
             return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
             imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
             url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
@@ -509,6 +533,61 @@ def getLikedTracks():
         LikedSongsString = LikedSongsString + str((idx, track['artists'][0]['name'], " – ", track['name'])) + "<br>"
     return LikedSongsString
 
+# Make the spotify API call to get the user playlists
+# Also calls parsePlaylistResults() to parse JSON from the API call
+@action('getPlaylists')
+def getPlaylists():
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect('login')
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    # 14 is an estimate on how long the box is 
+    results = spotify.current_user_playlists(limit=14)
+    bigList = parsePlaylistResults(results)
+    
+    return bigList
+
+# Stores the playlists in database tables
+def storePlaylists(userID):
+    # Function getPlaylists return session and a list containing lists
+    # of information about the user's playlists. 
+    bigList = getPlaylists()
+    playlistNames = bigList[0]
+    playlistImages = bigList[1]
+    playlistURLs = bigList[2]
+    descriptions = bigList[3]
+
+    # Tries to find the entry of the user in the playlist table
+    playlistEntry = (db(db.playlists.playlistsOfWho == getIDFromUserTable(userID)).select().as_list())
+
+    # Is their playlist entry already populated?
+    # If it isn't, then the playlists will be inserted
+    if (playlistEntry == None) or (playlistEntry == []):
+        insertedID = getIDFromUserTable(userID)
+        if playlistNames == "":
+            playlistNames = []
+            playlistImages = []
+            playlistURLs = []
+            descriptions =[]
+        db.playlists.insert(names=playlistNames, images=playlistImages,
+                            links=playlistURLs, descriptions=descriptions, 
+                            playlistsOfWho=insertedID)
+    # If there are already playlists, then update the information
+    else:
+        insertedID = getIDFromUserTable(userID)
+        if playlistNames == "":
+            playlistNames = []
+            playlistImages = []
+            playlistURLs = []
+            descriptions = []
+        # Finds the correct user entry
+        dbRow = db(db.playlists.playlistsOfWho == insertedID)
+        dbRow.update(names=playlistNames, images=playlistImages,
+                    links=playlistURLs, descriptions=descriptions)
+    return 
+
+
 # UNUSED, but perhaps will be soon
 # Gets the information of songs from a search result
 def getSearchResults(results):
@@ -583,7 +662,7 @@ def getAlbumResults(results):
         ImgLinkList = ""
     if TLinkList == []:
         TLinkList = ""
-    if TLinkList == []:
+    if ALinkList == []:
         ALinkList = ""
     # Add all to list to be returned
     BigList.append(TopSongsList)
@@ -591,6 +670,55 @@ def getAlbumResults(results):
     BigList.append(ImgLinkList)
     BigList.append(TLinkList)
     BigList.append(ALinkList)
+    # Returned to the user profile
+    return BigList  
+
+def parsePlaylistResults(results):
+    TopSongsList = []
+    descriptionList = []
+    #TopArtistsList = []
+    ImgLinkList = []
+    TLinkList = []
+    #ALinkList = []
+    BigList = []
+    for idx, item in enumerate(results['items']):
+        # Get items from correct place in given Spotipy dictionary
+        playlistName = item['name']
+        #trackInfo = item['artists'][0]['name']
+        icon = item['images'][0]['url']
+        trLink = item['external_urls']['spotify']
+        description = item['description']
+        #artLink = item['artists'][0]['external_urls']['spotify']
+        TopSongsList.append(playlistName)
+        #TopArtistsList.append(trackInfo)
+        ImgLinkList.append(icon)
+        TLinkList.append(trLink)
+        descriptionList.append(description)
+        # Done so the descriptionList matches the length of the other lists
+        # inside of BigList
+        if description == "":
+            descriptionList.append([])
+        #ALinkList.append(artLink)
+    # Avoid empty lists
+    if TopSongsList == []:
+        TopSongsList = ""
+    #if TopArtistsList == []:
+        #TopArtistsList= ""
+    if ImgLinkList == []:
+        ImgLinkList = ""
+    if TLinkList == []:
+        TLinkList = ""
+    #if ALinkList == []:
+        #ALinkList = ""
+    if descriptionList == []:
+        descriptionList = ""
+    # Add all to list to be returned
+    BigList.append(TopSongsList)
+    #BigList.append(TopArtistsList)
+    BigList.append(ImgLinkList)
+    BigList.append(TLinkList)
+    BigList.append(descriptionList)
+    #BigList.append(ALinkList)
     # Returned to the user profile
     return BigList  
 
@@ -652,17 +780,32 @@ def getTopTracksFunction(term):
 def groupSession(userID=None):
     # Ash: set editable to False for now, not sure if setting the theme
     #      on the groupSession page will change it for everyone
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyClientCredentials(cache_handler=cache_handler)
+    try:
+        token = auth_manager.get_access_token()
+    except:
+        return redirect('login')
+    print ("TOKEN IS ", token["access_token"])
+    profileURL = (URL("user", userID))
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
+    profile_pic = ""
+    if (currentProfileEntry != None) and (currentProfileEntry != []):
+       # Setting the top tracks and profile pic variables
+       profile_pic = currentProfileEntry[0]["profile_pic"]
     if userID is not None:
         try:
             user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
             theme_colors = return_theme(user_from_table.chosen_theme)
         except:
             theme_colors = return_theme(0)
-        return dict( session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1],)
+        return dict(session=session, editable=False,
+            background_bot=theme_colors[0],background_top=theme_colors[1], token=token["access_token"], 
+            profile_pic=profile_pic, profileURL = profileURL)
     else:
         return dict( session=session, editable=False, 
-            background_bot=None, background_top=None,)
+            background_bot=None, background_top=None, token=token["access_token"],
+            profile_pic=profile_pic, profileURL = profileURL)
 
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
@@ -767,6 +910,7 @@ def getTopSongs(userID=None):
 
     # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
     if (topTracks == None) or len(topTracks) < 10:
+        fillerTopTracks = ["", "",  "",  "", "", "",  "",  "", "",  "",  ""]
         topTracks = fillerTopTracks
         topArtists = fillerTopTracks
         imgList = fillerTopTracks
@@ -793,7 +937,6 @@ def getTopSongsPost(userID=None):
 @action.uses(session)
 def getUserBio(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
-    print("currentProfileEntry[0][bio_status]: ", currentProfileEntry[0]["bio_status"])
     return dict(userBio=currentProfileEntry[0]["bio_status"])
 
 # Makes a request to user.js for the content in the text area after a user hits the save button
@@ -884,8 +1027,3 @@ def checkIfFriendDuplicate(inputID):
         if (entry["friendToWhoID"] == friendtowhoID):
             return True
     return False
-
-fillerTopTracks = ["Listen to more songs to see results", "Listen to more songs to see results",  
-"Listen to more songs to see results",  "Listen to more songs to see results", "Listen to more songs to see results", 
- "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", 
-  "Listen to more songs to see results",  "Listen to more songs to see results",  "Listen to more songs to see results", ]
