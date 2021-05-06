@@ -32,22 +32,10 @@ let init = (app) => {
                 //Stays in the current window
             });
         };
-
-    app.controlEditButton = () => {
-        editButton = document.getElementById('editButton');
-        console.log(app.data.isEditing);
-        if (app.data.isEditing === 0) {
-            app.data.isEditing = 1;
-        }
-        else {
-            app.data.isEditing = 0;
-        }
-    };
     
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
-        controlEditButton: app.controlEditButton,
         save_album: app.save_album
     };
 
