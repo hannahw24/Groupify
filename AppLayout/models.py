@@ -14,6 +14,8 @@ from pydal.validators import *
 # db.commit()
 #
 
+
+
 def empty_albums():
     bannerList = []
     for i in range(12):

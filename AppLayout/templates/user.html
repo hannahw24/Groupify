@@ -125,18 +125,14 @@
                 [[pass]]
             </div>
             [[if (editable==True):]]
+                <div class="level-item">
                 <div id="editButton">
-                    <div v-if="isEditingAlbums === 0" class="level-item">
+                        <a href="[[=URL('user', userID, 'edit', signer=url_signer)]]">
                         <button @click="controlEditButton()" class="button is-link">
                             Edit Profile
                         </button>
-                    </div>
-                    <div v-else class="level-item">
-                        <button @click="controlEditButton()" class="button is-link is-warning">	
-                            Select Album
-                            <!-- Edit Profile &nbsp; <i class="fa fa-check-square"></i> -->
-                        </button>
-                    </div>
+                        </a>
+                </div>
                 </div>
             [[elif isFriend==True:]]
                 <div class="level-item">

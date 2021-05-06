@@ -1,115 +1,112 @@
 [[extend 'layout.html']]
+
+<div>
+    <br>
+    <h1 class="title has-text-centered">
+        Select Album to Edit
+    </h1>
+    <br>
+</div>
+
 <div id="vue-target">
     <section>
-    <div class="columns is-mobile is-centered">
-        <div class="column is-two-thirds">
-        <div class="rows">
-        <div class="row">
-            <div class="columns is-mobile">
-                [[for i in range(6):]]
-                    [[if coverList[i] != "x": ]]
-                        <div class="column album_box">
-                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
-                                <figure class="image">
-                                    <img src="[[=(coverList[i])]]" style="width:128px">
-                                </figure>
-                            </a>
+        <div class="columns is-mobile is-centered">
+            <div class="column is-two-thirds">
+                <div class="columns is-mobile is-multiline">
+                    <div v-for="(c, index) in coverList" class="column album_box is-2">
+                        <div v-if="page==index && c!='x'">
+                            <div class="selected_box">
+                                <img style="width:128px" @click="goto(index)"
+                                :src="c">
+                                <div class="overlay"><i class="fa fa-edit"></i></div>
+                                <div class="overlay_button"><button class="button is-danger" @click="delete_album(index)"><i class="fa fa-times"></i></button></div>
+                            </div>
                         </div>
-                    [[else:]]
-                    <div class="column album_box">
-                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
-                            <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png" style="width:128px">
-                            </figure>
-                        </a>
+                        <div v-else-if="page==index && c=='x'">
+                            <div class="selected_box">
+                                <img style="width:128px" @click="goto(index)"
+                                :src="'https://bulma.io/images/placeholders/128x128.png'">
+                                <div class="overlay"><i class="fa fa-edit"></i></div>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div class="edit_box">
+                                <img style="width:128px" @click="goto(index)"
+                                :src="c === 'x' ? 'https://bulma.io/images/placeholders/128x128.png' : c ">
+                            </div>
+                        </div>
                     </div>
-                    [[pass]]
-                [[pass]]
+                </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="columns is-mobile">
-                [[for i in range(6, 12):]]
-                    [[if coverList[i] != "x": ]]
-                        <div class="column album_box">
-                            <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
-                                <figure class="image">
-                                    <img src="[[=(coverList[i])]]" style="width:128px">
-                                </figure>
-                            </a>
-                        </div>
-                    [[else:]]
-                    <div class="column album_box">
-                        <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
-                            <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png" style="width:128px">
-                            </figure>
+        <div class="columns is-mobile is-centered">
+            <div class="column is-two-thirds">
+                <div class="level">
+                    [[userPage = "user/" + session.get("userID") ]]
+                    <div class="level-item is-pulled-right">
+                        <a href="[[=URL(userPage)]]">
+                            <button class="button is-danger">Exit</button>
                         </a>
+                        <div v-if="edited && !pending">
+                            <button class="button is-primary" @click="save_albums">Save</button>
+                        </div>
+                        <div v-else-if="edited && pending">
+                            <button class="button is-primary is-loading">Save</button>
+                        </div>
+                        <div v-else>
+                            <button class="button is-static">Save</button>
+                        </div>
                     </div>
-                    [[pass]]
-                [[pass]]
+                </div>
             </div>
         </div>
-        </div>
-        </div>
-        </div>
-        </section>
-<section>
-    <div>
-        <br>
-        <h1 class="title has-text-centered">
-            Search For Cover Art
-        </h1>
-    </div>
-    <form action="[[=URL('user', userID, 'edit', squareNumber)]]" method="POST">
-        <div class="container">
+    </section>
+    <section>
+        <div>
             <br>
-            <div class="field">
-                <input class="input" type="text" name="Search" placeholder="Enter an album or artist" />
-                <input type="submit" class="button" value="Search" />
-                <button class="button is-danger" @click="save_album('x', 'x', '[[=(squareNumber)]]')">Clear Album</button>
-                <button class="button" href="[[=URL(userPage)]]">Done</button>
+            <h1 class="title has-text-centered">
+                Search For Cover Art
+            </h1>
+        </div>
+        <div><br></div>
+        <div class="columns is-mobile is-centered">
+            <div class="column is-11">
+                <input id="barInput" class="input" type="text" v-on:keyup="search_spotify()" placeholder="Find an Album">
+                <div v-if="imgList.length > 0">
+                    <div class="tile is-child box"> 
+                        <div v-for="(t, index) in trackLinks">
+                            <section>
+                                <a @click="add_album(imgList[index], trackLinks[index], page)">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <!-- Album art image with link to track -->
+                                            <img width="64" height="64" :src="imgList[index]">
+                                        </div>
+                                        <div class="column is-9">
+                                            <div>
+                                                <!-- Song title with link to track -->
+                                                <span target="_blank" style="color:#000000"><strong>{{topAlbums[index]}}</strong></span>
+                                            </div>
+                                            <div>
+                                                <!-- Artist name with link to their Spotify page -->
+                                                <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </section>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </form>
-
-</section>
-
-[[if trackLinks != "":]]
-<br>
-    <div class="container">
-    [[for i in range(len(trackLinks)):]]
-        <div class="tile is-child box"> 
-            <!-- Panel title -->
-                <!-- For each top song -->
-                <section>
-                    <a @click="save_album('[[=(trackLinks[i])]]', '[[=(imgList[i])]]', '[[=(squareNumber)]]')">
-                        <div class="columns">
-                            <div class="column">
-                                <!-- Album art image with link to track -->
-                                <img src=[[=(imgList[i])]] width="64" height="64">
-                            </div>
-                            <div class="column is-9">
-                                <div>
-                                    <!-- Song title with link to track -->
-                                    <span target="_blank" style="color:#000000"><strong>[[=(topAlbums[i])]]</strong></span>
-                                </div>
-                                <div>
-                                    <!-- Artist name with link to their Spotify page -->
-                                    <span target="_blank" style="color:#000000">[[=(topArtists[i])]]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </section>
-        </div>
-    [[pass]]
-    </div>
-[[pass]]
+    </section>
+    <div id="snackbar">{{message}}</div>
 </div>
 [[block page_scripts]]
 <script>
+    let squares_url = "[[=XML(squares_url)]]";
+    let search_url = "[[=XML(search_url)]]";
     let inputAlbum = "[[=XML(inputAlbum)]]";
     let profileURL = "[[=XML(profileURL)]]";
 </script>
