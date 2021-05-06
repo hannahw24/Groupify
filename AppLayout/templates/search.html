@@ -1,5 +1,6 @@
 [[extend 'layout.html']]
 
+<!-- Banner Title -->
 <div>
     <br>
     <h1 class="title has-text-centered">
@@ -9,28 +10,36 @@
 </div>
 
 <div id="vue-target">
+    <!-- Albums Banner -->
     <section>
         <div class="columns is-mobile is-centered">
             <div class="column is-two-thirds">
                 <div class="columns is-mobile is-multiline">
+                    <!-- for all albums in js list -->
                     <div v-for="(c, index) in coverList" class="column album_box is-2">
+                        <!-- if album is selected and cover is not empty... -->
                         <div v-if="page==index && c!='x'">
                             <div class="selected_box">
+                                <!-- overlay edit icon and show delete button -->
                                 <img style="width:128px" @click="goto(index)"
                                 :src="c">
                                 <div class="overlay"><i class="fa fa-edit"></i></div>
                                 <div class="overlay_button"><button class="button is-danger" @click="delete_album(index)"><i class="fa fa-times"></i></button></div>
                             </div>
                         </div>
+                        <!-- else if album is selected and cover is empty... -->
                         <div v-else-if="page==index && c=='x'">
                             <div class="selected_box">
+                                <!-- overlay edit icon, but no delete button -->
                                 <img style="width:128px" @click="goto(index)"
                                 :src="'https://bulma.io/images/placeholders/128x128.png'">
                                 <div class="overlay"><i class="fa fa-edit"></i></div>
                             </div>
                         </div>
+                        <!-- else (for albums not selected) -->
                         <div v-else>
                             <div class="edit_box">
+                                <!-- no overlay or button, show either cover or placeholder -->
                                 <img style="width:128px" @click="goto(index)"
                                 :src="c === 'x' ? 'https://bulma.io/images/placeholders/128x128.png' : c ">
                             </div>
@@ -42,17 +51,20 @@
         <div class="columns is-mobile is-centered">
             <div class="column is-two-thirds">
                 <div class="level">
+                    <!-- Exit and Save buttons -->
                     [[userPage = "user/" + session.get("userID") ]]
                     <div class="level-item is-pulled-right">
-                        <a href="[[=URL(userPage)]]">
-                            <button class="button is-danger">Exit</button>
-                        </a>
+                        <!-- Exit button redirects to profile, changes are not saved -->
+                        <button class="button is-danger" @click="confirmExit()">Exit</button>
+                        <!-- if albums have been edited and save is not pending, Save button is clickable -->
                         <div v-if="edited && !pending">
                             <button class="button is-primary" @click="save_albums">Save</button>
                         </div>
+                        <!-- else if albums have been edited but save is pending, Save button shows loading icon -->
                         <div v-else-if="edited && pending">
                             <button class="button is-primary is-loading">Save</button>
                         </div>
+                        <!-- else, if albums not edited, Save button is not clickable (nothing to save) -->
                         <div v-else>
                             <button class="button is-static">Save</button>
                         </div>
@@ -62,6 +74,7 @@
         </div>
     </section>
     <section>
+        <!-- Seahc Title -->
         <div>
             <br>
             <h1 class="title has-text-centered">
@@ -71,11 +84,15 @@
         <div><br></div>
         <div class="columns is-mobile is-centered">
             <div class="column is-11">
+                <!-- user types search here -->
                 <input id="barInput" class="input" type="text" v-on:keyup="search_spotify()" placeholder="Find an Album">
-                <div v-if="imgList.length > 0">
+                <!-- if there is at least one result -->
+                <div v-if="totalResults > 0">
+                    <!-- show tile for each result -->
                     <div class="tile is-child box"> 
                         <div v-for="(t, index) in trackLinks">
                             <section>
+                                <!-- when result is clicked, add album to list at selected index -->
                                 <a @click="add_album(imgList[index], trackLinks[index], page)">
                                     <div class="columns">
                                         <div class="column">
@@ -101,13 +118,13 @@
             </div>
         </div>
     </section>
+    <!-- defines the box tha confirms save/shows error -->
     <div id="snackbar">{{message}}</div>
 </div>
 [[block page_scripts]]
 <script>
     let squares_url = "[[=XML(squares_url)]]";
     let search_url = "[[=XML(search_url)]]";
-    let inputAlbum = "[[=XML(inputAlbum)]]";
     let profileURL = "[[=XML(profileURL)]]";
 </script>
 <!-- Loads the user-specific js for Vue -->
