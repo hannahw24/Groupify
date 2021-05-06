@@ -10,8 +10,11 @@ let init = (app) => {
     app.data = {
         isEditingAlbums: 0,
         isEditingBio: 0,
+        isEditingStatus: 0,
         bio: "",
         originalBio: "",
+        active: "",
+        originalActive: "",
         //To display in top songs dropdown
         termString: "",
         //1 is short term, 2 is medium term, 3 is long term
@@ -52,6 +55,32 @@ let init = (app) => {
         //bio = app.data.originalBio;
         };
 
+    //Saving status
+    app.save_stat = (content) => {
+        //console.log("I'm in save_stat");
+        axios.post(userStat, null, {params: {
+            content: content,
+            }}).then((result) => {
+                app.data.isEditingStatus = 0;
+                //console.log("Received:", result.data);
+                active = content;
+                app.data.active = content;
+                app.data.originalActive = content;
+                //Goes to userProfile      
+                //window.location.replace(profileURL);       
+            }).catch(() => {
+                console.log("Caught error");
+                //Stays in the current window
+            });
+        };
+
+    app.cancel_stat = () => {
+        //console.log("I'm in cancel_bio");
+        app.data.active = app.data.originalActive;
+        app.data.isEditingStatus = 0;
+        //bio = app.data.originalBio;
+        };
+
     app.controlEditButton = () => {
         editButton = document.getElementById('editButton');
         console.log(app.data.isEditingAlbums);
@@ -62,6 +91,16 @@ let init = (app) => {
             app.data.isEditingAlbums = 0;
         }
     };
+
+    app.getStat = () => {
+        axios.get(userStat).then((result) => {
+            let active = result.data.userStat;
+            app.data.active = active;
+            app.data.originalActive = active;
+            }).then(() => {
+                console.log(app.data.active);
+            });
+    }
 
     //Called to see the top 10 songs
     app.seeTerm = () => {
@@ -113,6 +152,8 @@ let init = (app) => {
         controlEditButton: app.controlEditButton,
         save_bio: app.save_bio,
         cancel_bio: app.cancel_bio,
+        save_stat: app.save_stat,
+        cancel_stat: app.cancel_stat,
         seeTerm: app.seeTerm,
         changeTerm: app.changeTerm,
         //seePlaylists: app.seePlaylists
@@ -137,9 +178,9 @@ let init = (app) => {
                 //After setting the Bio move on to displaying top songs
                 //and user playlists
                 app.seeTerm();
+                app.getStat();
                 //app.seePlaylists();
             });
-
     };
 
     // Call to the initializer.

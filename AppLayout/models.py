@@ -27,6 +27,7 @@ db.define_table(
     Field('chosen_theme'),
     #Ash: email may be unnecessary. 
     Field('bio_status'),
+    Field('active_stat'),
     Field('profile_pic'),
     Field('chosen_term'),   
 )
@@ -36,6 +37,8 @@ db.define_table(
     Field('userID', notnull=True),
     Field('display_name'),
     Field('profile_pic'),
+    Field('bio_status'),
+    Field('active_stat'),
     #Ash: This should connect the friends table to the user table
     Field('friendToWhoID', db.dbUser)
 )
