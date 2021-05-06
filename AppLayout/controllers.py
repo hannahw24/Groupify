@@ -335,7 +335,8 @@ def getUserProfile(userID=None):
         playlistDescriptions=playlistDescriptions,
 
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
-        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"))
+        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"),
+        userStat=URL("userStat", userID))
 
 # After the user clicks on an album box to edit, this function is called. 
 # It displays the search bar and results of the search.
@@ -856,7 +857,8 @@ def addFriend():
             return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True, background_bot=theme_colors[0], 
                 background_top=theme_colors[1])
         db.dbFriends.insert(userID=form_userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
-                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"])
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"],
+                            active_stat=dbUserEntry[0]["active_stat"])
         return redirect(URL('user', session.get("userID")))
 
 @action('addFriendFromProfile/<userID>', method=["GET"])
@@ -873,7 +875,8 @@ def addFriendFromProfile(userID=None):
     if (userID == loggedInUserId):
         return redirect(URL('user', userID))
     db.dbFriends.insert(userID=userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
-                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"])
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"],
+                            active_stat=dbUserEntry[0]["active_stat"])
     return redirect(URL('user', userID))
 
 # Function used by seeTerm() in user.js to extract the top song information
@@ -955,7 +958,7 @@ def postUserBio(userID=None):
 @action.uses(session)
 def getUserStat(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
-    return dict(userBio=currentProfileEntry[0]["active_stat"])
+    return dict(userStat=currentProfileEntry[0]["active_stat"])
 
 # Makes a request to user.js for the content in the text area after a user hits the save button
 # Then updates the bio in the database

@@ -63,8 +63,7 @@
                                     <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
                                     <p class="friendtext" style="color:[[=text_color]]; height: 45px; overflow: scroll;">
-                                        [[=(row["bio_status"])]]</p>
-                                        <!--Replace bio_status with active_stat-->
+                                        [[=(row["active_stat"])]]</p>
                                 </div>
                             </div>
                         </div>
@@ -363,6 +362,7 @@
 [[block page_scripts]]
 <script>
     let userBio = "[[=XML(userBio)]]";
+    let userStat = "[[=XML(userStat)]]";
     let getTopSongs = "[[=XML(getTopSongs)]]";
     //let getPlaylists = "[[=XML(getPlaylists)]]";
 </script>
