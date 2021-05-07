@@ -674,7 +674,9 @@ def parsePlaylistResults(results):
         # Get items from correct place in given Spotipy dictionary
         playlistName = item['name']
         #trackInfo = item['artists'][0]['name']
-        icon = item['images'][0]['url']
+        print(item['images'])
+        if len(item['images']) > 0:
+            icon = item['images'][0]['url']
         trLink = item['external_urls']['spotify']
         description = item['description']
         #artLink = item['artists'][0]['external_urls']['spotify']
