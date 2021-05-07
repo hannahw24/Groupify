@@ -21,8 +21,6 @@ p.labels{
 }
 
 .profile_photo {
-    width: 100px;
-    height: 100px;
     border-radius:50%;
     box-shadow: 7px 7px 15px 1px #55555569;
 }
@@ -259,19 +257,20 @@ p.top_track_text {
     -webkit-box-orient: vertical;
 }
 
-p.friendtext{
+p.friend_text{
     display: -webkit-box;
     overflow: hidden;
-    -webkit-line-clamp: 1; /* truncates at 3 lines */
+    -webkit-line-clamp: 2; /* truncates at 3 lines */
     -webkit-box-orient: vertical;
  }
- 
-p.playlist_text {
+
+p.playlist_text{
     display: -webkit-box;
     overflow: hidden;
     -webkit-line-clamp: 2; /* truncates at 3 lines */
     -webkit-box-orient: vertical;
 }
+ 
 
 .album_box {
     border-radius: 0px; 

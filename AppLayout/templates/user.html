@@ -49,7 +49,7 @@
             [[for row in friendsList:]]
                 <li>
                     <div class="tile is-parent">
-                        <div class="tile is-child box" style="background-Color:[[=friend_tile]]; ">
+                        <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                             <div class="columns">
                                 <figure class="image is-64x64">
                                     [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
@@ -62,7 +62,7 @@
                                     [[ profileURL = "user/" + row["userID"] ]]
                                     <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
-                                    <p class="friendtext" style="color:[[=text_color]]; height: 45px; overflow: scroll;">
+                                    <p class="friend_text" style="color:[[=text_color]]; height: 45px; overflow: scroll;">
                                         [[=(row["active_stat"])]]</p>
                                 </div>
                             </div>
