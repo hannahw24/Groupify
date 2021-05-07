@@ -1,63 +1,130 @@
 [[extend 'layout.html']]
-<div id="vue-target">
-<section>
-    <div>
-        <br>
-        <h1 class="title has-text-centered">
-            Search For Cover Art
-        </h1>
-    </div>
-    <form action="[[=URL('user', userID, 'edit', squareNumber)]]" method="POST">
-        <div class="container">
-            <br>
-            <div class="field">
-                <input class="input" type="text" name="Search" placeholder="Enter an album or artist" />
-                <!-- <button class="button is-success" href="[[=URL('user', userID)]]"> back </button> -->
-                <input type="submit" class="button" value="Search" />
-                <button class="button is-danger" @click="save_album('x', 'x', '[[=(squareNumber)]]')">Clear Album</button>
-            </div>
-        </div>
-    </form>
 
-</section>
-<!-- /* make it look more like a list than tile results */ -->
-[[if trackLinks != "":]]
-<br>
-    <div class="container">
-    [[for i in range(len(trackLinks)):]]
-        <div class="tile is-child search_result"> 
-            <!-- Panel title -->
-                <!-- For each top song -->
-                <section>
-                    <a @click="save_album('[[=(trackLinks[i])]]', '[[=(imgList[i])]]', '[[=(squareNumber)]]')">
-                        <div class="columns">
-                            <div class="column">
-                                <!-- Album art image with link to track -->
-                                <img src=[[=(imgList[i])]] width="64" height="64">
-                            </div>
-                            <div class="column is-9">
-                                <div>
-                                    <!-- Song title with link to track -->
-                                    <span target="_blank" style="color:#000000"><strong>[[=(topAlbums[i])]]</strong></span>
-                                </div>
-                                <div>
-                                    <!-- Artist name with link to their Spotify page -->
-                                    <span target="_blank" style="color:#000000">[[=(topArtists[i])]]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </section>
-        </div>
-        <!-- <br/> -->
-    [[pass]]
-    </div>
-[[pass]]
+<!-- Banner Title -->
+<div>
+    <br>
+    <h1 class="title has-text-centered">
+        Select Album to Edit
+    </h1>
+    <br>
 </div>
 
+<div id="vue-target">
+    <!-- Albums Banner -->
+    <section>
+        <div class="columns is-mobile is-centered">
+            <div class="column is-two-thirds">
+                <div class="columns is-mobile is-multiline">
+                    <!-- for all albums in js list -->
+                    <div v-for="(c, index) in coverList" class="column album_box is-2">
+                        <!-- if album is selected and cover is not empty... -->
+                        <div v-if="page==index && c!='x'">
+                            <div class="selected_box">
+                                <!-- overlay edit icon and show delete button -->
+                                <img style="width:128px" @click="goto(index)"
+                                :src="c">
+                                <div class="overlay"><i class="fa fa-edit"></i></div>
+                                <div class="overlay_button"><button class="button is-danger" @click="delete_album(index)"><i class="fa fa-times"></i></button></div>
+                            </div>
+                        </div>
+                        <!-- else if album is selected and cover is empty... -->
+                        <div v-else-if="page==index && c=='x'">
+                            <div class="selected_box">
+                                <!-- overlay edit icon, but no delete button -->
+                                <img style="width:128px" @click="goto(index)"
+                                :src="'https://bulma.io/images/placeholders/128x128.png'">
+                                <div class="overlay"><i class="fa fa-edit"></i></div>
+                            </div>
+                        </div>
+                        <!-- else (for albums not selected) -->
+                        <div v-else>
+                            <div class="edit_box">
+                                <!-- no overlay or button, show either cover or placeholder -->
+                                <img style="width:128px" @click="goto(index)"
+                                :src="c === 'x' ? 'https://bulma.io/images/placeholders/128x128.png' : c ">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns is-mobile is-centered">
+            <div class="column is-two-thirds">
+                <div class="level">
+                    <!-- Exit and Save buttons -->
+                    [[userPage = "user/" + session.get("userID") ]]
+                    <div class="level-item is-pulled-right">
+                        <!-- Exit button redirects to profile, changes are not saved -->
+                        <button class="button is-danger" @click="confirmExit()">Exit</button>
+                        <!-- if albums have been edited and save is not pending, Save button is clickable -->
+                        <div v-if="edited && !pending">
+                            <button class="button is-primary" @click="save_albums">Save</button>
+                        </div>
+                        <!-- else if albums have been edited but save is pending, Save button shows loading icon -->
+                        <div v-else-if="edited && pending">
+                            <button class="button is-primary is-loading">Save</button>
+                        </div>
+                        <!-- else, if albums not edited, Save button is not clickable (nothing to save) -->
+                        <div v-else>
+                            <button class="button is-static">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <!-- Seahc Title -->
+        <div>
+            <br>
+            <h1 class="title has-text-centered">
+                Search For Cover Art
+            </h1>
+        </div>
+        <div><br></div>
+        <div class="columns is-mobile is-centered">
+            <div class="column is-11">
+                <!-- user types search here -->
+                <input id="barInput" class="input" type="text" v-on:keyup="search_spotify()" placeholder="Find an Album">
+                <!-- if there is at least one result -->
+                <div v-if="totalResults > 0">
+                    <!-- show tile for each result -->
+                    <div class="tile is-child box"> 
+                        <div v-for="(t, index) in trackLinks">
+                            <section>
+                                <!-- when result is clicked, add album to list at selected index -->
+                                <a @click="add_album(imgList[index], trackLinks[index], page)">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <!-- Album art image with link to track -->
+                                            <img width="64" height="64" :src="imgList[index]">
+                                        </div>
+                                        <div class="column is-9">
+                                            <div>
+                                                <!-- Song title with link to track -->
+                                                <span target="_blank" style="color:#000000"><strong>{{topAlbums[index]}}</strong></span>
+                                            </div>
+                                            <div>
+                                                <!-- Artist name with link to their Spotify page -->
+                                                <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- defines the box tha confirms save/shows error -->
+    <div id="snackbar">{{message}}</div>
+</div>
 [[block page_scripts]]
 <script>
-    let inputAlbum = "[[=XML(inputAlbum)]]";
+    let squares_url = "[[=XML(squares_url)]]";
+    let search_url = "[[=XML(search_url)]]";
     let profileURL = "[[=XML(profileURL)]]";
 </script>
 <!-- Loads the user-specific js for Vue -->
