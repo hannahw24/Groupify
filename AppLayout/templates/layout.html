@@ -53,11 +53,11 @@
             [[pass]]
             <!-- Home, settings, group -->
             <!-- <img src=[[=URL('static', 'images/icon.png')]] style="width:30px;height:57px;"> -->
-            [[if session.get("userID") != None:
-                user = session.get("userID")]]
+            [[if session.get("userID") != None: 
+              user = session.get("userID")]]
+            <a class="navbar-item" href="[[=URL('user', user)]]">home</a>
             <a class="navbar-item" href="[[=URL('groupSession', user)]]">group</a>
             <a class="navbar-item" href="[[=URL('settings', user)]]">settings</a>
-            <a class="navbar-item" href="[[=URL('user', user)]]">home</a>
             [[pass]]
             <!-- Sign In/Sign Out -->
             <div class="navbar-item">

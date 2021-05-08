@@ -20,50 +20,26 @@
                 </div>
             </div>
         </div>
-        [[if (editable==True):]]
-        <div style="padding-left: 12px; width: 96%;">
-            <div >
-                <div v-if="true" @click="isEditingStatus = 1" class="control is-small">
-                    <textarea spellcheck="false" class="textarea" placeholder="Active Status" name="activeStat" id="activeStat" v-model="active">
-                    </textarea>
-                </div>
-            </div>
-            <nav class="level is-mobile" style="padding-top: 5px;">
-                <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
-                <div class="level-left"></div>
-                <div class="level-right">
-                    <!-- Save button -->
-                    <div v-if="isEditingStatus === 1" class="level-item">
-                        <button @click="save_stat(active)" class="button is-primary">
-                            <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
-                    <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
-                    <div v-if="isEditingStatus === 1" class="level-item">
-                        <button @click="cancel_stat" class="button is-danger">
-                            <i class="fa fa-window-close" aria-hidden="true"></i></button>
-                    </div>
-                </div>
-            </nav>
-        </div>
-        [[pass]]
         <ul id="listItems">
             [[for row in friendsList:]]
+            [[ profileURL = "user/" + row["userID"] ]]
                 <li>
                     <div class="tile is-parent">
-                        <div class="tile is-child box" style="background-Color:[[=friend_tile]]; ">
+                        <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                             <div class="columns">
-                                <figure class="image is-64x64">
+                                <figure class="image is-64x64" >
                                     [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
-                                    <img class="is-rounded profile_photo" src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                    <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
+                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                     [[else:]]
-                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"]) ]]>
+                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]>
                                     [[pass]]
                                 </figure>
-                                <div style="padding-left: 15px; width: 78%;">
-                                    [[ profileURL = "user/" + row["userID"] ]]
+                                <div style="padding-left: 15px; width: 78%; ">
                                     <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
-                                    <p class="friendtext" style="color:[[=text_color]]; height: 45px; overflow: scroll;">
-                                        [[=(row["active_stat"])]]</p>
+                                    <p class="friend_text" style="color:[[=text_color]]; height:45px; ">
+                                        [[=(row["active_stat"])]] </p>
                                 </div>
                             </div>
                         </div>
@@ -190,7 +166,7 @@
             <div class="tile is-vertical is-parent is-8">
                 <article class="tile is-child box"  style="background-Color:[[=tile_color]]">
                     <div class="tile">
-                        <figure class="image is-128x128 profile_photo index_pfp">
+                        <figure class="image is-128x128 index_pfp">
                             [[if (profile_pic != ""):]]
                             <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
                             [[else:]]
@@ -215,6 +191,33 @@
                                         <textarea spellcheck="false" class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
                                         </textarea>
                                     </div>
+                                </div>
+                                [[pass]]
+                                <br/>
+                                Active Status:
+                                [[if (editable==True):]]
+                                <div style="padding-left: 12px; width: 96%;">
+                                    <div>
+                                        <div v-if="true" @click="isEditingStatus = 1" class="control is-small">
+                                            <textarea spellcheck="false" class="textarea" placeholder="Active Status" name="activeStat" id="activeStat" v-model="active">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                    <nav class="level is-mobile" style="padding-top: 5px;">
+                                        <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
+                                        <div class="level-left"></div>
+                                        <div class="level-right">
+                                            <!-- Save button -->
+                                            <div v-if="isEditingStatus === 1" class="level-item">
+                                                <button @click="save_stat(active)" class="button is-primary">
+                                                    <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
+                                            <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
+                                            <div v-if="isEditingStatus === 1" class="level-item">
+                                                <button @click="cancel_stat" class="button is-danger">
+                                                    <i class="fa fa-window-close" aria-hidden="true"></i></button>
+                                            </div>
+                                        </div>
+                                    </nav>
                                 </div>
                                 [[pass]]
                                 <nav class="level is-mobile" style="padding-top: 5px;">
@@ -324,7 +327,7 @@
                                         <!-- Playlist description with link to their Spotify page -->
                                         <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"> 
                                             [[if playlistDescriptions[i] != "[]":]]
-                                                [[=(playlistDescriptions[i])]]
+                                                <p class="playlist_text">[[=(playlistDescriptions[i])]]</p>
                                             [[else:]]
                                                 <br>
                                             [[pass]]

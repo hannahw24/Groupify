@@ -32,6 +32,8 @@ db.define_table(
     Field('chosen_term'),   
 )
 
+# db.dbUser.active_stat.requires=IS_LENGTH(0,100)
+
 db.define_table(
     'dbFriends',
     Field('userID', notnull=True),

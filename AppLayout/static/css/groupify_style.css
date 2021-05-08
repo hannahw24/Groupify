@@ -21,10 +21,6 @@ p.labels{
 }
 
 .profile_photo {
-    /* color: #818181; */
-    width: 100px;
-    height: 100px;
-    /* background-color: #818181; */
     border-radius:50%;
     box-shadow: 7px 7px 15px 1px #55555569;
 }
@@ -125,12 +121,13 @@ body{
 }
 
 .group_bar:hover{
-    height: 85.25%;
-    width: 5.25%; 
+    height: 86%;
+    width: 6%; 
     top: 9.75%; 
     right: 0;
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
+    
     transition: 0.3s;
 }
 
@@ -261,12 +258,19 @@ p.top_track_text {
     -webkit-box-orient: vertical;
 }
 
-p.friendtext{
+p.friend_text{
     display: -webkit-box;
     overflow: hidden;
-    -webkit-line-clamp: 1; /* truncates at 3 lines */
+    -webkit-line-clamp: 2; /* truncates at 3 lines */
     -webkit-box-orient: vertical;
  }
+
+p.playlist_text{
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2; /* truncates at 3 lines */
+    -webkit-box-orient: vertical;
+}
  
 
 .album_box {

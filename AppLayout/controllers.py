@@ -293,6 +293,7 @@ def getUserProfile(userID=None):
         playlistImages = playlistEntry[0]["images"]
         playlistURLs = playlistEntry[0]["links"]
         playlistDescriptions = playlistEntry[0]["descriptions"]
+
     # To see if the button "Unfollow" or "Follow" appears
     isFriend = False
 
@@ -1004,7 +1005,7 @@ def return_theme(chosen_theme=None):
         return ['#191414', '#800000', '#993333', '#919191', '#FFFFFF']
     # popTheme pink, blue, pink, white, black
     if chosen_theme == "4": 
-        return ['#ffaff6', '#0080fe', '#ffaff6', '#FFFFFF', '#221B1B']
+        return ['#ffaff6', '#72d3fe', '#ffaff6', '#FFFFFF', '#221B1B']
     # rnbTheme dark purple, light purple, soft purple, soft gray, white
     if chosen_theme == "5": 
         return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#FFFFFF']
