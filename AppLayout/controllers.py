@@ -54,9 +54,18 @@ scopes = "user-library-read user-read-private user-follow-read user-follow-modif
 
 url_signer = URLSigner(session)
 
+def getUserID():
+    return session.get("userID")
+
 @action('index', method='GET')
 @action.uses('index.html', session)
 def getIndex(userID=None):
+    # If session is still active, we do not ask users to login again.
+    if session.get("userID") is not None:
+        # Instead of redirecting them to their profiles, we send them 
+        # to "getUserInfo" to see any of their information has changed.
+        print (session.get("userID"))
+        return getUserInfo()
     if userID is not None:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
@@ -191,7 +200,7 @@ def getUserInfo():
         db.squares.insert(albumsOfWho=insertedID)
     # After inserting/updating user information, send them to their 
     # profile page
-    return redirect(profileURL)
+    return redirect(URL(profileURL))
 
 # A function that updates the top songs table specified by "term".
 def getTopTracksLen(userID, term):
@@ -335,129 +344,115 @@ def getUserProfile(userID=None):
         playlistDescriptions=playlistDescriptions,
 
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
-        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"))
+        userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"),
+        userStat=URL("userStat", userID))
 
-# After the user clicks on an album box to edit, this function is called. 
-# It displays the search bar and results of the search.
-@action('user/<userID>/edit/<squareNumber>', method=["GET", "POST"])
+# -----------------------------------Search Page-------------------------------------
+
+# Many of these functions are split up versions of the old, very large search() function.
+
+# After the user clicks on Edit Profile, this function is called. 
+# It displays their banner, the search bar, and results of the search.
+@action('user/<userID>/edit', method=["GET", "POST"])
 @action.uses('search.html', session)
-def editUserSquare(userID, squareNumber):
+def editUserSquare(userID):
     profileURL = (URL("user", userID))
-    # Probably super inefficient to set all these but 500 errors if we dont right now
+    
+    # Because search.html extends layout.html, we must return the background colors
+    # that layout.html demands.
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+
+    return dict(session=session, editable=False, 
+    url_signer=url_signer, userID=userID, 
+    profileURL=profileURL,
+    
+    squares_url = URL('get_squares'),
+    search_url = URL('do_search'),
+    
+    background_bot=theme_colors[0],
+    background_top=theme_colors[1])
+
+# URL to get user's albums
+@action('get_squares')
+@action.uses(db, session)
+def get_squares():
+    userID = getUserID()
+    print(userID)
+    # Get squares (cover and url) from db
+    user_squares = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
+    print(user_squares)
+    coverList = user_squares[0]["coverList"]
+    urlList = user_squares[0]["urlList"]
+    # Return items for search.js
+    return dict(coverList=coverList, urlList=urlList)
+
+# URL to post new albums to server
+@action('get_squares',  method="POST")
+@action.uses(db)
+def save_albums():
+    # Get lists from search.js
+    coverList = request.json.get('coverList')
+    urlList = request.json.get('urlList')
+    userID = getUserID()
+    # Update db
+    dbSquareEntry = db(db.squares.albumsOfWho == getIDFromUserTable(userID))
+    squareEntries = dbSquareEntry.select().as_list()
+    dbSquareEntry.update(coverList=coverList, urlList=urlList)
+    return dict(coverList=coverList, urlList=urlList)
+
+# URL to get Spotify search results
+@action('do_search', method=["GET", "POST"])
+@action.uses(session)
+def do_search():
+    # Initialize empty lists
     topAlbums = ""
     topArtists = ""
     imgList = ""
     trackLinks = ""
     artistLinks = ""   
     totalResults = 0
-    # Because search.html extends layout.html, we must return the background colors
-    # that layout.html demands.
-    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
-
-    # When search.html is first seen, the request method is GET
-    if request.method == "GET":
-        return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
-        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
-        url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
-        profileURL=profileURL,
-        
-        background_bot=theme_colors[0],
-        background_top=theme_colors[1])
-    # After the user searches, the method is POST
-    else:
-        # Getting the string the user put in the search bar
-        form_SearchValue = request.params.get("Search")
-        # If the string is empty, return the page with no results
-        if form_SearchValue == "":
-            return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
-            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
-            url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
-            profileURL=profileURL,
-            
-            background_bot=theme_colors[0],
-            background_top=theme_colors[1])
-        # Checks to see if we have the user token to make a request to the Spotify API
-        cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
-        if not auth_manager.validate_token(cache_handler.get_cached_token()):
-            return redirect('login')
-        spotify = spotipy.Spotify(auth_manager=auth_manager)
-        # Here we use the search() function is spotipy to obtain the search results. 
-        # The type of results we want are albums, because we are interested in users
-        # displaying their favorite albums and their cover art.
-        results = spotify.search(form_SearchValue, type='album', limit=10)
-        # Cautionary try/except statements in case another programmer decides to change
-        # the type from 'album' to something else. If they do this and they use the 
-        # results["albums"] line below, they will cause an error.
-        try:
-            # If the search results yielded no results, then return nothing. 
-            totalResults = results["albums"]["total"]
-            if (totalResults == 0):
-                return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
-                imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
-                url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
-                profileURL=profileURL,
-                
-                background_bot=theme_colors[0],
-                background_top=theme_colors[1])
-            # Else begint to parse the JSON by looking at the albums
-            results = results["albums"]
-        except:
-            return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
-            imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
-            url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
-            profileURL=profileURL,
-                
-            background_bot=theme_colors[0],
-            background_top=theme_colors[1])
-
-        # Parses through the JSON and returns a list of lists with the information we desire
-        biglist = getAlbumResults(results)
-        topAlbums = biglist[0]
-        topArtists = biglist[1]
-        imgList = biglist[2]
-        trackLinks = biglist[3]
-        artistLinks = biglist[4]
-        # Return this information to display
-        return dict(session=session, editable=False, topAlbums=topAlbums, topArtists=topArtists,
-        imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, 
-        url_signer=url_signer, userID=userID, inputAlbum=URL('inputAlbum'), squareNumber=squareNumber, 
-        profileURL=profileURL,
-        
-        background_bot=theme_colors[0],
-        background_top=theme_colors[1])
-
-# This function updates the logged in user's cover art squares. 
-# It takes in an axios.post request and obtains the user, the square
-# they are editing 
-@action('inputAlbum', method="POST")
-@action.uses(session)
-def inputAlbum():
-    # Obtains the parameters passed in to the save_album function in search.js
-    userID = session.get('userID')
-    squareNumber = request.params.get('squareNumber') 
-    cover = request.params.get('cover')
-    albumURL = request.params.get('albumURL')
+    # Get user input from search.js
+    form_SearchValue = request.json.get("input")
+    print("FORM DATA:")
+    print(form_SearchValue)
+    # If empty, return empty lists
+    if form_SearchValue == "":
+        return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
     
-    # Finds the entry of the user in the squares table
-    dbSquareEntry = db(db.squares.albumsOfWho == getIDFromUserTable(userID))
-    squareEntries = dbSquareEntry.select().as_list()
+    # Get results from Spotify
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect('login')
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    results = spotify.search(form_SearchValue, type='album', limit=10)
+    
+    try:
+        # If the search results yielded no results, then return nothing. 
+        totalResults = results["albums"]["total"]
+        if (totalResults == 0):
+            return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+            trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+        # Else begin to parse the JSON by looking at the albums
+        results = results["albums"]
+    except:
+        print(results)
+        return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
-    # If the entry does not exist, return the user to the profile
-    if squareEntries == []:
-        return redirect(URL('user', userID))
-    # Else obtain the present cover images and URLS of ALL the boxes.
-    coverList = squareEntries[0]["coverList"]
-    urlList = squareEntries[0]["urlList"]
+    # Parses through the JSON and returns a list of lists with the information we desire
+    biglist = getAlbumResults(results)
+    topAlbums = biglist[0]
+    topArtists = biglist[1]
+    imgList = biglist[2]
+    trackLinks = biglist[3]
+    artistLinks = biglist[4]
+    # Return this information to display
+    return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+    trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
-    # Here we update the specific box we want to change through our knowledge of its index. 
-    coverList[int(squareNumber)] = cover
-    urlList[int(squareNumber)] = albumURL
-    # Updates the square in the table.
-    dbSquareEntry.update(coverList=coverList, urlList=urlList)
-
-    # Returning something for user.js
-    return ""
+# -----------------------------------End Search Page-------------------------------------
 
 # Finds the row number of the userID inside of dbUser
 def getIDFromUserTable(userID):
@@ -543,7 +538,7 @@ def getPlaylists():
         return redirect('login')
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     # 14 is an estimate on how long the box is 
-    results = spotify.current_user_playlists(limit=14)
+    results = spotify.current_user_playlists(limit=12)
     bigList = parsePlaylistResults(results)
     
     return bigList
@@ -685,7 +680,9 @@ def parsePlaylistResults(results):
         # Get items from correct place in given Spotipy dictionary
         playlistName = item['name']
         #trackInfo = item['artists'][0]['name']
-        icon = item['images'][0]['url']
+        print(item['images'])
+        if len(item['images']) > 0:
+            icon = item['images'][0]['url']
         trLink = item['external_urls']['spotify']
         description = item['description']
         #artLink = item['artists'][0]['external_urls']['spotify']
@@ -856,7 +853,8 @@ def addFriend():
             return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True, background_bot=theme_colors[0], 
                 background_top=theme_colors[1])
         db.dbFriends.insert(userID=form_userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
-                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"],
+                            active_stat=dbUserEntry[0]["active_stat"])
         return redirect(URL('user', session.get("userID")))
 
 @action('addFriendFromProfile/<userID>', method=["GET"])
@@ -873,7 +871,8 @@ def addFriendFromProfile(userID=None):
     if (userID == loggedInUserId):
         return redirect(URL('user', userID))
     db.dbFriends.insert(userID=userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
-                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"])
+                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"],
+                            active_stat=dbUserEntry[0]["active_stat"])
     return redirect(URL('user', userID))
 
 # Function used by seeTerm() in user.js to extract the top song information
@@ -950,6 +949,23 @@ def postUserBio(userID=None):
     dbBioEntry.update(bio_status=content)
     return dict(content=content)
 
+# Retrieves the status of the user, used in user.js to display the bio
+@action('userStat/<userID>', method=["GET"])
+@action.uses(session)
+def getUserStat(userID=None):
+    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
+    return dict(userStat=currentProfileEntry[0]["active_stat"])
+
+# Makes a request to user.js for the content in the text area after a user hits the save button
+# Then updates the bio in the database
+@action('userStat/<userID>', method=["POST"])
+@action.uses(session)
+def postUserStat(userID=None):
+    dbStatEntry = db(db.dbUser.userID == userID)
+    content = request.params.get('content')
+    dbStatEntry.update(active_stat=content)
+    return dict(content=content)
+
 @action('unfollowProfile/<userID>', method=['GET'])
 @action.uses(session, db)
 def delete_contact(userID=None):
@@ -994,7 +1010,7 @@ def return_theme(chosen_theme=None):
         return ['#191414', '#800000', '#993333', '#919191', '#FFFFFF']
     # popTheme pink, blue, pink, white, black
     if chosen_theme == "4": 
-        return ['#ffaff6', '#0080fe', '#ffaff6', '#FFFFFF', '#221B1B']
+        return ['#ffaff6', '#72d3fe', '#ffaff6', '#FFFFFF', '#221B1B']
     # rnbTheme dark purple, light purple, soft purple, soft gray, white
     if chosen_theme == "5": 
         return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#FFFFFF']
