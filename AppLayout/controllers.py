@@ -869,8 +869,10 @@ def getTopArtistsFunction(term):
         ALinkList.append(artistLink)
         for genre in item['genres']:
             print (genre, ", ")
-        GenreList.append(genre)
-        followers = item['followers']['total']
+        GenreList.append(item['genres'])
+        # Adds command between thousands to make more readable
+        followers = "{:,}".format(item['followers']['total'])
+        
         print (followers)
         FollowersList.append(followers)
 

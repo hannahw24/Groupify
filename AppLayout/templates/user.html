@@ -343,9 +343,16 @@
                                             <a :href="artistLinks[i]" target="_blank" style="color:#000000"><strong>{{artistNames[i]}}</strong></a>
                                         </div>
                                         <div>
-                                            <!-- Artist name with link to their Spotify page -->
+                                            <!-- Artist Genres with link to their Spotify page -->
                                             <a :href="artistLinks[i]" target="_blank" style="color:#000000"> 
-                                                {{followers[i]}} Followers
+                                                <span v-if="genres != null">
+                                                <span v-if="genres[i] != ''">{{genres[i]}}</span>
+                                                </span>
+                                            </a>
+                                            <br>
+                                            <!-- Artist followers with link to their Spotify page -->
+                                            <a :href="artistLinks[i]" target="_blank" style="color:#000000">
+                                                <span v-if="followers[i] != ''">{{followers[i]}} Followers</span>
                                             </a>
                                         </div>
                                     </div>

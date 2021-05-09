@@ -85,7 +85,7 @@ db.define_table(
     Field('topArtists', 'list:string'), # Artists for each top track
     Field('imgList', 'list:string'),
     Field('artistLinks', 'list:string'), 
-    Field('genres'), 
+    Field('genres', 'list:string'), 
     Field('followers', 'list:string'), 
     Field('topArtistsOfWho', db.dbUser)
 )
@@ -95,7 +95,7 @@ db.define_table(
     Field('topArtists', 'list:string'), # Artists for each top track
     Field('imgList', 'list:string'),
     Field('artistLinks', 'list:string'), 
-    Field('genres'), 
+    Field('genres', 'list:string'), 
     Field('followers', 'list:string'), 
     Field('topArtistsOfWho', db.dbUser)
 )
@@ -105,7 +105,7 @@ db.define_table(
     Field('topArtists', 'list:string'), # Artists for each top track
     Field('imgList', 'list:string'),
     Field('artistLinks', 'list:string'), 
-    Field('genres'), 
+    Field('genres', 'list:string'), 
     Field('followers', 'list:string'), 
     Field('topArtistsOfWho', db.dbUser)
 )

@@ -142,9 +142,29 @@ let init = (app) => {
             app.data.artistURLs = result.data.artistLinks;
             app.data.genres = result.data.genres;
             app.data.followers = result.data.followers;
-            }).then(() => {
+            console.log("Followers", app.data.followers)
+
+            app.data.genres = app.parseArray(app.data.genres);
+            /*console.log("genres is ", app.data.genres);
+            console.log("genres[0] ", app.data.genres[0]);
+
+            var res = app.data.genres[0].split("'");
+            console.log("res", res);
+            console.log("res[1] ", res[1])
+            res.splice(0, 1)
+            res.splice(res.length-1, 1)
+            app.data.genres = res
+            console.log("res", res);*/
+
+            }).catch(() => {
                 //show what the bio is.
-                console.log(app.data.artistTerm);
+                console.log("Error in seeArtistTerm")
+                var emptyString = ["", "", "", "", ""];
+                app.data.artistNames = emptyString;
+                app.data.artistImages = emptyString;
+                app.data.artistURLs = emptyString;
+                app.data.genres = emptyString;
+                app.data.followers = emptyString;
             });
         }
     
@@ -160,6 +180,24 @@ let init = (app) => {
             });
         };
 
+    app.parseArray = (genres) => {
+        var returnList = [];
+        for (i = 0; i < genres.length; i++) {
+            var tempString = "";
+            console.log(genres[i]);
+            var res = app.data.genres[i].split("'");
+            res.splice(0, 1);
+            res.splice(res.length-1, 1);
+            console.log("res", res);
+            for (j = 0; j < res.length; j++) {
+                tempString += res[j];
+            }
+            console.log("tempString", tempString);
+            returnList.push(tempString);
+        }
+        console.log("returnList", returnList);
+        return returnList;
+    }
     /*
     app.seePlaylists = () => {
         console.log("I'm in seePlaylists");
@@ -187,7 +225,8 @@ let init = (app) => {
         seeTerm: app.seeTerm,
         changeTerm: app.changeTerm,
         seeArtistTerm: app.seeArtistTerm,
-        changeArtistTerm: app.changeArtistTerm
+        changeArtistTerm: app.changeArtistTerm,
+        parseArray: app.parseArray,
         //seePlaylists: app.seePlaylists
     };
 
