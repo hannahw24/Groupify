@@ -269,13 +269,9 @@ def getTopArtistsLen(userID, term):
     artistList = getTopArtistsFunction(spotifyTerm)
 
     topArtists = artistList[0] # Names
-    print("topArtists ", topArtists)
     imgList = artistList[1] # URLs to images
-    print("imgList ", imgList)
     artistLinks = artistList[2] # URLs to artists
-    print("artistLinks ", artistLinks)
     genres = artistList[3] # Artist's genres
-    print("genres ", genres)
     
     followers = artistList[4] # Number of followers the artist has
 
@@ -290,7 +286,6 @@ def getTopArtistsLen(userID, term):
     # Is their desired term of top tracks populated?
     # If it isn't, then the information from tracksList will be inserted.
     if (termEntry == None) or (termEntry == []):
-        print ("HELLO DEPARTMENT?")
         insertedID = getIDFromUserTable(userID)
         if term == 'shortArtists':
             db.shortArtists.insert(topArtists=topArtists, imgList=imgList, artistLinks=artistLinks, 
@@ -390,7 +385,7 @@ def getUserProfile(userID=None):
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     display_name=dbUserEntry[0]["display_name"]
     bio_status=dbUserEntry[0]["bio_status"]
-
+    print(friendsList)
     return dict(
         session=session, 
         editable=editable_profile(userID), 
@@ -504,7 +499,7 @@ def do_search():
         # Else begin to parse the JSON by looking at the albums
         results = results["albums"]
     except:
-        print(results)
+        #print(results)
         return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
         trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
@@ -747,7 +742,7 @@ def parsePlaylistResults(results):
         # Get items from correct place in given Spotipy dictionary
         playlistName = item['name']
         #trackInfo = item['artists'][0]['name']
-        print(item['images'])
+        #print(item['images'])
         if len(item['images']) > 0:
             icon = item['images'][0]['url']
         trLink = item['external_urls']['spotify']
@@ -861,19 +856,17 @@ def getTopArtistsFunction(term):
     for idx, item in enumerate(results['items']):
         # Get items from correct place in given Spotipy dictionary
         artist = item['name']
-        print (artist)
+        #print (artist)
         TopArtistsList.append(artist)
         icon = item['images'][2]['url']
         ImgLinkList.append(icon)
         artistLink = item['external_urls']['spotify']
         ALinkList.append(artistLink)
-        for genre in item['genres']:
-            print (genre, ", ")
         GenreList.append(item['genres'])
         # Adds command between thousands to make more readable
         followers = "{:,}".format(item['followers']['total'])
         
-        print (followers)
+        #print (followers)
         FollowersList.append(followers)
 
     if TopArtistsList == []:
@@ -1064,7 +1057,7 @@ def getTopArtists(userID=None):
     # This "term" is about what period of top songs to display on 
     # a user's profile.
     term = (db.dbUser[getIDFromUserTable(userID)]).artist_term
-    print("term is ", term)
+    #print("term is ", term)
     # Obtains the whole entry of the user in the correct table.
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
@@ -1154,7 +1147,6 @@ def postUserStat(userID=None):
     if (friendsEntries != None) and (friendsEntries != []):
         # If active status has changed, update it.
         for row in friendsEntries:
-            print("test1 ", content)
             dbRow = db(db.dbFriends.id == row["id"])
             dbRow.update(active_stat=content)
 

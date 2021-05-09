@@ -2429,135 +2429,45 @@ success!
 success!
 success!
 success!
-timestamp: 2021-05-08T21:09:42.941301
+success!
+success!
+success!
+timestamp: 2021-05-09T14:20:47.061847
 ALTER TABLE "dbUser" ADD "artist_term" CHAR(512);
 success!
 success!
-timestamp: 2021-05-08T21:09:42.959304
+timestamp: 2021-05-09T14:20:47.076850
 CREATE TABLE "shortArtists"(
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "topartists" TEXT,
     "imglist" TEXT,
     "artistlinks" TEXT,
+    "genres" TEXT,
+    "followers" TEXT,
     "topartistsofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
 );
 success!
-timestamp: 2021-05-08T21:09:42.965304
+timestamp: 2021-05-09T14:20:47.083853
 CREATE TABLE "mediumArtists"(
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "topartists" TEXT,
     "imglist" TEXT,
     "artistlinks" TEXT,
+    "genres" TEXT,
+    "followers" TEXT,
     "topartistsofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
 );
 success!
-timestamp: 2021-05-08T21:09:42.971305
+timestamp: 2021-05-09T14:20:47.088853
 CREATE TABLE "longArtists"(
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "topartists" TEXT,
     "imglist" TEXT,
     "artistlinks" TEXT,
+    "genres" TEXT,
+    "followers" TEXT,
     "topartistsofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
 );
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-timestamp: 2021-05-08T21:41:32.057366
-ALTER TABLE "shortArtists" ADD "genres" TEXT;
-timestamp: 2021-05-08T21:41:32.063367
-ALTER TABLE "shortArtists" ADD "followers" TEXT;
-success!
-timestamp: 2021-05-08T21:41:32.071369
-ALTER TABLE "mediumArtists" ADD "genres" TEXT;
-timestamp: 2021-05-08T21:41:32.076370
-ALTER TABLE "mediumArtists" ADD "followers" TEXT;
-success!
-timestamp: 2021-05-08T21:41:32.085372
-ALTER TABLE "longArtists" ADD "genres" TEXT;
-timestamp: 2021-05-08T21:41:32.089372
-ALTER TABLE "longArtists" ADD "followers" TEXT;
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
-success!
 success!
 success!
 success!
