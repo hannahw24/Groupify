@@ -185,6 +185,21 @@
                                         </textarea>
                                     </div>
                                 </div>
+                                <nav class="level is-mobile" style="padding-top: 5px;">
+                                    <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
+                                    <div class="level-left"></div>
+                                    <div class="level-right">
+                                        <!-- Save button -->
+                                        <div v-if="isEditingBio === 1" class="level-item">
+                                            <button @click="save_bio(bio)" class="button is-primary">
+                                                <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
+                                        <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
+                                        <div v-if="isEditingBio === 1" class="level-item">
+                                            <button @click="cancel_bio" class="button is-danger">
+                                                <i class="fa fa-window-close" aria-hidden="true"></i></button>
+                                        </div>
+                                    </div>
+                                </nav>
                                 [[else:]]
                                 <div >
                                     <div v-if="true" class="control is-small">
@@ -192,10 +207,11 @@
                                         </textarea>
                                     </div>
                                 </div>
+
                                 [[pass]]
+                                [[if (editable==True):]]
                                 <br/>
                                 Active Status:
-                                [[if (editable==True):]]
                                 <div style="padding-left: 12px; width: 96%;">
                                     <div>
                                         <div v-if="true" @click="isEditingStatus = 1" class="control is-small">
@@ -220,21 +236,6 @@
                                     </nav>
                                 </div>
                                 [[pass]]
-                                <nav class="level is-mobile" style="padding-top: 5px;">
-                                    <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
-                                    <div class="level-left"></div>
-                                    <div class="level-right">
-                                        <!-- Save button -->
-                                        <div v-if="isEditingBio === 1" class="level-item">
-                                            <button @click="save_bio(bio)" class="button is-primary">
-                                                <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
-                                        <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
-                                        <div v-if="isEditingBio === 1" class="level-item">
-                                            <button @click="cancel_bio" class="button is-danger">
-                                                <i class="fa fa-window-close" aria-hidden="true"></i></button>
-                                        </div>
-                                    </div>
-                                </nav>
                             </div>
                         </div>
                         

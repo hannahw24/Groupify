@@ -964,6 +964,19 @@ def postUserStat(userID=None):
     dbStatEntry = db(db.dbUser.userID == userID)
     content = request.params.get('content')
     dbStatEntry.update(active_stat=content)
+
+    # This takes all the instances of the logged in user in the friends database. 	
+    # This is so we can update their information.
+    friendsEntries = (db(db.dbFriends.userID == userID).select().as_list())
+
+    # Updates the information in friends database so the friends NAV bar is up to date. 
+    if (friendsEntries != None) and (friendsEntries != []):
+        # If active status has changed, update it.
+        for row in friendsEntries:
+            print("test1 ", content)
+            dbRow = db(db.dbFriends.id == row["id"])
+            dbRow.update(active_stat=content)
+
     return dict(content=content)
 
 @action('unfollowProfile/<userID>', method=['GET'])

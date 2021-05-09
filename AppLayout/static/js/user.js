@@ -52,17 +52,24 @@ let init = (app) => {
         console.log("I'm in cancel_bio");
         app.data.bio = app.data.originalBio;
         app.data.isEditingBio = 0;
-        //bio = app.data.originalBio;
         };
+
+    app.getStat = () => {
+        axios.get(userStat).then((result) => {
+            let active = result.data.userStat;
+            app.data.active = active;
+            app.data.originalActive = active;
+            }).then(() => {
+                console.log(app.data.active);
+            });
+    }
 
     //Saving status
     app.save_stat = (content) => {
-        //console.log("I'm in save_stat");
         axios.post(userStat, null, {params: {
             content: content,
             }}).then((result) => {
                 app.data.isEditingStatus = 0;
-                //console.log("Received:", result.data);
                 active = content;
                 app.data.active = content;
                 app.data.originalActive = content;
@@ -75,10 +82,8 @@ let init = (app) => {
         };
 
     app.cancel_stat = () => {
-        //console.log("I'm in cancel_bio");
         app.data.active = app.data.originalActive;
         app.data.isEditingStatus = 0;
-        //bio = app.data.originalBio;
         };
 
     app.controlEditButton = () => {
@@ -91,16 +96,6 @@ let init = (app) => {
             app.data.isEditingAlbums = 0;
         }
     };
-
-    app.getStat = () => {
-        axios.get(userStat).then((result) => {
-            let active = result.data.userStat;
-            app.data.active = active;
-            app.data.originalActive = active;
-            }).then(() => {
-                console.log(app.data.active);
-            });
-    }
 
     //Called to see the top 10 songs
     app.seeTerm = () => {
