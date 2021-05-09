@@ -29,7 +29,8 @@ db.define_table(
     Field('bio_status'),
     Field('active_stat'),
     Field('profile_pic'),
-    Field('chosen_term'),   
+    Field('chosen_term'),
+    Field('artist_term'),
 )
 
 db.define_table(
@@ -77,6 +78,36 @@ db.define_table(
     Field('trackLinks', 'list:string'),
     Field('artistLinks', 'list:string'), 
     Field('topTracksOfWho', db.dbUser)
+)
+
+db.define_table(
+    'shortArtists',
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('genres'), 
+    Field('followers', 'list:string'), 
+    Field('topArtistsOfWho', db.dbUser)
+)
+
+db.define_table(
+    'mediumArtists',
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('genres'), 
+    Field('followers', 'list:string'), 
+    Field('topArtistsOfWho', db.dbUser)
+)
+
+db.define_table(
+    'longArtists',
+    Field('topArtists', 'list:string'), # Artists for each top track
+    Field('imgList', 'list:string'),
+    Field('artistLinks', 'list:string'), 
+    Field('genres'), 
+    Field('followers', 'list:string'), 
+    Field('topArtistsOfWho', db.dbUser)
 )
 
 

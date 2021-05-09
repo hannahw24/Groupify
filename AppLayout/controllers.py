@@ -191,6 +191,10 @@ def getUserInfo():
     getTopTracksLen(userID, "medium_term")	
     getTopTracksLen(userID, "long_term")
 
+    getTopArtistsLen(userID, "shortArtists")
+    getTopArtistsLen(userID, "mediumArtists")
+    getTopArtistsLen(userID, "longArtists")
+
     # Stores/updates user playlists
     storePlaylists(userID)
 
@@ -248,6 +252,69 @@ def getTopTracksLen(userID, term):
 
         dbRow.update(topTracks=topTracks, topArtists=topArtists, 
         imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks)
+    return
+
+def getTopArtistsLen(userID, term):
+    # Convert term passed in into something that the spotify API will
+    # accept. 
+    if term == 'shortArtists':
+        spotifyTerm = 'short_term'
+    elif term == 'mediumArtists':
+        spotifyTerm = 'medium_term'
+    elif term == 'longArtists':
+        spotifyTerm = 'long_term'
+
+    # A list containing information about the User's top tracks. 
+    # "term" is a period passed in to select the songs from a desired time.
+    artistList = getTopArtistsFunction(spotifyTerm)
+
+    topArtists = artistList[0] # Names
+    print("topArtists ", topArtists)
+    imgList = artistList[1] # URLs to images
+    print("imgList ", imgList)
+    artistLinks = artistList[2] # URLs to artists
+    print("artistLinks ", artistLinks)
+    genres = artistList[3] # Artist's genres
+    print("genres ", genres)
+    
+    followers = artistList[4] # Number of followers the artist has
+
+    # Selects the correct user entry from the desired time period
+    if term == 'shortArtists':
+        termEntry = (db(db.shortArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list())
+    elif term == 'mediumArtists':
+        termEntry = (db(db.mediumArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list())
+    elif term == 'longArtists':
+        termEntry = (db(db.longArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list())
+
+    # Is their desired term of top tracks populated?
+    # If it isn't, then the information from tracksList will be inserted.
+    if (termEntry == None) or (termEntry == []):
+        print ("HELLO DEPARTMENT?")
+        insertedID = getIDFromUserTable(userID)
+        if term == 'shortArtists':
+            db.shortArtists.insert(topArtists=topArtists, imgList=imgList, artistLinks=artistLinks, 
+            genres=genres, followers=followers, topArtistsOfWho=insertedID)
+        elif term == 'mediumArtists':
+            db.mediumArtists.insert(topArtists=topArtists, imgList=imgList, artistLinks=artistLinks, 
+            genres=genres, followers=followers, topArtistsOfWho=insertedID)
+        elif term == 'longArtists':
+            db.longArtists.insert(topArtists=topArtists, imgList=imgList, artistLinks=artistLinks, 
+            genres=genres, followers=followers, topArtistsOfWho=insertedID)
+
+    # If there are already tracks, then update the information
+    else:
+        insertedID = getIDFromUserTable(userID)
+        # Finds the correct user entry
+        if term == 'shortArtists':
+            dbRow = db(db.shortArtists.topArtistsOfWho == insertedID)
+        elif term == 'mediumArtists':
+            dbRow = db(db.mediumArtists.topArtistsOfWho == insertedID)
+        elif term == 'longArtists':
+            dbRow = db(db.longArtists.topArtistsOfWho == insertedID)
+
+        dbRow.update(topArtists=topArtists, imgList=imgList, 
+        artistLinks=artistLinks, genres=genres, followers=followers)
     return
 
 # Profile tests (currently no difference between them)
@@ -345,7 +412,7 @@ def getUserProfile(userID=None):
 
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
         userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"),
-        userStat=URL("userStat", userID))
+        getTopArtists=URL("getTopArtists", userID), userStat=URL("userStat", userID))
 
 # -----------------------------------Search Page-------------------------------------
 
@@ -761,7 +828,7 @@ def getTopTracksFunction(term):
         ImgLinkList = ""
     if TLinkList == []:
         TLinkList = ""
-    if TLinkList == []:
+    if ALinkList == []:
         ALinkList = ""
     # Add all to list to be returned
     BigList.append(TopSongsList)
@@ -769,6 +836,61 @@ def getTopTracksFunction(term):
     BigList.append(ImgLinkList)
     BigList.append(TLinkList)
     BigList.append(ALinkList)
+    # Returned to the user profile
+    return BigList
+
+def getTopArtistsFunction(term):
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect('login')
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+
+    # long_term = all time
+    # medium_term = 6 months
+    # short_term = 4 weeks
+    results = spotify.current_user_top_artists(limit=5, offset=0, time_range=term)    
+    TopArtistsList = []
+    ImgLinkList = []
+    TLinkList = []
+    ALinkList = []
+    GenreList = []
+    FollowersList = []
+    BigList = []
+
+    for idx, item in enumerate(results['items']):
+        # Get items from correct place in given Spotipy dictionary
+        artist = item['name']
+        print (artist)
+        TopArtistsList.append(artist)
+        icon = item['images'][2]['url']
+        ImgLinkList.append(icon)
+        artistLink = item['external_urls']['spotify']
+        ALinkList.append(artistLink)
+        for genre in item['genres']:
+            print (genre, ", ")
+        GenreList.append(genre)
+        followers = item['followers']['total']
+        print (followers)
+        FollowersList.append(followers)
+
+    if TopArtistsList == []:
+        TopArtistsList= ""
+    if ImgLinkList == []:
+        ImgLinkList = ""
+    if ALinkList == []:
+        ALinkList = ""
+    if GenreList == []:
+        GenreList = ""
+    if FollowersList == []:
+        FollowersList = ""
+    # Add all to list to be returned
+    BigList.append(TopArtistsList)
+    BigList.append(ImgLinkList)
+    BigList.append(ALinkList)
+    BigList.append(GenreList)
+    BigList.append(FollowersList)
+
     # Returned to the user profile
     return BigList
 
@@ -929,6 +1051,63 @@ def getTopSongsPost(userID=None):
     # in the changeTerm() function
     term = request.params.get('term')
     db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term)	
+    return dict(session=session)	
+
+# Function used by seeTerm() in user.js to extract the top song information
+# from the correct table in the database. 
+@action('getTopArtists/<userID>', method=["GET"])
+@action.uses(session)
+def getTopArtists(userID=None):
+    # Finds the value of the term chosen by the user. 
+    # This "term" is about what period of top songs to display on 
+    # a user's profile.
+    term = (db.dbUser[getIDFromUserTable(userID)]).artist_term
+    print("term is ", term)
+    # Obtains the whole entry of the user in the correct table.
+    # Also sets the term string to display on the dropdown menu.
+    if term == '1':	
+        term_str = 'last 4 weeks'	
+        termList = db(db.shortArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list()	
+    elif term == '2':	
+        term_str = 'last 6 months'	
+        termList = db(db.mediumArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list()	
+    elif term == '3':	
+        term_str = 'of all time'	
+        termList = db(db.longArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list()	
+    else:	
+        term_str = 'last 4 weeks'	
+        termList = db(db.shortArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list()
+
+    # Get the fields from the termList, but only if they have a reference in it 
+    if termList != []:
+        topArtists = termList[0]["topArtists"]
+        imgList = termList[0]["imgList"]
+        artistLinks = termList[0]["artistLinks"]
+        genres = termList[0]["genres"]
+        followers = termList[0]["followers"]
+
+    # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
+    if (topArtists == None) or len(topArtists) < 5:
+        fillerTopArtists = ["", "",  "",  "", ""]
+        topArtists = fillerTopArtists
+        imgList = fillerTopArtists
+        artistLinks = fillerTopArtists
+        genres = [[""], [""], [""], [""], [""]]
+        followers = fillerTopArtists
+
+    return dict(term_str=term_str, topArtists=topArtists, imgList=imgList,
+    artistLinks=artistLinks, genres=genres, followers=followers, session=session)
+
+# NEEDS SECURITY CHECK
+# Changes the chosen term for top tracks of the user. Posts the change
+# immediately to the user page
+@action('getTopArtists/<userID>', method=["POST"])
+@action.uses(session)
+def getTopArtistsPost(userID=None):
+    # Gets the term selected by the user, which is currently in user.js 
+    # in the changeTerm() function
+    term = request.params.get('term')
+    db(db.dbUser.id == getIDFromUserTable(userID)).update(artist_term=term)	
     return dict(session=session)	
 
 # Retrieves the bio of the user, used in user.js to display the bio

@@ -24,9 +24,16 @@ let init = (app) => {
         imgList: [],
         trackLinks: [],
         artistLinks: [],
-        playlistNames: [],
-        playlistImages: [],
-        playlistLinks: []
+        artistNames: [],
+        artistImages: [],
+        artistURLs: [],
+        genres: [[]],
+        followers: [],
+        artistTerm: ""
+        //playlistNames: [],
+        //playlistImages: [],
+       // playlistLinks: [],
+
     };
     
     //Used to save the album cover art for the user profiles. 
@@ -124,6 +131,34 @@ let init = (app) => {
                 console.log("Caught error");
             });
         };
+    
+    //Called to see the top 10 songs
+    app.seeArtistTerm = () => {
+        console.log("I'm in seeArtistTerm");
+        axios.get(getTopArtists).then((result) => {
+            app.data.artistTerm = result.data.term_str;
+            app.data.artistNames = result.data.topArtists;
+            app.data.artistImages = result.data.imgList;
+            app.data.artistURLs = result.data.artistLinks;
+            app.data.genres = result.data.genres;
+            app.data.followers = result.data.followers;
+            }).then(() => {
+                //show what the bio is.
+                console.log(app.data.artistTerm);
+            });
+        }
+    
+    //Called to change the term of top 10 songs
+    app.changeArtistTerm = (term) => {
+        console.log("I'm in changeArtistTerm");
+        axios.post(getTopArtists, null, {params: {
+            term: term,
+            }}).then(() => {
+                app.seeArtistTerm(); 
+            }).catch(() => {
+                console.log("Caught error");
+            });
+        };
 
     /*
     app.seePlaylists = () => {
@@ -151,6 +186,8 @@ let init = (app) => {
         cancel_stat: app.cancel_stat,
         seeTerm: app.seeTerm,
         changeTerm: app.changeTerm,
+        seeArtistTerm: app.seeArtistTerm,
+        changeArtistTerm: app.changeArtistTerm
         //seePlaylists: app.seePlaylists
     };
 
@@ -173,6 +210,7 @@ let init = (app) => {
                 //After setting the Bio move on to displaying top songs
                 //and user playlists
                 app.seeTerm();
+                app.seeArtistTerm();
                 app.getStat();
                 //app.seePlaylists();
             });

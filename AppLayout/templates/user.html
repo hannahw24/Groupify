@@ -300,10 +300,62 @@
                     </div>
                     <div class="tile is-vertical is-parent">
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
-                            Song of the day
+                            <strong>Top Artists</strong>
+                            [[if (editable==True):]]	
+                            <div class="dropdown is-hoverable is-pulled-right is-right">	
+                                <div class="dropdown-trigger">	
+                                  <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
+                                    <span>{{artistTerm}}</span>	
+                                    <span class="icon is-small">	
+                                      <i class="fas fa-angle-down" aria-hidden="true"></i>	
+                                    </span>	
+                                  </button>	
+                                </div>
+                                <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
+                                  <div class="dropdown-content">	
+                                    <a class="dropdown-item" @click="changeArtistTerm('1')">	
+                                      <p>last 4 weeks</p>	
+                                    </a>	
+                                    <a class="dropdown-item" @click="changeArtistTerm('2')">	
+                                      <p>last 6 months</p>	
+                                    </a>	
+                                    <a class="dropdown-item" @click="changeArtistTerm('3')">	
+                                      <p>of all time</p>	
+                                    </a>	
+                                  </div>	
+                                </div>
+                              </div>
+                            <br>	
+                            [[pass]]	
+                            <br>	
+                            <br>
+                            <!-- v-for wants to start at 1, "(n, i)" makes it start at 0-->
+                            <div v-for="(n, i) in 5">
+                            <section>
+                                <div class="columns">
+                                    <div class="column">
+                                        <!-- Album art image with link to track -->
+                                        <a :href="artistLinks[i]" target="_blank"><img :src="artistImages[i]"></a>
+                                    </div>
+                                    <div class="column is-9">
+                                        <div>
+                                            <!-- Song title with link to track -->
+                                            <a :href="artistLinks[i]" target="_blank" style="color:#000000"><strong>{{artistNames[i]}}</strong></a>
+                                        </div>
+                                        <div>
+                                            <!-- Artist name with link to their Spotify page -->
+                                            <a :href="artistLinks[i]" target="_blank" style="color:#000000"> 
+                                                {{followers[i]}} Followers
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            </div>
                         </div>
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
-                            Analytics
+                            Song of the day
+
                         </div>
                     </div>
                 </div>
@@ -364,6 +416,7 @@
     let userBio = "[[=XML(userBio)]]";
     let userStat = "[[=XML(userStat)]]";
     let getTopSongs = "[[=XML(getTopSongs)]]";
+    let getTopArtists = "[[=XML(getTopArtists)]]";
     //let getPlaylists = "[[=XML(getPlaylists)]]";
 </script>
 <!-- Loads the user-specific js for Vue -->
