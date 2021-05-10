@@ -335,23 +335,23 @@
                                 <div class="columns">
                                     <div class="column">
                                         <!-- Album art image with link to track -->
-                                        <a :href="artistLinks[i]" target="_blank"><img :src="artistImages[i]"></a>
+                                        <a :href="artistURLs[i]" target="_blank"><img :src="artistImages[i]"></a>
                                     </div>
                                     <div class="column is-9">
                                         <div>
                                             <!-- Song title with link to track -->
-                                            <a :href="artistLinks[i]" target="_blank" style="color:#000000"><strong>{{artistNames[i]}}</strong></a>
+                                            <a :href="artistURLs[i]" target="_blank" style="color:#000000"><strong>{{artistNames[i]}}</strong></a>
                                         </div>
                                         <div>
                                             <!-- Artist Genres with link to their Spotify page -->
-                                            <a :href="artistLinks[i]" target="_blank" style="color:#000000"> 
+                                            <a :href="artistURLs[i]" target="_blank" style="color:#000000"> 
                                                 <span v-if="genres != null">
                                                 <span v-if="genres[i] != ''">{{genres[i]}}</span>
                                                 </span>
                                             </a>
                                             <br>
                                             <!-- Artist followers with link to their Spotify page -->
-                                            <a :href="artistLinks[i]" target="_blank" style="color:#000000">
+                                            <a :href="artistURLs[i]" target="_blank" style="color:#000000">
                                                 <span v-if="followers[i] != ''">{{followers[i]}} Followers</span>
                                             </a>
                                         </div>

@@ -34,10 +34,17 @@ from py4web.utils.url_signer import URLSigner
 import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyClientCredentials
+import spotipy.oauth2 as oauth2
 import time
 import os
 import uuid
+import configparser
 ################################################
+os.environ["SPOTIPY_CLIENT_ID"] = "f4cfb74420ed4bcaab8408922adb5820"
+os.environ["SPOTIPY_CLIENT_SECRET"] = "d9ff6b1b8e0d4dd3a421f0c1e4f70e67"
+os.environ["SPOTIPY_REDIRECT_URI"] = "http://127.0.0.1:8000/groupify/callback"
+
 
 # The cache folder is located in the /py4web folder. 
 # Keep this in mind when we move on from local hosting. 
@@ -140,7 +147,6 @@ def getUserInfo():
 
     # Necessary to make a call to the API.
     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    # "sp.current_user()" returns: display name, email
     # url to user, id, images (profile pic), and premium status
     results = spotify.current_user()
 
@@ -385,7 +391,6 @@ def getUserProfile(userID=None):
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     display_name=dbUserEntry[0]["display_name"]
     bio_status=dbUserEntry[0]["bio_status"]
-    print(friendsList)
     return dict(
         session=session, 
         editable=editable_profile(userID), 
@@ -438,29 +443,31 @@ def editUserSquare(userID):
 @action('get_squares')
 @action.uses(db, session)
 def get_squares():
-    userID = getUserID()
-    print(userID)
+    userID = session.get("userID")
+    print("the userID in get_squares is", userID)
     # Get squares (cover and url) from db
     user_squares = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
-    print(user_squares)
+    #print(user_squares)
     coverList = user_squares[0]["coverList"]
     urlList = user_squares[0]["urlList"]
     # Return items for search.js
-    return dict(coverList=coverList, urlList=urlList)
+    return dict(session=session, coverList=coverList, urlList=urlList)
 
 # URL to post new albums to server
 @action('get_squares',  method="POST")
-@action.uses(db)
+@action.uses(db, session)
 def save_albums():
     # Get lists from search.js
     coverList = request.json.get('coverList')
     urlList = request.json.get('urlList')
-    userID = getUserID()
+    userID = session.get("userID")
+    print("the userID in save_albums is", userID)
+
     # Update db
     dbSquareEntry = db(db.squares.albumsOfWho == getIDFromUserTable(userID))
     squareEntries = dbSquareEntry.select().as_list()
     dbSquareEntry.update(coverList=coverList, urlList=urlList)
-    return dict(coverList=coverList, urlList=urlList)
+    return dict(session=session, coverList=coverList, urlList=urlList)
 
 # URL to get Spotify search results
 @action('do_search', method=["GET", "POST"])
@@ -475,11 +482,11 @@ def do_search():
     totalResults = 0
     # Get user input from search.js
     form_SearchValue = request.json.get("input")
-    print("FORM DATA:")
-    print(form_SearchValue)
+    #print("FORM DATA:")
+    #print(form_SearchValue)
     # If empty, return empty lists
     if form_SearchValue == "":
-        return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+        return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
         trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
     
     # Get results from Spotify
@@ -494,13 +501,13 @@ def do_search():
         # If the search results yielded no results, then return nothing. 
         totalResults = results["albums"]["total"]
         if (totalResults == 0):
-            return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+            return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
             trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
         # Else begin to parse the JSON by looking at the albums
         results = results["albums"]
     except:
         #print(results)
-        return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+        return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
         trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
     # Parses through the JSON and returns a list of lists with the information we desire
@@ -511,7 +518,7 @@ def do_search():
     trackLinks = biglist[3]
     artistLinks = biglist[4]
     # Return this information to display
-    return dict(topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
+    return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
     trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
 # -----------------------------------End Search Page-------------------------------------
@@ -1110,7 +1117,7 @@ def getTopArtistsPost(userID=None):
 @action.uses(session)
 def getUserBio(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
-    return dict(userBio=currentProfileEntry[0]["bio_status"])
+    return dict(session=session, userBio=currentProfileEntry[0]["bio_status"])
 
 # Makes a request to user.js for the content in the text area after a user hits the save button
 # Then updates the bio in the database
@@ -1121,14 +1128,14 @@ def postUserBio(userID=None):
     dbBioEntry = db(db.dbUser.userID == userID)
     content = request.params.get('content')
     dbBioEntry.update(bio_status=content)
-    return dict(content=content)
+    return dict(session=session, content=content)
 
 # Retrieves the status of the user, used in user.js to display the bio
 @action('userStat/<userID>', method=["GET"])
 @action.uses(session)
 def getUserStat(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
-    return dict(userStat=currentProfileEntry[0]["active_stat"])
+    return dict(session=session, userStat=currentProfileEntry[0]["active_stat"])
 
 # Makes a request to user.js for the content in the text area after a user hits the save button
 # Then updates the bio in the database
@@ -1150,7 +1157,7 @@ def postUserStat(userID=None):
             dbRow = db(db.dbFriends.id == row["id"])
             dbRow.update(active_stat=content)
 
-    return dict(content=content)
+    return dict(session=session, content=content)
 
 @action('unfollowProfile/<userID>', method=['GET'])
 @action.uses(session, db)

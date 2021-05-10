@@ -124,17 +124,6 @@ let init = (app) => {
         }    
     };
     
-    app.controlEditButton = () => {
-        editButton = document.getElementById('editButton');
-        console.log(app.data.isEditing);
-        if (app.data.isEditing === 0) {
-            app.data.isEditing = 1;
-        }
-        else {
-            app.data.isEditing = 0;
-        }
-    };
-    
     // Go to specific page (album index)
     app.goto = (pg) => {
         app.vue.page = pg;
@@ -174,7 +163,6 @@ let init = (app) => {
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
-        controlEditButton: app.controlEditButton,
         goto: app.goto,
         search_spotify: app.search_spotify,
         refresh_page: app.refresh_page,
