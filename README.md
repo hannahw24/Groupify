@@ -6,7 +6,7 @@
 **-------------------------------------**
 
 To launch the app correctly 
-1. cd into your py4web/apps/AppLayout folder
+1. cd into your py4web/apps/groupify-music folder
 2. If on windows **run** **these following** **commands** on the commandline 
 
     a. SET SPOTIPY_CLIENT_ID=f4cfb74420ed4bcaab8408922adb5820 
@@ -19,10 +19,10 @@ To launch the app correctly
        On Mac/Linux:
        export SPOTIPY_CLIENT_SECRET='d9ff6b1b8e0d4dd3a421f0c1e4f70e67'
        
-    c. SET SPOTIPY_REDIRECT_URI=http://127.0.0.1:8000/AppLayout/callback
+    c. SET SPOTIPY_REDIRECT_URI=http://127.0.0.1:8000/groupify-music/callback
     
        On Mac/Linux:
-       export SPOTIPY_REDIRECT_URI='http://127.0.0.1:8000/AppLayout/callback'
+       export SPOTIPY_REDIRECT_URI='http://127.0.0.1:8000/groupify-music/callback'
     
 3. cd back to /py4web
 4. conda activate cse183
@@ -31,13 +31,13 @@ To launch the app correctly
 
 **TO MAKE RUNNING THE APP EASIER, PUT THESE INSTRUCTIONS ON A NOTEPAD AND COPY AND PASTE INTO ANACONDA**
 
-_Your path to py4web/apps/AppLayout here_
+_Your path to py4web/apps/groupify-music here_
 
 export SPOTIPY_CLIENT_ID='f4cfb74420ed4bcaab8408922adb5820'
 
 export SPOTIPY_CLIENT_SECRET='d9ff6b1b8e0d4dd3a421f0c1e4f70e67'
 
-export SPOTIPY_REDIRECT_URI='http://127.0.0.1:8000/AppLayout/callback'
+export SPOTIPY_REDIRECT_URI='http://127.0.0.1:8000/groupify-music/callback'
 
 cd ..
 
