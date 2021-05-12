@@ -1,6 +1,3 @@
-[[extend 'layout.html']]
-<script src="https://spotify-player.herokuapp.com/spotify-player.js">
-
 var mainContainer = document.getElementById('js-main-container'),
     loginContainer = document.getElementById('js-login-container'),
     loginButton = document.getElementById('js-btn-login'),
@@ -60,58 +57,3 @@ loginButton.addEventListener('click', () => {
 });
 
 spotifyPlayer.init();
-
-
-</script>
-
-
-
-<div>
-    [[userPage = "user/" + session.get("userID") ]]
-    <div class="group_panel panel_spec" style="background-color: white;"> 
-        <div class="container">
-            <div class="login-container hidden" id="js-login-container">
-              <button class="btn btn--login" id="js-btn-login">Login with Spotify</button>
-            </div>
-            <div class="main-container hidden" id="js-main-container"></div>
-        </div>
-        </div>
-    </div>
-
-    <!--   
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script>
-      window.onSpotifyWebPlaybackSDKReady = () => {
-        const token = '[[=(token)]]';
-        const player = new Spotify.Player({
-          name: 'Groupify Website',
-          getOAuthToken: cb => { cb(token); }
-        });
-  
-        // Error handling
-        player.addListener('initialization_error', ({ message }) => { console.error(message); });
-        player.addListener('authentication_error', ({ message }) => { console.error(message); });
-        player.addListener('account_error', ({ message }) => { console.error(message); });
-        player.addListener('playback_error', ({ message }) => { console.error(message); });
-  
-        // Playback status updates
-        player.addListener('player_state_changed', state => { console.log(state); });
-  
-        // Ready
-        player.addListener('ready', ({ device_id }) => {
-          console.log('Ready with Device ID', device_id);
-        });
-  
-        // Not Ready
-        player.addListener('not_ready', ({ device_id }) => {
-          console.log('Device ID has gone offline', device_id);
-        });
-  
-        // Connect to the player!
-        player.connect();
-        
-      };
-    </script>
-    -->
-</div>
-
