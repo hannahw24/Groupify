@@ -95,7 +95,7 @@ def getIndex(userID=None):
 # Step 0: Visitor is unknown, give random ID, then make them sign in 
 # with Spotify
 @action('login', method='GET')
-@action.uses('login.html', session)
+@action.uses('index.html', session)
 def userLogin():
     if not session.get('uuid'):
         session['uuid'] = str(uuid.uuid4())
@@ -141,7 +141,7 @@ def getUserInfo():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
+        return redirect(URL('login'))
 
     # Necessary to make a call to the API.
     spotify = spotipy.Spotify(auth_manager=auth_manager)
@@ -502,7 +502,7 @@ def do_search():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
+        return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.search(form_SearchValue, type='album', limit=10)
     
@@ -595,7 +595,7 @@ def getLikedTracks():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
+        return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.current_user_saved_tracks()
     #Taken from the quick start of Spotipy authorization flow
@@ -613,7 +613,7 @@ def getPlaylists():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
+        return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     # 14 is an estimate on how long the box is 
     results = spotify.current_user_playlists(limit=12)
@@ -762,8 +762,10 @@ def parsePlaylistResults(results):
         playlistName = unescape(playlistName)
         #trackInfo = item['artists'][0]['name']
         #print(item['images'])
-        if len(item['images']) > 0:
+        try:
             icon = item['images'][0]['url']
+        except:
+            icon = "https://bulma.io/images/placeholders/128x128.png"
         trLink = item['external_urls']['spotify']
         description = item['description']
         description = unescape(description)
@@ -806,7 +808,7 @@ def getTopTracksFunction(term):
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
+        return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
 
     # long_term = all time
@@ -826,7 +828,10 @@ def getTopTracksFunction(term):
         # Get items from correct place in given Spotipy dictionary
         track = item['name']
         trackInfo = item['album']['artists'][0]['name']
-        icon = item['album']['images'][2]['url']
+        try:
+            icon = item['album']['images'][2]['url']
+        except:
+            icon = "https://bulma.io/images/placeholders/128x128.png"
         trLink = item['external_urls']['spotify']
         artLink = item['album']['artists'][0]['external_urls']['spotify']
         TopSongsList.append(track)
@@ -859,7 +864,7 @@ def getTopArtistsFunction(term):
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
+        return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
 
     # long_term = all time
@@ -879,7 +884,10 @@ def getTopArtistsFunction(term):
         artist = item['name']
         #print (artist)
         TopArtistsList.append(artist)
-        icon = item['images'][2]['url']
+        try:
+            icon = item['images'][2]['url']
+        except:
+            icon = "https://bulma.io/images/placeholders/128x128.png"
         ImgLinkList.append(icon)
         artistLink = item['external_urls']['spotify']
         ALinkList.append(artistLink)
@@ -920,7 +928,7 @@ def groupSession(userID=None):
     try:
         token = auth_manager.get_access_token()
     except:
-        return redirect('login')
+        return redirect(URL('login'))
     print ("TOKEN IS ", token["access_token"])
     profileURL = (URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()

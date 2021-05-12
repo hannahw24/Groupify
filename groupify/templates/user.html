@@ -30,7 +30,7 @@
                                 <img class="is-rounded profile_photo" href=[[=URL('user', session.get("userID"))]] 
                                         src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]>
+                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]] style="width:64px;height:64px;">
                                 [[pass]]
                             </figure>
                             <div style="padding-left: 15px; width: 78%; ">
@@ -75,7 +75,7 @@
                                     <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
                                             src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                     [[else:]]
-                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]>
+                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]] style="width:64px;height:64px;">
                                     [[pass]]
                                 </figure>
                                 <div style="padding-left: 15px; width: 78%; ">
@@ -211,7 +211,7 @@
                         <div class="tile">
                             <figure class="image is-128x128 index_pfp">
                                 [[if (profile_pic != ""):]]
-                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
+                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]" style="width:128px;height:102px;">
                                 [[else:]]
                                 <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
                                 [[pass]]
@@ -357,10 +357,9 @@
                                             <!-- Artist Genres with link to their Spotify page -->
                                             <a :href="artistURLs[i]" target="_blank" style="color:#000000"> 
                                                 <span v-if="genres != null">
-                                                <span v-if="genres[i] != ''">{{genres[i]}}</span>
+                                                <span v-if="genres[i] != ''">{{genres[i]}}<br></span>
                                                 </span>
                                             </a>
-                                            <br>
                                             <!-- Artist followers with link to their Spotify page -->
                                             <a :href="artistURLs[i]" target="_blank" style="color:#000000">
                                                 <span v-if="followers[i] != undefined">{{followers[i]}} Followers</span>
@@ -389,7 +388,7 @@
                             <div class="columns">
                                 <div class="column">
                                     <!-- Album art image with link to track -->
-                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]]></a>
+                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]] style="width:auto;height:64px;"></a>
                                 </div>
                                 <div class="column is-9">
                                     <div>
