@@ -105,9 +105,12 @@ let init = (app) => {
     };
 
     //Called to see the top 10 songs
-    app.seeTerm = () => {
+    app.seeTerm = (term) => {
         console.log("I'm in seeTerm");
-        axios.get(getTopSongs).then((result) => {
+        axios.get(getTopSongs, {params: {
+            term: term
+            }}).then((result) => {
+            console.log(term);
             app.data.termString = result.data.term_str;
             app.data.topTracks = result.data.topTracks;
             app.data.topArtists = result.data.topArtists;
@@ -121,23 +124,29 @@ let init = (app) => {
         }
     
     //Called to change the term of top 10 songs
-    app.changeTerm = (term) => {
+    app.changeTerm = (term, editable) => {
         console.log("I'm in changeTerm");
-        axios.post(getTopSongs, null, {params: {
-            term: term,
-            }}).then(() => {
-                app.seeTerm(); 
-            }).catch(() => {
-                console.log("Caught error");
-            });
+        if (editable == "True") {
+            axios.post(getTopSongs, null, {params: {
+                term: term,
+                }}).then(() => {
+                    app.seeTerm(); 
+                }).catch(() => {
+                    console.log("Caught error");
+                });
+        }
+        else {
+            app.seeTerm(term);
+        }
         };
     
-    //Called to see the top 10 songs
-    app.seeArtistTerm = () => {
+    app.seeArtistTerm = (term) => {
         console.log("I'm in seeArtistTerm");
-        axios.get(getTopArtists).then((result) => {
-            app.data.artistTerm = result.data.term_str;
+        axios.get(getTopArtists, {params: {
+            term: term
+            }}).then((result) => {
             app.data.artistNames = result.data.topArtists;
+            app.data.artistTerm = result.data.term_str;
             app.data.artistImages = result.data.imgList;
             app.data.artistURLs = result.data.artistLinks;
             app.data.genres = result.data.genres;
@@ -145,39 +154,38 @@ let init = (app) => {
             console.log("Followers", app.data.followers)
 
             app.data.genres = app.parseArray(app.data.genres);
-            /*console.log("genres is ", app.data.genres);
-            console.log("genres[0] ", app.data.genres[0]);
-
-            var res = app.data.genres[0].split("'");
-            console.log("res", res);
-            console.log("res[1] ", res[1])
-            res.splice(0, 1)
-            res.splice(res.length-1, 1)
-            app.data.genres = res
-            console.log("res", res);*/
 
             }).catch(() => {
                 //show what the bio is.
                 console.log("Error in seeArtistTerm")
-                var emptyString = ["", "", "", "", ""];
+                var emptyString = [];
+                for (i = 0; i < 9; i++) {
+                    emptyString.push("")
+                }
                 app.data.artistNames = emptyString;
                 app.data.artistImages = emptyString;
                 app.data.artistURLs = emptyString;
                 app.data.genres = emptyString;
-                app.data.followers = emptyString;
+                //empty to prevent "Followers" from appearing
+                app.data.followers = [];
             });
         }
     
     //Called to change the term of top 10 songs
-    app.changeArtistTerm = (term) => {
+    app.changeArtistTerm = (term, editable) => {
         console.log("I'm in changeArtistTerm");
-        axios.post(getTopArtists, null, {params: {
-            term: term,
-            }}).then(() => {
-                app.seeArtistTerm(); 
-            }).catch(() => {
-                console.log("Caught error");
-            });
+        if (editable == "True") {
+            axios.post(getTopArtists, null, {params: {
+                term: term
+                }}).then(() => {
+                    app.seeArtistTerm(); 
+                }).catch(() => {
+                    console.log("Caught error");
+                });
+        }
+        else {
+            app.seeArtistTerm(term); 
+        }
         };
 
     app.parseArray = (genres) => {
@@ -189,7 +197,7 @@ let init = (app) => {
             res.splice(0, 1);
             res.splice(res.length-1, 1);
             console.log("res", res);
-            for (j = 0; j < res.length; j++) {
+            for (j = 0; j < Math.min(res.length, 3); j++) {
                 tempString += res[j];
             }
             console.log("tempString", tempString);
@@ -198,20 +206,6 @@ let init = (app) => {
         console.log("returnList", returnList);
         return returnList;
     }
-    /*
-    app.seePlaylists = () => {
-        console.log("I'm in seePlaylists");
-        axios.get(getPlaylists).then((result) => {
-            let bigList = result.data.bigList;
-            app.data.playlistNames = bigList[0];
-            app.data.playlistImages = bigList[1];
-            app.data.playlistLinks = bigList[2];
-            }).then(() => {
-                //show what the bio is.
-                console.log("see playlists success");
-            });
-        };
-    */
 
 
     // We form the dictionary of all methods, so we can assign them
