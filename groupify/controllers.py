@@ -910,7 +910,7 @@ def getTopArtistsFunction(term):
     # Returned to the user profile
     return BigList
 
-@action('groupSession/<userID>')
+@action('groupSession/<userID>', method=["GET", "POST"])
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
     # Ash: set editable to False for now, not sure if setting the theme
@@ -936,11 +936,11 @@ def groupSession(userID=None):
             theme_colors = return_theme(0)
         return dict(session=session, editable=False,
             background_bot=theme_colors[0],background_top=theme_colors[1], token=token["access_token"], 
-            profile_pic=profile_pic, profileURL = profileURL, search_url = URL('do_search'))
+            profile_pic=profile_pic, profileURL = profileURL, squares_url = URL('get_squares'),search_url = URL('group_search'))
     else:
         return dict( session=session, editable=False, 
             background_bot=None, background_top=None, token=token["access_token"],
-            profile_pic=profile_pic, profileURL = profileURL, search_url = URL('group_search'))
+            profile_pic=profile_pic, profileURL = profileURL, squares_url = URL('get_squares'),search_url = URL('group_search'))
 
 #Search element for group session
 @action('group_search', method=["GET", "POST"])
@@ -954,7 +954,7 @@ def group_search():
     artistLinks = ""   
     totalResults = 0
     # Get user input from search.js
-    form_SearchValue = request.json.get("input")
+    form_SearchValue = request.json.get("input2")
     # If empty, return empty lists
     if form_SearchValue == "":
         return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
@@ -966,16 +966,16 @@ def group_search():
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect('login')
     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    results = spotify.search(form_SearchValue, type='album', limit=10)
+    results = spotify.search(form_SearchValue, type='song', limit=10)
     
     try:
         # If the search results yielded no results, then return nothing. 
-        totalResults = results["albums"]["total"]
+        totalResults = results["songs"]["total"]
         if (totalResults == 0):
             return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,
             trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
         # Else begin to parse the JSON by looking at the albums
-        results = results["albums"]
+        results = results["songs"]
     except:
         #print(results)
         return dict(session=session, topAlbums=topAlbums, topArtists=topArtists, imgList=imgList,

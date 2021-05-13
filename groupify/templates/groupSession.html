@@ -44,43 +44,43 @@
             </figure>
         </div>
 
-        <iframe src="https://open.spotify.com/track/1F6IbA7di42uPc3cff8PXV" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+        <!-- <iframe src="https://open.spotify.com/track/1F6IbA7di42uPc3cff8PXV" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe> -->
 
         <div class="columns is-mobile is-centered">
-          <div class="column is-11">
-              <!-- user types search here -->
-              <input id="songSearch" class="input" type="text" v-on:keyup="search_spotify()" placeholder="Find a song">
-              <!-- if there is at least one result -->
-              <div v-if="totalResults > 0">
-                  <!-- show tile for each result -->
-                  <div class="tile is-child box"> 
-                      <div v-for="(t, index) in trackLinks">
-                          <section>
-                              <!-- when result is clicked, add album to list at selected index -->
-                              <a @click="add_album(imgList[index], trackLinks[index], page)">
-                                  <div class="columns">
-                                      <div class="column">
-                                          <!-- Album art image with link to track -->
-                                          <img width="64" height="64" :src="imgList[index]">
-                                      </div>
-                                      <div class="column is-9">
-                                          <div>
-                                              <!-- Song title with link to track -->
-                                              <span target="_blank" style="color:#000000"><strong>{{topAlbums[index]}}</strong></span>
-                                          </div>
-                                          <div>
-                                              <!-- Artist name with link to their Spotify page -->
-                                              <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </a>
-                          </section>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
+            <div class="column is-11">
+                <!-- user types search here -->
+                <input id="songSearch" class="input" type="text" v-on:keyup="search_spotify_songs()" placeholder="Find a song">
+                <!-- if there is at least one result -->
+                <div v-if="totalResults > 0">
+                    <!-- show tile for each result -->
+                    <div class="tile is-child box"> 
+                        <div v-for="(t, index) in trackLinks">
+                            <section>
+                                <!-- when result is clicked, add album to list at selected index -->
+                                <a @click="add_song(imgList[index], trackLinks[index])">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <!-- Album art image with link to track -->
+                                            <img width="64" height="64" :src="imgList[index]">
+                                        </div>
+                                        <div class="column is-9">
+                                            <div>
+                                                <!-- Song title with link to track -->
+                                                <span target="_blank" style="color:#000000"><strong>Song</strong></span>
+                                            </div>
+                                            <div>
+                                                <!-- Artist name with link to their Spotify page -->
+                                                <span target="_blank" style="color:#000000">Artist</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
@@ -128,9 +128,10 @@
 
 [[block page_scripts]]
 <script>
+    let squares_url = "[[=XML(squares_url)]]";
     let search_url = "[[=XML(search_url)]]";
     let profileURL = "[[=XML(profileURL)]]";
 </script>
 <!-- Loads the user-specific js for Vue -->
-<script src="js/searchSong.js"></script>
+<script src="js/search.js"></script>
 [[end]]
