@@ -874,8 +874,11 @@ success!
 success!
 success!
 success!
+<<<<<<< HEAD
+=======
 timestamp: 2021-04-23T15:33:51.581656
 ALTER TABLE "dbUser" ADD "chosen_theme" CHAR(512);
+>>>>>>> a31aad06bda995e91554556bd890129cd53e2e2e
 success!
 success!
 success!
@@ -2465,6 +2468,60 @@ CREATE TABLE "longArtists"(
     "followers" TEXT,
     "topartistsofwho" INTEGER REFERENCES "dbUser" ("id") ON DELETE CASCADE  
 );
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
 success!
 success!
 success!

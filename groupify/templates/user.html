@@ -15,7 +15,7 @@
                     </span>
                     <!-- Calls function when something is entered -->
                     <form>
-                        <input id="barInput" class="input" type="text" onkeyup="searchBar()" name="search" placeholder="filter friends">
+                        <input id="barInput" class="input" type="text" onkeyup="searchBar()" name="search" placeholder="Filter Friends">
                     </form>
                 </div>
             </div>
@@ -25,50 +25,40 @@
                 <div class="tile is-parent">
                     <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                         <div class="columns">
-                            <figure class="image is-64x64">
-                                [[if (profile_pic != ""):]]
-                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
+                            <figure class="image is-64x64" >
+                                [[if (loggedInPicture == None) or (loggedInPicture == ""):]]
+                                <img class="is-rounded profile_photo" href=[[=URL('user', session.get("userID"))]] 
+                                        src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
+                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]>
                                 [[pass]]
                             </figure>
-                            <div style="padding-left: 15px; width: 78%;">
-                                <a  class="friendname"  style="color:[[=text_color]]" href="[[=URL('user', user)]]">
-                                    <strong>Me</strong>
-                                </a>
-                                <p class="friend_text" style="color:[[=text_color]];">
-                                    [[if (editable==True):]]
+                            <div style="padding-left: 15px; width: 78%; ">
+                                <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL("user", session.get("userID"))]]>
+                                    <strong>[[=(loggedInName)]]</strong></a>
+                                <div>
                                     <div>
-                                        <div>
-                                            <div v-if="true" @click="isEditingStatus = 1" class="control is-small">
-                                                <textarea spellcheck="false" class="textarea has-fixed-size" rows="2" placeholder="edit your status" name="activeStat" id="activeStat" v-model="active">
-                                                </textarea>
+                                        <div v-if="true" @click="isEditingStatus = 1" class="control is-small">
+                                            <textarea spellcheck="false" class="textarea has-fixed-size" rows="2" placeholder="edit your status" name="activeStat" id="activeStat" v-model="active">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                    <nav class="level is-mobile" style="padding-top: 5px;">
+                                        <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
+                                        <div class="level-left"></div>
+                                        <div class="level-right">
+                                            <!-- Save button -->
+                                            <div v-if="isEditingStatus === 1" class="level-item">
+                                                <button @click="save_stat(active)" class="button is-primary">
+                                                    <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
+                                            <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
+                                            <div v-if="isEditingStatus === 1" class="level-item">
+                                                <button @click="cancel_stat" class="button is-danger">
+                                                    <i class="fa fa-window-close" aria-hidden="true"></i></button>
                                             </div>
                                         </div>
-                                        <nav class="level is-mobile" style="padding-top: 5px;">
-                                            <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
-                                            <div class="level-left"></div>
-                                            <div class="level-right">
-                                                <!-- Save button -->
-                                                <div v-if="isEditingStatus === 1" class="level-item">
-                                                    <button @click="save_stat(active)" class="button is-primary">
-                                                        <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
-                                                <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
-                                                <div v-if="isEditingStatus === 1" class="level-item">
-                                                    <button @click="cancel_stat" class="button is-danger">
-                                                        <i class="fa fa-window-close" aria-hidden="true"></i></button>
-                                                </div>
-                                            </div>
-                                        </nav>
-                                    </div>
-                                    [[else:]]
-                                    <div>
-                                        <p style="color:#221B1B;"> [[=active_status]] </p>
-                                    </div>
-
-                                    [[pass]]
-                                    
-                                </p>
+                                    </nav>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -91,7 +81,7 @@
                                 <div style="padding-left: 15px; width: 78%; ">
                                     <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
-                                    <p class="friend_text" style="color:[[=text_color]];">
+                                    <p class="friend_text" style="color:[[=text_color]]; height:45px; ">
                                         [[=(row["active_stat"])]] </p>
                                 </div>
                             </div>
@@ -111,7 +101,7 @@
 
     <div class="main_profile">
         <!-- albumns features -->
-        <section>
+        <div class="album_section">
         <div class="row">
             <div class="columns is-mobile is-1">
                 [[for i in range(6):]]
@@ -134,22 +124,21 @@
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                                <img src="images/square.png">
                             </figure>
                         </a>
                     </div>
                     <div v-else class="column is-2 album_box">
                         <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                            <img src="images/square.png">
                         </figure>
                     </div>
                     [[pass]]
                 [[pass]]
             </div>
         </div>
-        </section>
+        
 
-        <section>
         <div class="row">
             <div class="columns is-mobile is-1">
                 [[for i in range(6, 12):]]
@@ -172,18 +161,21 @@
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                                <img src="images/square.png">
                             </figure>
                         </a>
                     </div>
-                    <div v-else class="column is-2 album_box">
+                    <div v-else class="column is-2 album_box" >
                         <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                            <img src="images/square.png">
                         </figure>
                     </div>
                     [[pass]]
                 [[pass]]
             </div>
+        </div>
+        </div>
+        <section>
             [[if (editable==True):]]
                 <div class="level-item">
                 <div id="editButton">
@@ -208,60 +200,61 @@
                 </div>
             [[pass]]
 
-        </div>
+        
         </section>
         
         <br><br>
         
         <!-- profile features -->
         <section>
-        <div class="tile is-ancestor" >
-            <div class="tile is-vertical is-parent is-8">
-                <article class="tile is-child box"  style="background-Color:[[=tile_color]]">
-                    <div class="tile">
-                        <figure class="image is-128x128 index_pfp">
-                            [[if (profile_pic != ""):]]
-                            <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
-                            [[else:]]
-                            <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
-                            [[pass]]
-                        </figure>
-                            <!-- <p>Bio and Status</p> -->
-                            <div style="margin-left:2%; padding-left: 15px;  width: 100%;">
-                                <p style="color:#221B1B; padding-bottom: 5px;" class="labels">[[=display_name]]</p>
-                                [[if (editable==True):]]
-                                <div >
-                                    <div v-if="true" @click="isEditingBio = 1" class="control is-small">
-                                        <textarea spellcheck="false" class="textarea" placeholder="Bio" name="bio&stat" id="bio&stat" v-model="bio">
-                                        </textarea>
-                                    </div>
-                                </div>
-                                <nav class="level is-mobile" style="padding-top: 5px;">
-                                    <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
-                                    <div class="level-left"></div>
-                                    <div class="level-right">
-                                        <!-- Save button -->
-                                        <div v-if="isEditingBio === 1" class="level-item">
-                                            <button @click="save_bio(bio)" class="button is-primary">
-                                                <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
-                                        <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
-                                        <div v-if="isEditingBio === 1" class="level-item">
-                                            <button @click="cancel_bio" class="button is-danger">
-                                                <i class="fa fa-window-close" aria-hidden="true"></i></button>
+            <div class="tile is-ancestor" >
+                <div class="tile is-vertical is-parent is-8">
+                    <article class="tile is-child box"  style="background-Color:[[=tile_color]]">
+                        <div class="tile">
+                            <figure class="image is-128x128 index_pfp">
+                                [[if (profile_pic != ""):]]
+                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
+                                [[else:]]
+                                <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
+                                [[pass]]
+                            </figure>
+                                <!-- <p>Bio and Status</p> -->
+                                <div style="margin-left:2%; padding-left: 15px;  width: 100%;">
+                                    <p style="color:#221B1B; padding-bottom: 5px;" class="labels">[[=display_name]]</p>
+                                    [[if (editable==True):]]
+                                    <div >
+                                        <div v-if="true" @click="isEditingBio = 1" class="control is-small">
+                                            <textarea spellcheck="false" class="textarea" placeholder="Bio" name="bio&stat" 
+                                            id="bio&stat" v-model="bio" maxlength="300"> 
+                                            </textarea>
                                         </div>
                                     </div>
-                                </nav>
-                                [[else:]]
-                                <div >
-                                    <!-- <div v-if="true" class="control is-small">
-                                        <textarea spellcheck="false" class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
-                                        </textarea>
-                                    </div> -->
-                                    <p style="color:#221B1B;"> [[=bio_status]] </p>
+                                    <nav class="level is-mobile" style="padding-top: 5px;">
+                                        <!--Filler level left because I believe Bulma needs this. Might be unnecessary-->
+                                        <div class="level-left"></div>
+                                        <div class="level-right">
+                                            <!-- Save button -->
+                                            <div v-if="isEditingBio === 1" class="level-item">
+                                                <button @click="save_bio(bio)" class="button is-primary">
+                                                    <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
+                                            <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
+                                            <div v-if="isEditingBio === 1" class="level-item">
+                                                <button @click="cancel_bio" class="button is-danger">
+                                                    <i class="fa fa-window-close" aria-hidden="true"></i></button>
+                                            </div>
+                                        </div>
+                                    </nav>
+                                    [[else:]]
+                                    <div >
+                                        <!-- <div v-if="true" class="control is-small">
+                                            <textarea spellcheck="false" class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
+                                            </textarea>
+                                        </div> -->
+                                        <p style="color:#221B1B;"> [[=bio_status]] </p>
+                                    </div>
+                                    [[pass]]
                                 </div>
-                                [[pass]]
                             </div>
-                        </div>
                         
                     </article>
                 <div class="tile is-ancestor" >
@@ -271,7 +264,6 @@
                             <strong>Top 10 Songs</strong>
                                 <!-- For each top song -->
 	                            <!-- toggle top songs length -->
-                                [[if (editable==True):]]	
                                 <div class="dropdown is-hoverable is-pulled-right is-right">	
                                     <div class="dropdown-trigger">	
                                       <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
@@ -283,20 +275,19 @@
                                     </div>
                                     <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
                                       <div class="dropdown-content">	
-                                        <a class="dropdown-item" @click="changeTerm('1')">	
+                                        <a class="dropdown-item" @click="changeTerm('1', '[[=(editable)]]')">	
                                           <p>last 4 weeks</p>	
                                         </a>	
-                                        <a class="dropdown-item" @click="changeTerm('2')">	
+                                        <a class="dropdown-item" @click="changeTerm('2', '[[=(editable)]]')">	
                                           <p>last 6 months</p>	
                                         </a>	
-                                        <a class="dropdown-item" @click="changeTerm('3')">	
+                                        <a class="dropdown-item" @click="changeTerm('3', '[[=(editable)]]')">	
                                           <p>of all time</p>	
                                         </a>	
                                       </div>	
                                     </div>
                                   </div>
                                 <br>	
-                                [[pass]]	
                                 <br>	
                                 <br>
                                 <!-- v-for wants to start at 1, "(n, i)" makes it start at 0-->
@@ -325,7 +316,6 @@
                     <div class="tile is-vertical is-parent">
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             <strong>Top Artists</strong>
-                            [[if (editable==True):]]	
                             <div class="dropdown is-hoverable is-pulled-right is-right">	
                                 <div class="dropdown-trigger">	
                                   <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">	
@@ -337,24 +327,23 @@
                                 </div>
                                 <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
                                   <div class="dropdown-content">	
-                                    <a class="dropdown-item" @click="changeArtistTerm('1')">	
+                                    <a class="dropdown-item" @click="changeArtistTerm('1', '[[=(editable)]]')">	
                                       <p>last 4 weeks</p>	
                                     </a>	
-                                    <a class="dropdown-item" @click="changeArtistTerm('2')">	
+                                    <a class="dropdown-item" @click="changeArtistTerm('2', '[[=(editable)]]')">	
                                       <p>last 6 months</p>	
                                     </a>	
-                                    <a class="dropdown-item" @click="changeArtistTerm('3')">	
+                                    <a class="dropdown-item" @click="changeArtistTerm('3', '[[=(editable)]]')">	
                                       <p>of all time</p>	
                                     </a>	
                                   </div>	
                                 </div>
                               </div>
                             <br>	
-                            [[pass]]	
                             <br>	
                             <br>
                             <!-- v-for wants to start at 1, "(n, i)" makes it start at 0-->
-                            <div v-for="(n, i) in 5">
+                            <div v-for="(n, i) in 8">
                             <section>
                                 <div class="columns">
                                     <div class="column">
@@ -376,7 +365,7 @@
                                             <br>
                                             <!-- Artist followers with link to their Spotify page -->
                                             <a :href="artistURLs[i]" target="_blank" style="color:#000000">
-                                                <span v-if="followers[i] != ''">{{followers[i]}} Followers</span>
+                                                <span v-if="followers[i] != undefined">{{followers[i]}} Followers</span>
                                             </a>
                                         </div>
                                     </div>
@@ -384,10 +373,12 @@
                             </section>
                             </div>
                         </div>
+                        <!--  
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             Song of the day
 
                         </div>
+                         -->
                     </div>
                 </div>
             </div>

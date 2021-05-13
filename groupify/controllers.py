@@ -30,16 +30,14 @@ from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.url_signer import URLSigner
+from html.parser import HTMLParser
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy.oauth2 as oauth2
-import time
 import os
 import uuid
-import configparser
 ################################################
 os.environ["SPOTIPY_CLIENT_ID"] = "f4cfb74420ed4bcaab8408922adb5820"
 os.environ["SPOTIPY_CLIENT_SECRET"] = "d9ff6b1b8e0d4dd3a421f0c1e4f70e67"
@@ -151,6 +149,7 @@ def getUserInfo():
     results = spotify.current_user()
 
     display_name = results["display_name"]
+    display_name = display_name.capitalize()
     userID = results["id"]
     # Sets the profile pic of the user, if no profile pic found on spotify, set it to nothing
     if (len(results["images"]) != 0):
@@ -278,6 +277,7 @@ def getTopArtistsLen(userID, term):
     imgList = artistList[1] # URLs to images
     artistLinks = artistList[2] # URLs to artists
     genres = artistList[3] # Artist's genres
+    print(topArtists)
     
     followers = artistList[4] # Number of followers the artist has
 
@@ -379,19 +379,23 @@ def getUserProfile(userID=None):
     friendsList = []
     # The friends list shown will ALWAYS be of the user who is logged in
     userNumber = loggedInUserEntry[0]["id"]
+
+    # Used to display yourself in the friend's navbar.
+    loggedInPicture = loggedInUserEntry[0]["profile_pic"]
+    loggedInName = loggedInUserEntry[0]["display_name"]
+    loggedStatus = loggedInUserEntry[0]["active_stat"]
+
     friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
     # To see if the button "Unfollow" or "Follow" appears
     isFriend = db((db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID"))) & (db.dbFriends.userID == userID)).select().as_list()
     if (isFriend != []):
         isFriend=True
-    
     # get the current chosen theme in the db.user, and set 5 varibles to be passed to html
     # [background_bot, background_top, friend_tile, tile_color, text_color]
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
     dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
     display_name=dbUserEntry[0]["display_name"]
     bio_status=dbUserEntry[0]["bio_status"]
-    active_status=dbUserEntry[0]["active_stat"]
     return dict(
         session=session, 
         editable=editable_profile(userID), 
@@ -399,7 +403,10 @@ def getUserProfile(userID=None):
         profile_pic=profile_pic,
         display_name=display_name,
         bio_status=bio_status,
-        active_status=active_status,
+
+        loggedInPicture=loggedInPicture,
+        loggedInName=loggedInName,
+        loggedStatus=loggedStatus,
 
         background_bot=theme_colors[0],
         background_top=theme_colors[1],
@@ -414,7 +421,7 @@ def getUserProfile(userID=None):
 
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
         userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"),
-        getTopArtists=URL("getTopArtists", userID), userStat=URL("userStat", userID))
+        getTopArtists=URL("getTopArtists", userID), userStat=URL("userStat", session.get("userID")))
 
 # -----------------------------------Search Page-------------------------------------
 
@@ -747,15 +754,20 @@ def parsePlaylistResults(results):
     TLinkList = []
     #ALinkList = []
     BigList = []
+    # Clean any potential HTML markings
+    unescape = HTMLParser().unescape
     for idx, item in enumerate(results['items']):
         # Get items from correct place in given Spotipy dictionary
         playlistName = item['name']
+        playlistName = unescape(playlistName)
         #trackInfo = item['artists'][0]['name']
         #print(item['images'])
         if len(item['images']) > 0:
             icon = item['images'][0]['url']
         trLink = item['external_urls']['spotify']
         description = item['description']
+        description = unescape(description)
+        print ("description is ", description, "\n")
         #artLink = item['artists'][0]['external_urls']['spotify']
         TopSongsList.append(playlistName)
         #TopArtistsList.append(trackInfo)
@@ -800,7 +812,7 @@ def getTopTracksFunction(term):
     # long_term = all time
     # medium_term = 6 months
     # short_term = 4 weeks
-    results = spotify.current_user_top_tracks(limit=10, offset=0, time_range=term)    #Taken from the quick start of Spotipy authorization flow
+    results = spotify.current_user_top_tracks(limit=50, offset=0, time_range=term)    #Taken from the quick start of Spotipy authorization flow
     #https://spotipy.readthedocs.io/en/2.18.0/#authorization-code-flow
     # Initialize Lists for each field
     TopSongsString= ""
@@ -853,7 +865,7 @@ def getTopArtistsFunction(term):
     # long_term = all time
     # medium_term = 6 months
     # short_term = 4 weeks
-    results = spotify.current_user_top_artists(limit=5, offset=0, time_range=term)    
+    results = spotify.current_user_top_artists(limit=50, offset=0, time_range=term)    
     TopArtistsList = []
     ImgLinkList = []
     TLinkList = []
@@ -933,7 +945,7 @@ def groupSession(userID=None):
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
 def getSettings(userID=None):
-    profileURL = "http://127.0.0.1:8000"+(URL("user", userID))
+    profileURL = "http://shams.pythonanywhere.com"+(URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
@@ -1009,8 +1021,15 @@ def getTopSongs(userID=None):
     # Finds the value of the term chosen by the user. 
     # This "term" is about what period of top songs to display on 
     # a user's profile.
-    term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term
-    # Obtains the whole entry of the user in the correct table.
+
+    # This is populated if a person who is not the owner wants to see a different term
+    term = request.params.get('term')
+    print ("1term is ", term)
+
+    # This is populated if by default
+    if term == None:
+        term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term    # Obtains the whole entry of the user in the correct table.
+    print ("term is ", term)
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
         term_str = 'last 4 weeks'	
@@ -1054,6 +1073,7 @@ def getTopSongsPost(userID=None):
     # Gets the term selected by the user, which is currently in user.js 
     # in the changeTerm() function
     term = request.params.get('term')
+    print("postTerm ", term)
     db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term)	
     return dict(session=session)	
 
@@ -1065,7 +1085,12 @@ def getTopArtists(userID=None):
     # Finds the value of the term chosen by the user. 
     # This "term" is about what period of top songs to display on 
     # a user's profile.
-    term = (db.dbUser[getIDFromUserTable(userID)]).artist_term
+    
+    # This is populated if a person who is not the owner wants to see a different term
+    term = request.params.get('term')
+    # This is populated if by default
+    if term == None:
+        term = (db.dbUser[getIDFromUserTable(userID)]).artist_term
     #print("term is ", term)
     # Obtains the whole entry of the user in the correct table.
     # Also sets the term string to display on the dropdown menu.
@@ -1091,7 +1116,7 @@ def getTopArtists(userID=None):
         followers = termList[0]["followers"]
 
     # This handles if a user hasn't listened to any songs or has less than 10 songs listened to.
-    if (topArtists == None) or (len(topArtists) < 5):
+    if (topArtists == None) or len(topArtists) < 5:
         fillerTopArtists = ["", "",  "",  "", ""]
         topArtists = fillerTopArtists
         imgList = fillerTopArtists
