@@ -1,26 +1,18 @@
 """
 This file defines actions, i.e. functions the URLs are mapped into
 The @action(path) decorator exposed the function at URL:
-
     http://127.0.0.1:8000/{app_name}/{path}
-
 If app_name == '_default' then simply
-
     http://127.0.0.1:8000/{path}
-
 If path == 'index' it can be omitted:
-
     http://127.0.0.1:8000/
-
 The path follows the bottlepy syntax.
-
 @action.uses('generic.html')  indicates that the action uses the generic.html template
 @action.uses(session)         indicates that the action uses the session
 @action.uses(db)              indicates that the action uses the db
 @action.uses(T)               indicates that the action uses the i18n & pluralization
 @action.uses(auth.user)       indicates that the action requires a logged in user
 @action.uses(auth)            indicates that the action requires the auth object
-
 session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
@@ -1075,27 +1067,101 @@ def delete_profile(userID=None):
 @action('add_friend', method=["GET", "POST"])
 @action.uses(db, auth, 'add_friend.html', session)
 def addFriend():
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    userNumber = loggedInUserEntry[0]["id"]
+
+    # [background_bot, background_top, friend_tile, tile_color, text_color]
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(session.get("userID"))]).chosen_theme)
+    # get database of all db users
+    allusers = db(db.dbUser).select(orderby=db.dbUser.display_name).as_list()
+    friendsList = db(db.dbFriends.friendToWhoID == userNumber).select(orderby=db.dbFriends.display_name).as_list()
+
+    friend_ids = []
+    for frand in friendsList:
+        print(frand["display_name"])
+        friend_ids.append(frand["userID"])
+    print(friend_ids)   
+
+
     if request.method == "GET":
-        return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=False, background_bot=theme_colors[0], 
-                background_top=theme_colors[1])
+        return dict(
+            session=session, 
+            editable=False, 
+            nullError=False, 
+            alreadyFriend=False, 
+            CannotAddSelf=False, 
+            background_bot=theme_colors[0], 
+            background_top=theme_colors[1],
+            friend_tile=theme_colors[2],
+            tile_color=theme_colors[3],
+            text_color=theme_colors[4],
+            allusers = allusers,
+            friendsList=friendsList,
+            friend_ids=friend_ids,
+            )
+
     else:
         loggedInUserId = session.get("userID")
         form_userID = request.params.get("userID")
         dbUserEntry = (db(db.dbUser.userID == form_userID).select().as_list())
         if dbUserEntry == []:
-            return dict(session=session, editable=False, nullError=True, alreadyFriend=False, CannotAddSelf=False, background_bot=theme_colors[0], 
-                background_top=theme_colors[1])
+            return dict(
+                session=session, 
+                editable=False, 
+                nullError=True, 
+                alreadyFriend=False, 
+                CannotAddSelf=False, 
+                background_bot=theme_colors[0], 
+                background_top=theme_colors[1],
+                friend_tile=theme_colors[2],
+                tile_color=theme_colors[3],
+                text_color=theme_colors[4],
+                allusers = allusers,
+                friendsList=friendsList,
+                friend_ids=friend_ids,
+                )
         if (checkIfFriendDuplicate(form_userID)):
-            return dict(session=session, editable=False, nullError=False, alreadyFriend=True, CannotAddSelf=False, background_bot=theme_colors[0], 
-                background_top=theme_colors[1])
+            return dict(
+                session=session, 
+                editable=False, 
+                nullError=False, 
+                alreadyFriend=True, 
+                CannotAddSelf=False, 
+                background_bot=theme_colors[0], 
+                background_top=theme_colors[1],
+                friend_tile=theme_colors[2],
+                tile_color=theme_colors[3],
+                text_color=theme_colors[4],
+                allusers = allusers,
+                friendsList=friendsList,
+                friend_ids=friend_ids,
+                )
         if (form_userID == loggedInUserId):
-            return dict(session=session, editable=False, nullError=False, alreadyFriend=False, CannotAddSelf=True, background_bot=theme_colors[0], 
-                background_top=theme_colors[1])
-        db.dbFriends.insert(userID=form_userID, friendToWhoID=getIDFromUserTable(loggedInUserId), 
-                            profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"],
-                            active_stat=dbUserEntry[0]["active_stat"])
-        return redirect(URL('user', session.get("userID")))
+            return dict(
+                session=session, 
+                editable=False, 
+                nullError=False, 
+                alreadyFriend=False, 
+                CannotAddSelf=True, 
+                background_bot=theme_colors[0], 
+                background_top=theme_colors[1],
+                friend_tile=theme_colors[2],
+                tile_color=theme_colors[3],
+                text_color=theme_colors[4],
+                allusers = allusers,
+                friendsList=friendsList,
+                friend_ids=friend_ids,
+                )
+
+        db.dbFriends.insert(
+                userID=form_userID, 
+                friendToWhoID=getIDFromUserTable(loggedInUserId), 
+                profile_pic=dbUserEntry[0]["profile_pic"], 
+                display_name=dbUserEntry[0]["display_name"], 
+                bio_status=dbUserEntry[0]["bio_status"], 
+                active_stat=dbUserEntry[0]["active_stat"]
+            )
+        return redirect(URL('add_friend'))
 
 @action('addFriendFromProfile/<userID>', method=["GET"])
 @action.uses(db, session)
@@ -1126,10 +1192,12 @@ def getTopSongs(userID=None):
 
     # This is populated if a person who is not the owner wants to see a different term
     term = request.params.get('term')
+    print ("1term is ", term)
 
     # This is populated if by default
     if term == None:
         term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term    # Obtains the whole entry of the user in the correct table.
+    print ("term is ", term)
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
         term_str = 'last 4 weeks'	
@@ -1173,6 +1241,7 @@ def getTopSongsPost(userID=None):
     # Gets the term selected by the user, which is currently in user.js 
     # in the changeTerm() function
     term = request.params.get('term')
+    print("postTerm ", term)
     db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term)	
     return dict(session=session)	
 
@@ -1291,13 +1360,13 @@ def delete_contact(userID=None):
     person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
     if person is None or person == []:
         # Nothing to edit.  This should happen only if you tamper manually with the URL.
-        redirect(URL('user', userID))
+        return redirect(URL('add_friend'))
     else:
         person = person[0]
         friendToWhoID = person["friendToWhoID"]
         if friendToWhoID == getIDFromUserTable(session.get("userID")):
             db(db.dbFriends.id == person["id"]).delete()
-        redirect(URL('user', userID))
+            return redirect(URL('add_friend'))
 
 # change the db.user's perfered theme
 @action('user/<userID>/theme/<theme_id:int>')

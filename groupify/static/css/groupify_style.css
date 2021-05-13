@@ -338,3 +338,24 @@ p.friend_text{
     color: green;
     font-size: small;
 }
+
+/* ********************** ADD FRIEND PAGE ********************** */
+
+.addfriend_panel{
+    height: 90%;
+    width: 80%;
+    top: 10%;
+    left: 10%;
+    position: fixed;
+    overflow-x: hidden;
+    overflow-y: hidden; 
+    padding: 20px;
+    z-index: 1; /* Stay on top */
+}
+
+.add_friend_results{
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 75%;
+    
+}
