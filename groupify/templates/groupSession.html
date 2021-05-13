@@ -39,11 +39,11 @@
         <progress class="progress" :value="songProgressBar" max="100"></progress>
         <nav class="level">
           <!-- Left side -->
-          <span class="level-left">
-            <span class="level-item">
-              <strong>{{playingTrackName}} </strong>
-            </span>
-          </span>
+          <div class="level-left">
+            <div class="level-item">
+              <strong style="width:300px;">{{playingTrackName}} </strong>
+            </div>
+          </div>
           <span class="level-right">
             <span class="level-item">
               <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
@@ -51,9 +51,7 @@
           </span>
         </nav>
         {{playingTrackArtist}}
-
-
-
+  </div>
 </div>
 [[block page_scripts]]
 <script>
