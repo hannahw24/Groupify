@@ -19,16 +19,18 @@ let init = (app) => {
         server_coverList: [], // server's list of album covers
         server_urlList: [], // server's list of Spotify links
         topAlbums: [], // Search result titles
+        topTracks: [],
         topArtists: [], // Search result artists
         trackLinks: [], // Search result links
         artistLinks: [], // Search result artist links
         imgList: [], // Search result album covers
         totalResults: 0, // Number of results
+        queueListImage: [], //list of songs in queue; picture
+        queueListURL: [], //list of songs in queue; link
     };
     
     // Uses user input as it is types to search Spotify
     app.search_spotify = () => {
-        
         input = document.getElementById('barInput'); // Get input from searcg bar
         input = input.value;
         console.log(input);
@@ -48,7 +50,7 @@ let init = (app) => {
             console.log("Caught error");
         });
     };
-    
+
     app.compare = () => {
         // Check each entry to see if edited
         // Currently unused

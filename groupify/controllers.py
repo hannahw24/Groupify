@@ -948,11 +948,13 @@ def groupSession(userID=None):
             theme_colors = return_theme(0)
         return dict(session=session, editable=False,
             background_bot=theme_colors[0],background_top=theme_colors[1], token=token["access_token"], 
-            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID))
+            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
+            squares_url = URL('get_squares'),search_url = URL('group_search'))
     else:
         return dict( session=session, editable=False, 
             background_bot=None, background_top=None, token=token["access_token"],
-            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID))
+            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
+            squares_url = URL('get_squares'),search_url = URL('group_search'))
 
 @action('currentPlaying/<userID>', method=["GET"])
 @action.uses(session)
@@ -971,9 +973,9 @@ def getCurrentPlaying(userID=None):
         # Isolating the URI
         trackURI = trackURI.replace("spotify:track:", "")
         curPosition = results["progress_ms"]
-        print("curPosition = ", curPosition)
+        #print("curPosition = ", curPosition)
         trackLength = results["item"]["duration_ms"]
-        print("trackLength = ", trackLength)
+        #print("trackLength = ", trackLength)
 
     except:
         trackName = "None"
@@ -991,6 +993,56 @@ def getCurrentPlaying(userID=None):
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength)
 
 #start_playback(device_id=None, context_uri=None, uris=None, offset=None, position_ms=None)
+
+#Search element for group session
+@action('group_search', method=["GET", "POST"])
+@action.uses(session)
+def group_search():
+    # Initialize empty lists
+    topTracks = ""
+    topArtists = ""
+    imgList = ""
+    trackLinks = ""
+    artistLinks = ""   
+    totalResults = 0
+    # Get user input from search.js
+    form_SearchValue = request.json.get("input2")
+    # If empty, return empty lists
+    if form_SearchValue == "":
+        return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+    
+    # Get results from Spotify
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect('login')
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    results = spotify.search(form_SearchValue, type='track', limit=10)
+    #print(results)
+    try:
+        # If the search results yielded no results, then return nothing. 
+        totalResults = results["tracks"]["total"]
+        if (totalResults == 0):
+            return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+            trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+        # Else begin to parse the JSON by looking at the albums
+        results = results["tracks"]
+    except:
+        #print(results)
+        return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+
+    # Parses through the JSON and returns a list of lists with the information we desire
+    biglist = getSearchResults(results)
+    topTracks = biglist[0]
+    topArtists = biglist[1]
+    imgList = biglist[2]
+    trackLinks = biglist[3]
+    artistLinks = biglist[4]
+    # Return this information to display
+    return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+    trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
 
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)

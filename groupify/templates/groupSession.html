@@ -10,6 +10,11 @@
             &nbsp; Back
         </a>
 
+        <p style="color:#221B1B;" class="labels">Share Your Session</p>
+        <input type="text" value="[[=(profileURL)]]" id="sessionLink" readonly style="width: 50%;">
+        <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
+        <p class="smallgreentext"> Send your friends this link to share your group session!</p>
+
         <figure class="image is-128x128 profile_photo group_pfp">
             [[if (profile_pic != ""):]]
             <img class="is-rounded" src="[[=(profile_pic)]]">
@@ -37,7 +42,7 @@
             </figure>
         </div>
         <progress class="progress" :value="songProgressBar" max="100"></progress>
-        <nav class="level">
+        <nav class="level" style="margin-bottom: 1px;">
           <!-- Left side -->
           <div class="level-left">
             <div class="level-item">
@@ -46,16 +51,72 @@
           </div>
           <span class="level-right">
             <span class="level-item">
-              <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
+              <span style="width:300px;" v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
             </span>
           </span>
+          <br>
+          <div class="level-left">
+            <div class="level-item">
+              <strong style="width:300px;">{{playingTrackName}} </strong>
+            </div>
+          </div>
         </nav>
-        {{playingTrackArtist}}
+        <span>{{playingTrackArtist}}</span>
+        <br>        <br>
+        <div class="columns is-mobile is-centered">
+          <div class="column is-11">
+              <!-- user types search here -->
+              <input id="songSearch" class="input" type="text" v-on:keyup="search_spotify_songs()" placeholder="Find a song">
+              <!-- if there is at least one result -->
+              <div v-if="totalResults > 0">
+                  <!-- show tile for each result -->
+                  <div class="tile is-child box"> 
+                      <div v-for="(t, index) in trackLinks">
+                          <section>
+                              <!-- when result is clicked, add album to list at selected index -->
+                              <a @click="add_song(imgList[index], trackLinks[index])">
+                                  <div class="columns">
+                                      <div class="column">
+                                          <!-- Album art image with link to track -->
+                                          <img width="64" height="64" :src="imgList[index]">
+                                      </div>
+                                      <div class="column is-9">
+                                          <div>
+                                              <!-- Song title with link to track -->
+                                              <span target="_blank" style="color:#000000"><strong>{{topTracks[index]}}</strong></span>
+                                          </div>
+                                          <div>
+                                              <!-- Artist name with link to their Spotify page -->
+                                              <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
+                                          </div>
+                                      </div>
+                                  </div>
+                                </a>
+                            </section>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
   </div>
 </div>
+
+<script>
+function getGroupLink() {
+  var link = document.getElementById("sessionLink");
+  link.select();
+  link.setSelectionRange(0, 99999)
+  document.execCommand("copy");
+  alert("Copied the text: " + link.value);
+}
+</script>
+
 [[block page_scripts]]
 <script>
     let currentPlaying = "[[=XML(currentPlaying)]]";
+    let squares_url = "[[=XML(squares_url)]]";
+    let search_url = "[[=XML(search_url)]]";
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]

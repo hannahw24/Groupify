@@ -19,6 +19,14 @@ let init = (app) => {
       currSeconds: "",
       lengthMinutes: "",
       lengthSeconds: "",
+      topTracks: "", 
+      topArtists: "",
+      imgList: "",
+      artistLinks: "",
+      totalResults: "",
+      totalResults: 0, // Number of results
+      queueListImage: [], //list of songs in queue; picture
+      queueListURL: [], //list of songs in queue; link
     };
     
     app.getPlayingTrack = () => {
@@ -45,24 +53,57 @@ let init = (app) => {
         if (app.data.lengthSeconds < 10) {
           app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
         }
-        console.log(app.data.lengthSeconds);
+        //console.log(app.data.lengthSeconds);
 
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
 
         //var spotifyTrackLinkPrefix = "https://open.spotify.com/embed/track/";
         //app.data.playingTrackURI = spotifyTrackLinkPrefix.concat(result.data.trackURI);
         }).then(() => {
-            //show what the bio is.
-            console.log("getPlayingTrack Finished");
+            //console.log("getPlayingTrack Finished");
         });
     }
 
+    app.search_spotify_songs = () => {
+        
+      input2 = document.getElementById('songSearch'); // Get input from searcg bar
+      input2 = input2.value;
+      console.log(input2);
+      // Send to server
+      axios.post(search_url, {
+          input2: input2,
+      }).then((result) => {
+          // Update all search result fields with server result
+          app.vue.topTracks = result.data.topTracks;
+          app.vue.topArtists = result.data.topArtists;
+          app.vue.imgList = result.data.imgList;
+          app.vue.trackLinks = result.data.trackLinks;
+          app.vue.artistLinks = result.data.artistLinks;
+          app.vue.totalResults = result.data.totalResults;
+          console.log(result2);
+      }).catch(() => {
+          console.log("Caught error");
+      });
+  };
 
+    // Adds an album to the banner
+    app.add_song = (cover, url) =>{
+        // If valid index of a song
+        // if (i >= 0 && i < 12) {
+        //     // Update album data
+        //     app.vue.queueListImage[i] = cover;
+        //     app.vue.queueListURL[i] = url;
+        // }
+        app.vue.queueListImage[i] = cover;
+        app.vue.queueListURL[i] = url;
+    };
 
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
       getPlayingTrack: app.getPlayingTrack,
+      search_spotify_songs: app.search_spotify_songs,
+      add_song: app.add_song,
     };
 
     // This creates the Vue instance.
