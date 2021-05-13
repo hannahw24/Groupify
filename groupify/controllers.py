@@ -1004,11 +1004,6 @@ def addFriend():
     print(friend_ids)   
 
 
-    # To see if the button "Unfollow" or "Follow" appears
-    # isFriend = db((db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID"))) & (db.dbFriends.userID == session.get("userID"))).select().as_list()
-    # if (isFriend != []):
-    #     isFriend=True
-
     if request.method == "GET":
         return dict(
             session=session, 
