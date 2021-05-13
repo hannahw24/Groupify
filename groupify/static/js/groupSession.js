@@ -11,7 +11,14 @@ let init = (app) => {
       playingTrackName: "",
       playingTrackArtist: "",
       playingTrackImage: "",
-      playingTrackURI: "",
+      //playingTrackURI: "",
+      playingTrackPos: "",
+      playingTrackLength: "",
+      songProgressBar: "",
+      currMinutes: "",
+      currSeconds: "",
+      lengthMinutes: "",
+      lengthSeconds: "",
     };
     
     app.getPlayingTrack = () => {
@@ -20,8 +27,30 @@ let init = (app) => {
         app.data.playingTrackName = result.data.trackName;
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
-        var spotifyTrackLinkPrefix = "https://open.spotify.com/embed/track/";
-        app.data.playingTrackURI = spotifyTrackLinkPrefix.concat(result.data.trackURI);
+
+        app.data.playingTrackPos = result.data.curPosition;
+        app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
+        app.data.playingTrackPos = app.data.playingTrackPos/1000;
+        app.data.currMinutes = Math.floor(app.data.playingTrackPos / 60);
+        app.data.currSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
+        if (app.data.currSeconds < 10) {
+          app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+        }
+
+        app.data.playingTrackLength = result.data.trackLength;
+        app.data.playingTrackLength = parseInt(app.data.playingTrackLength);
+        app.data.playingTrackLength = app.data.playingTrackLength/1000;
+        app.data.lengthMinutes = Math.floor(app.data.playingTrackLength / 60);
+        app.data.lengthSeconds = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
+        if (app.data.lengthSeconds < 10) {
+          app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
+        }
+        console.log(app.data.lengthSeconds);
+
+        app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+
+        //var spotifyTrackLinkPrefix = "https://open.spotify.com/embed/track/";
+        //app.data.playingTrackURI = spotifyTrackLinkPrefix.concat(result.data.trackURI);
         }).then(() => {
             //show what the bio is.
             console.log("getPlayingTrack Finished");

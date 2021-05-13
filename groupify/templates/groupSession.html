@@ -32,54 +32,29 @@
     </div>
     <div class="queue_panel panel_spec" style="background-color: white;"> 
         <div class="box">
-          <iframe :src="playingTrackURI" style="width:400px;height:410px;" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-          <!--
             <figure class="image">
                 <img :src="playingTrackImage">
             </figure>
-          -->
         </div>
-        <!-- 
-        <strong>{{playingTrackName}}</strong> <br>
+        <progress class="progress" :value="songProgressBar" max="100"></progress>
+        <nav class="level">
+          <!-- Left side -->
+          <span class="level-left">
+            <span class="level-item">
+              <strong>{{playingTrackName}} </strong>
+            </span>
+          </span>
+          <span class="level-right">
+            <span class="level-item">
+              <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
+            </span>
+          </span>
+        </nav>
         {{playingTrackArtist}}
-        -->
-    </div>
+
+
 
 </div>
-<script src="https://sdk.scdn.co/spotify-player.js"></script>
-<script>
-  window.onSpotifyWebPlaybackSDKReady = () => {
-    const token = '[[=(token)]]';
-    const player = new Spotify.Player({
-      name: 'Groupify Website',
-      getOAuthToken: cb => { cb(token); }
-    });
-
-    // Error handling
-    player.addListener('initialization_error', ({ message }) => { console.error(message); });
-    player.addListener('authentication_error', ({ message }) => { console.error(message); });
-    player.addListener('account_error', ({ message }) => { console.error(message); });
-    player.addListener('playback_error', ({ message }) => { console.error(message); });
-
-    // Playback status updates
-    player.addListener('player_state_changed', state => { console.log(state); });
-
-    // Ready
-    player.addListener('ready', ({ device_id }) => {
-      console.log('Ready with Device ID', device_id);
-    });
-
-    // Not Ready
-    player.addListener('not_ready', ({ device_id }) => {
-      console.log('Device ID has gone offline', device_id);
-    });
-
-    // Connect to the player!
-    player.connect();
-    
-  };
-</script>
-
 [[block page_scripts]]
 <script>
     let currentPlaying = "[[=XML(currentPlaying)]]";

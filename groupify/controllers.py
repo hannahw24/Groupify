@@ -280,7 +280,6 @@ def getTopArtistsLen(userID, term):
     imgList = artistList[1] # URLs to images
     artistLinks = artistList[2] # URLs to artists
     genres = artistList[3] # Artist's genres
-    print(topArtists)
     
     followers = artistList[4] # Number of followers the artist has
 
@@ -456,7 +455,6 @@ def editUserSquare(userID):
 @action.uses(db, session)
 def get_squares():
     userID = session.get("userID")
-    print("the userID in get_squares is", userID)
     # Get squares (cover and url) from db
     user_squares = db(db.squares.albumsOfWho == getIDFromUserTable(userID)).select().as_list()
     #print(user_squares)
@@ -473,7 +471,6 @@ def save_albums():
     coverList = request.json.get('coverList')
     urlList = request.json.get('urlList')
     userID = session.get("userID")
-    print("the userID in save_albums is", userID)
 
     # Update db
     dbSquareEntry = db(db.squares.albumsOfWho == getIDFromUserTable(userID))
@@ -924,6 +921,7 @@ def getTopArtistsFunction(term):
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
+    # Makes user log in if they go to a group session link and have not logged in yet
     if (session.get("userID") == None):
         return redirect(URL('login'))
     # Ash: set editable to False for now, not sure if setting the theme
@@ -935,8 +933,6 @@ def groupSession(userID=None):
     except:
         return redirect(URL('login'))
     print ("TOKEN IS ", token["access_token"])
-
-    #getCurrentPlaying(userID)
 
     profileURL = (URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
@@ -969,28 +965,30 @@ def getCurrentPlaying(userID=None):
     results = spotify.current_playback()
     try:
         trackName = results["item"]["name"]
-        print ("Name is ", results["item"]["name"])
         artistName = results["item"]["album"]["artists"][0]["name"]
-        print ("Artist Name ", results["item"]["album"]["artists"][0]["name"])
         isLocal = results["item"]["is_local"]
-        print ("Is local ", results["item"]["is_local"])
         trackURI = results["item"]["uri"]
+        # Isolating the URI
         trackURI = trackURI.replace("spotify:track:", "")
-        print ("trackURI ", trackURI)
+        curPosition = results["progress_ms"]
+        print("curPosition = ", curPosition)
+        trackLength = results["item"]["duration_ms"]
+        print("trackLength = ", trackLength)
+
     except:
         trackName = "None"
         isLocal = "False"
         artistName = "None"
         trackURI = ""
+        curPosition = ""
+        trackLength = ""
     try:
         imageURL = results["item"]["album"]["images"][1]["url"]
-        print ("imageURL ", results["item"]["album"]["images"][1]["url"])
     except:
         imageURL = "https://bulma.io/images/placeholders/128x128.png"
-        print ("imageURL https://bulma.io/images/placeholders/128x128.png")
 
     return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
-    imageURL=imageURL, trackURI=trackURI)
+    imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength)
 
 #start_playback(device_id=None, context_uri=None, uris=None, offset=None, position_ms=None)
 
@@ -1076,12 +1074,10 @@ def getTopSongs(userID=None):
 
     # This is populated if a person who is not the owner wants to see a different term
     term = request.params.get('term')
-    print ("1term is ", term)
 
     # This is populated if by default
     if term == None:
         term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term    # Obtains the whole entry of the user in the correct table.
-    print ("term is ", term)
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
         term_str = 'last 4 weeks'	
@@ -1125,7 +1121,6 @@ def getTopSongsPost(userID=None):
     # Gets the term selected by the user, which is currently in user.js 
     # in the changeTerm() function
     term = request.params.get('term')
-    print("postTerm ", term)
     db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term)	
     return dict(session=session)	
 
