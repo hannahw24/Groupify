@@ -1,59 +1,59 @@
-var mainContainer = document.getElementById('js-main-container'),
-    loginContainer = document.getElementById('js-login-container'),
-    loginButton = document.getElementById('js-btn-login'),
-    background = document.getElementById('js-background');
+// This will be the object that will contain the Vue attributes
+// and be used to initialize it.
+let app = {};
 
-var spotifyPlayer = new SpotifyPlayer();
+// Given an empty app object, initializes it filling its attributes,
+// creates a Vue instance, and then initializes the Vue instance.
+let init = (app) => {
 
-var template = function (data) {
-  return `
-    <div class="main-wrapper">
-      <div class="now-playing__img">
-        <img src="${data.item.album.images[0].url}">
-      </div>
-      <div class="now-playing__side">
-        <div class="now-playing__name">${data.item.name}</div>
-        <div class="now-playing__artist">${data.item.artists[0].name}</div>
-        <div class="now-playing__status">${data.is_playing ? 'Playing' : 'Paused'}</div>
-        <div class="progress">
-          <div class="progress__bar" style="width:${data.progress_ms * 100 / data.item.duration_ms}%"></div>
-        </div>
-      </div>
-    </div>
-    <div class="background" style="background-image:url(${data.item.album.images[0].url})"></div>
-  `;
+    // This is the Vue data.
+    app.data = {
+      playingTrackName: "",
+      playingTrackArtist: "",
+      playingTrackImage: "",
+      playingTrackURI: "",
+    };
+    
+    app.getPlayingTrack = () => {
+      axios.get(currentPlaying).then((result) => {
+        //include local variable checking later.
+        app.data.playingTrackName = result.data.trackName;
+        app.data.playingTrackArtist = result.data.artistName;
+        app.data.playingTrackImage = result.data.imageURL;
+        var spotifyTrackLinkPrefix = "https://open.spotify.com/embed/track/";
+        app.data.playingTrackURI = spotifyTrackLinkPrefix.concat(result.data.trackURI);
+        }).then(() => {
+            //show what the bio is.
+            console.log("getPlayingTrack Finished");
+        });
+    }
+
+
+
+    // We form the dictionary of all methods, so we can assign them
+    // to the Vue app in a single blow.
+    app.methods = {
+      getPlayingTrack: app.getPlayingTrack,
+    };
+
+    // This creates the Vue instance.
+    app.vue = new Vue({
+        el: "#vue-target",
+        data: app.data,
+        methods: app.methods
+    });
+
+    // And this initializes it.
+    app.init = () => {
+      var t=setInterval(app.getPlayingTrack, 1000);
+    };
+
+    // Call to the initializer.
+    app.init();
 };
 
-var previousResponse = null;
-spotifyPlayer.on('update', response => {
-  mainContainer.innerHTML = template(response);
-  if (previousResponse === null ||
-    response.item.id !== previousResponse.item.id) {
-    var options = {
-      body: response.item.artists[0].name + ' — ' + response.item.album.name,
-      icon: response.item.album.images[0].url
-    }
-    var n = new Notification(response.item.name, options);
-    setTimeout(n.close.bind(n), 4000);
-  }
-  previousResponse = response;
-});
 
-spotifyPlayer.on('login', user => {
-  if (user === null) {
-    loginContainer.style.display = 'block';
-    mainContainer.style.display = 'none';
-  } else {
-    loginContainer.style.display = 'none';
-    mainContainer.style.display = 'block';
-    Notification.requestPermission().then(function(result) {
-      console.log(result);
-    });
-  }
-});
+// This takes the (empty) app object, and initializes it,
+// putting all the code i
+init(app);
 
-loginButton.addEventListener('click', () => {
-    spotifyPlayer.login();
-});
-
-spotifyPlayer.init();

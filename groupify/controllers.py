@@ -55,7 +55,10 @@ def session_cache_path():
 
 # Ash: Permissions needed to be accepted by the user at login. There are more but these are the ones
 # we use right now, so they are the only ones we ask.
-scopes = "user-library-read user-read-private user-follow-read user-follow-modify user-top-read streaming user-read-email"
+scopes = "user-library-read user-read-private user-follow-read \
+user-follow-modify user-top-read streaming user-read-email streaming \
+app-remote-control user-read-playback-state user-modify-playback-state \
+user-read-currently-playing"
 
 url_signer = URLSigner(session)
 
@@ -921,6 +924,8 @@ def getTopArtistsFunction(term):
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
+    if (session.get("userID") == None):
+        return redirect(URL('login'))
     # Ash: set editable to False for now, not sure if setting the theme
     #      on the groupSession page will change it for everyone
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
@@ -930,6 +935,9 @@ def groupSession(userID=None):
     except:
         return redirect(URL('login'))
     print ("TOKEN IS ", token["access_token"])
+
+    #getCurrentPlaying(userID)
+
     profileURL = (URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
@@ -944,11 +952,47 @@ def groupSession(userID=None):
             theme_colors = return_theme(0)
         return dict(session=session, editable=False,
             background_bot=theme_colors[0],background_top=theme_colors[1], token=token["access_token"], 
-            profile_pic=profile_pic, profileURL = profileURL)
+            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID))
     else:
         return dict( session=session, editable=False, 
             background_bot=None, background_top=None, token=token["access_token"],
-            profile_pic=profile_pic, profileURL = profileURL)
+            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID))
+
+@action('currentPlaying/<userID>', method=["GET"])
+@action.uses(session)
+def getCurrentPlaying(userID=None):
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect(URL('login'))
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    results = spotify.current_playback()
+    try:
+        trackName = results["item"]["name"]
+        print ("Name is ", results["item"]["name"])
+        artistName = results["item"]["album"]["artists"][0]["name"]
+        print ("Artist Name ", results["item"]["album"]["artists"][0]["name"])
+        isLocal = results["item"]["is_local"]
+        print ("Is local ", results["item"]["is_local"])
+        trackURI = results["item"]["uri"]
+        trackURI = trackURI.replace("spotify:track:", "")
+        print ("trackURI ", trackURI)
+    except:
+        trackName = "None"
+        isLocal = "False"
+        artistName = "None"
+        trackURI = ""
+    try:
+        imageURL = results["item"]["album"]["images"][1]["url"]
+        print ("imageURL ", results["item"]["album"]["images"][1]["url"])
+    except:
+        imageURL = "https://bulma.io/images/placeholders/128x128.png"
+        print ("imageURL https://bulma.io/images/placeholders/128x128.png")
+
+    return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
+    imageURL=imageURL, trackURI=trackURI)
+
+#start_playback(device_id=None, context_uri=None, uris=None, offset=None, position_ms=None)
 
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
