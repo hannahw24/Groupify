@@ -19,14 +19,11 @@ let init = (app) => {
         server_coverList: [], // server's list of album covers
         server_urlList: [], // server's list of Spotify links
         topAlbums: [], // Search result titles
-        topTracks: [],
         topArtists: [], // Search result artists
         trackLinks: [], // Search result links
         artistLinks: [], // Search result artist links
         imgList: [], // Search result album covers
         totalResults: 0, // Number of results
-        queueListImage: [], //list of songs in queue; picture
-        queueListURL: [], //list of songs in queue; link
     };
     
     // Uses user input as it is types to search Spotify
@@ -50,40 +47,6 @@ let init = (app) => {
         }).catch(() => {
             console.log("Caught error");
         });
-    };
-
-    app.search_spotify_songs = () => {
-        
-        input2 = document.getElementById('songSearch'); // Get input from searcg bar
-        input2 = input2.value;
-        console.log(input2);
-        // Send to server
-        axios.post(search_url, {
-            input2: input2,
-        }).then((result) => {
-            // Update all search result fields with server result
-            app.vue.topTracks = result.data.topTracks;
-            app.vue.topArtists = result.data.topArtists;
-            app.vue.imgList = result.data.imgList;
-            app.vue.trackLinks = result.data.trackLinks;
-            app.vue.artistLinks = result.data.artistLinks;
-            app.vue.totalResults = result.data.totalResults;
-            console.log(result2);
-        }).catch(() => {
-            console.log("Caught error");
-        });
-    };
-
-    // Adds an album to the banner
-    app.add_song = (cover, url) =>{
-        // If valid index of a song
-        // if (i >= 0 && i < 12) {
-        //     // Update album data
-        //     app.vue.queueListImage[i] = cover;
-        //     app.vue.queueListURL[i] = url;
-        // }
-        app.vue.queueListImage[i] = cover;
-        app.vue.queueListURL[i] = url;
     };
     
     app.compare = () => {
@@ -202,8 +165,6 @@ let init = (app) => {
     app.methods = {
         goto: app.goto,
         search_spotify: app.search_spotify,
-        search_spotify_songs: app.search_spotify_songs,
-        add_song: app.add_song,
         refresh_page: app.refresh_page,
         add_album: app.add_album,
         delete_album: app.delete_album,
