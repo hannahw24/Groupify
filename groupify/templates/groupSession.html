@@ -39,27 +39,22 @@
         <div class="box">
             <figure class="image">
                 <img :src="playingTrackImage">
-            </figure>
+            </figure> 
         </div>
         <progress class="progress" :value="songProgressBar" max="100"></progress>
         <nav class="level" style="margin-bottom: 1px;">
           <!-- Left side -->
-          <div class="level-left">
-            <div class="level-item">
-              <strong style="width:300px;">{{playingTrackName}} </strong>
+          <div class="level-left" style="width:80%;">
+            <div class="level-item" style="width:100%;justify-content: flex-start;">
+              <strong>{{playingTrackName}} </strong>
             </div>
           </div>
-          <span class="level-right">
-            <span class="level-item">
-              <span style="width:300px;" v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
+          <span class="level-right" style="width:20%;">
+            <span class="level-item" style="width:100%;justify-content: right">
+              <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
             </span>
           </span>
           <br>
-          <div class="level-left">
-            <div class="level-item">
-              <strong style="width:300px;">{{playingTrackName}} </strong>
-            </div>
-          </div>
         </nav>
         <span>{{playingTrackArtist}}</span>
         <br>        <br>
@@ -117,6 +112,9 @@ function getGroupLink() {
     let currentPlaying = "[[=XML(currentPlaying)]]";
     let squares_url = "[[=XML(squares_url)]]";
     let search_url = "[[=XML(search_url)]]";
+    let getAPICallTime = "[[=XML(getAPICallTime)]]";
+    let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
+    let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]

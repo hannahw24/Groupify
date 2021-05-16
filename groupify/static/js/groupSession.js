@@ -8,6 +8,13 @@ let init = (app) => {
 
     // This is the Vue data.
     app.data = {
+      // The variable that determines how often an API call is made. 
+      apiCallTimer: 5,
+      // Keeps track if it is time to make an API call.
+      secondsPassedSinceCall: 0,
+
+      isPlaying: false,      
+
       playingTrackName: "",
       playingTrackArtist: "",
       playingTrackImage: "",
@@ -32,6 +39,8 @@ let init = (app) => {
     app.getPlayingTrack = () => {
       axios.get(currentPlaying).then((result) => {
         //include local variable checking later.
+        app.data.isPlaying = result.data.isPlaying;
+
         app.data.playingTrackName = result.data.trackName;
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
@@ -53,7 +62,6 @@ let init = (app) => {
         if (app.data.lengthSeconds < 10) {
           app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
         }
-        //console.log(app.data.lengthSeconds);
 
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
 
@@ -87,7 +95,7 @@ let init = (app) => {
   };
 
     // Adds an album to the banner
-    app.add_song = (cover, url) =>{
+    app.addSong = (cover, url) =>{
         // If valid index of a song
         // if (i >= 0 && i < 12) {
         //     // Update album data
@@ -98,12 +106,80 @@ let init = (app) => {
         app.vue.queueListURL[i] = url;
     };
 
+    app.updateSongTimeEachSecond = () =>{
+      if (app.data.isPlaying == false) {
+        return;
+      }
+      app.data.currSeconds = parseInt(app.data.currSeconds);
+      app.data.currSeconds++;
+      if (app.data.currSeconds >= 60) {
+        app.data.currMinutes++;
+        app.data.currSeconds -= 60;
+      }
+      app.data.songProgressBar = (((app.data.currMinutes*60) + app.data.currSeconds)/((app.data.lengthMinutes*60) + app.data.lengthSeconds)) * 100
+
+      if (app.data.currSeconds < 10) {
+        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+      }
+  };
+
+    app.increaseTime = () =>{
+      // If it is the time to make an API call, do so. 
+      if (app.data.secondsPassedSinceCall == app.data.apiCallTimer) {
+        try {
+          app.getPlayingTrack();
+          app.data.secondsPassedSinceCall = 0;
+        }
+        catch(err) {
+          console.log("axios call failure");
+          app.data.secondsPassedSinceCall = 0;
+        }
+      }
+      // If it is not time to make an API call for the song the host 
+      // is listening to, then increase the time passed since the last
+      // call. 
+      else {
+        app.data.secondsPassedSinceCall++;
+        app.updateSongTimeEachSecond();
+      }
+    }
+
+    app.synchronizeVisitor = () => {
+      axios.get(synchronizeVisitor).then((result) => {
+        //include local variable checking later.
+        app.data.isPlaying = result.data.isPlaying;
+        app.data.playingTrackName = result.data.trackName;
+        app.data.playingTrackArtist = result.data.artistName;
+        app.data.playingTrackImage = result.data.imageURL;
+        app.data.playingTrackPos = result.data.curPosition;
+        app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
+        app.data.playingTrackPos = app.data.playingTrackPos/1000;
+        app.data.currMinutes = Math.floor(app.data.playingTrackPos / 60);
+        app.data.currSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
+        if (app.data.currSeconds < 10) {
+          app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+        }
+        app.data.playingTrackLength = result.data.trackLength;
+        app.data.playingTrackLength = parseInt(app.data.playingTrackLength);
+        app.data.playingTrackLength = app.data.playingTrackLength/1000;
+        app.data.lengthMinutes = Math.floor(app.data.playingTrackLength / 60);
+        app.data.lengthSeconds = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
+        if (app.data.lengthSeconds < 10) {
+          app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
+        }
+        app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+        }).then(() => {
+            //console.log("getPlayingTrack Finished");
+        });
+    }
+
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
       getPlayingTrack: app.getPlayingTrack,
       search_spotify_songs: app.search_spotify_songs,
-      add_song: app.add_song,
+      addSong: app.addSong,
+      increaseTime: app.increaseTime,
     };
 
     // This creates the Vue instance.
@@ -115,7 +191,21 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
-      var t=setInterval(app.getPlayingTrack, 1000);
+      axios.get(isGroupSessionHost).then((result) => {
+          if (result.data.isHost == true) {
+            console.log("isHost");
+            //immediately get the song a user is playing. 
+            app.getPlayingTrack();
+            var t=setInterval(app.increaseTime, 1000);
+          }
+          else {
+            console.log("is not Host");
+            app.synchronizeVisitor();
+            var t=setInterval(app.updateSongTimeEachSecond, 1000);
+          }
+      }).then(() => {
+          console.log("hey");
+      });
     };
 
     // Call to the initializer.
