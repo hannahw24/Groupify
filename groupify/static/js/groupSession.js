@@ -64,7 +64,7 @@ let init = (app) => {
         }
 
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-
+        console.log("songProgressBar in getPlayingTrack() is ", app.data.songProgressBar);
         //var spotifyTrackLinkPrefix = "https://open.spotify.com/embed/track/";
         //app.data.playingTrackURI = spotifyTrackLinkPrefix.concat(result.data.trackURI);
         }).then(() => {
@@ -112,11 +112,14 @@ let init = (app) => {
       }
       app.data.currSeconds = parseInt(app.data.currSeconds);
       app.data.currSeconds++;
+      app.data.playingTrackPos++;
       if (app.data.currSeconds >= 60) {
         app.data.currMinutes++;
         app.data.currSeconds -= 60;
       }
-      app.data.songProgressBar = (((app.data.currMinutes*60) + app.data.currSeconds)/((app.data.lengthMinutes*60) + app.data.lengthSeconds)) * 100
+
+      app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
 
       if (app.data.currSeconds < 10) {
         app.data.currSeconds = "0" + (app.data.currSeconds).toString();
@@ -168,6 +171,8 @@ let init = (app) => {
           app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
         }
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+        console.log("songProgressBar in synchronizeVisitor() is ", app.data.songProgressBar);
+
         }).then(() => {
             //console.log("getPlayingTrack Finished");
         });
