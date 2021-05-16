@@ -422,17 +422,23 @@ def getUserProfile(userID=None):
 def artists_page(userID):
     profileURL = (URL("user", userID))
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    display_name=dbUserEntry[0]["display_name"]
     return dict(session=session, 
     userID=userID, editable=False,
     profileURL=profileURL,
     
     getTopArtists=URL("getTopArtists", userID),
     
+    url_signer=url_signer,
+    
     background_bot=theme_colors[0],
     background_top=theme_colors[1],
     friend_tile=theme_colors[2],
     tile_color=theme_colors[3],
-    text_color=theme_colors[4])
+    text_color=theme_colors[4],
+    user=getUserID(),
+    display_name=display_name)
 
 # -----------------------------------Search Page-------------------------------------
 
