@@ -1,117 +1,120 @@
 [[extend 'layout.html']]
-<script src="https://spotify-player.herokuapp.com/spotify-player.js">
 
-var mainContainer = document.getElementById('js-main-container'),
-    loginContainer = document.getElementById('js-login-container'),
-    loginButton = document.getElementById('js-btn-login'),
-    background = document.getElementById('js-background');
-
-var spotifyPlayer = new SpotifyPlayer();
-
-var template = function (data) {
-  return `
-    <div class="main-wrapper">
-      <div class="now-playing__img">
-        <img src="${data.item.album.images[0].url}">
-      </div>
-      <div class="now-playing__side">
-        <div class="now-playing__name">${data.item.name}</div>
-        <div class="now-playing__artist">${data.item.artists[0].name}</div>
-        <div class="now-playing__status">${data.is_playing ? 'Playing' : 'Paused'}</div>
-        <div class="progress">
-          <div class="progress__bar" style="width:${data.progress_ms * 100 / data.item.duration_ms}%"></div>
-        </div>
-      </div>
-    </div>
-    <div class="background" style="background-image:url(${data.item.album.images[0].url})"></div>
-  `;
-};
-
-var previousResponse = null;
-spotifyPlayer.on('update', response => {
-  mainContainer.innerHTML = template(response);
-  if (previousResponse === null ||
-    response.item.id !== previousResponse.item.id) {
-    var options = {
-      body: response.item.artists[0].name + ' — ' + response.item.album.name,
-      icon: response.item.album.images[0].url
-    }
-    var n = new Notification(response.item.name, options);
-    setTimeout(n.close.bind(n), 4000);
-  }
-  previousResponse = response;
-});
-
-spotifyPlayer.on('login', user => {
-  if (user === null) {
-    loginContainer.style.display = 'block';
-    mainContainer.style.display = 'none';
-  } else {
-    loginContainer.style.display = 'none';
-    mainContainer.style.display = 'block';
-    Notification.requestPermission().then(function(result) {
-      console.log(result);
-    });
-  }
-});
-
-loginButton.addEventListener('click', () => {
-    spotifyPlayer.login();
-});
-
-spotifyPlayer.init();
-
-
-</script>
-
-
-
-<div>
+<div id="vue-target">
     [[userPage = "user/" + session.get("userID") ]]
     <div class="group_panel panel_spec" style="background-color: white;"> 
-        <div class="container">
-            <div class="login-container hidden" id="js-login-container">
-              <button class="btn btn--login" id="js-btn-login">Login with Spotify</button>
-            </div>
-            <div class="main-container hidden" id="js-main-container"></div>
+
+        <!-- get back to profile -->
+        <a class="button is-primary" href="[[=URL(userPage)]]">
+            <i class="fa fa-backward" aria-hidden="true"></i>
+            &nbsp; Back
+        </a>
+
+        <p style="color:#221B1B;" class="labels">Share Your Session</p>
+        <input type="text" value="[[=(profileURL)]]" id="sessionLink" readonly style="width: 50%;">
+        <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
+        <p class="smallgreentext"> Send your friends this link to share your group session!</p>
+
+        <figure class="image is-128x128 profile_photo group_pfp">
+            [[if (profile_pic != ""):]]
+            <img class="is-rounded" src="[[=(profile_pic)]]">
+            [[else:]]
+            <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+            [[pass]]
+        </figure>
+        <div class="box" style="width:25%;">
+            Friend 1
         </div>
+        <div class="box" style="width:25%;">
+            Friend 2
+        </div>
+        <div class="box" style="width:25%;">
+            Friend 3
+        </div>
+        <div class="box" style="width:25%;">
+            Friend 4
         </div>
     </div>
+    <div class="queue_panel panel_spec" style="background-color: white;"> 
+        <div class="box">
+            <figure class="image">
+                <img :src="playingTrackImage">
+            </figure> 
+        </div>
+        <progress class="progress" :value="songProgressBar" max="100"></progress>
+        <nav class="level" style="margin-bottom: 1px;">
+          <!-- Left side -->
+          <div class="level-left" style="width:80%;">
+            <div class="level-item" style="width:100%;justify-content: flex-start;">
+              <strong>{{playingTrackName}} </strong>
+            </div>
+          </div>
+          <span class="level-right" style="width:20%;">
+            <span class="level-item" style="width:100%;justify-content: right">
+              <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
+            </span>
+          </span>
+          <br>
+        </nav>
+        <span>{{playingTrackArtist}}</span>
+        <br>        <br>
+        <div class="columns is-mobile is-centered">
+          <div class="column is-11">
+              <!-- user types search here -->
+              <input id="songSearch" class="input" type="text" v-on:keyup="search_spotify_songs()" placeholder="Find a song">
+              <!-- if there is at least one result -->
+              <div v-if="totalResults > 0">
+                  <!-- show tile for each result -->
+                  <div class="tile is-child box"> 
+                      <div v-for="(t, index) in trackLinks">
+                          <section>
+                              <!-- when result is clicked, add album to list at selected index -->
+                              <a @click="add_song(imgList[index], trackLinks[index])">
+                                  <div class="columns">
+                                      <div class="column">
+                                          <!-- Album art image with link to track -->
+                                          <img width="64" height="64" :src="imgList[index]">
+                                      </div>
+                                      <div class="column is-9">
+                                          <div>
+                                              <!-- Song title with link to track -->
+                                              <span target="_blank" style="color:#000000"><strong>{{topTracks[index]}}</strong></span>
+                                          </div>
+                                          <div>
+                                              <!-- Artist name with link to their Spotify page -->
+                                              <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
+                                          </div>
+                                      </div>
+                                  </div>
+                                </a>
+                            </section>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-    <!--   
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script>
-      window.onSpotifyWebPlaybackSDKReady = () => {
-        const token = '[[=(token)]]';
-        const player = new Spotify.Player({
-          name: 'Groupify Website',
-          getOAuthToken: cb => { cb(token); }
-        });
-  
-        // Error handling
-        player.addListener('initialization_error', ({ message }) => { console.error(message); });
-        player.addListener('authentication_error', ({ message }) => { console.error(message); });
-        player.addListener('account_error', ({ message }) => { console.error(message); });
-        player.addListener('playback_error', ({ message }) => { console.error(message); });
-  
-        // Playback status updates
-        player.addListener('player_state_changed', state => { console.log(state); });
-  
-        // Ready
-        player.addListener('ready', ({ device_id }) => {
-          console.log('Ready with Device ID', device_id);
-        });
-  
-        // Not Ready
-        player.addListener('not_ready', ({ device_id }) => {
-          console.log('Device ID has gone offline', device_id);
-        });
-  
-        // Connect to the player!
-        player.connect();
-        
-      };
-    </script>
-    -->
+  </div>
 </div>
 
+<script>
+function getGroupLink() {
+  var link = document.getElementById("sessionLink");
+  link.select();
+  link.setSelectionRange(0, 99999)
+  document.execCommand("copy");
+  alert("Copied the text: " + link.value);
+}
+</script>
+
+[[block page_scripts]]
+<script>
+    let currentPlaying = "[[=XML(currentPlaying)]]";
+    let squares_url = "[[=XML(squares_url)]]";
+    let search_url = "[[=XML(search_url)]]";
+    let getAPICallTime = "[[=XML(getAPICallTime)]]";
+    let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
+    let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
+</script>
+<script src="js/groupSession.js"></script>
+[[end]]

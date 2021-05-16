@@ -30,7 +30,7 @@
                                 <img class="is-rounded profile_photo" href=[[=URL('user', session.get("userID"))]] 
                                         src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]] style="width:64px;height:64px;">
+                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]>
                                 [[pass]]
                             </figure>
                             <div style="padding-left: 15px; width: 78%; ">
@@ -75,7 +75,7 @@
                                     <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
                                             src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                                     [[else:]]
-                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]] style="width:64px;height:64px;">
+                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]>
                                     [[pass]]
                                 </figure>
                                 <div style="padding-left: 15px; width: 78%; ">
@@ -101,7 +101,7 @@
 
     <div class="main_profile">
         <!-- albumns features -->
-        <section>
+        <div class="album_section">
         <div class="row">
             <div class="columns is-mobile is-1">
                 [[for i in range(6):]]
@@ -124,22 +124,21 @@
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                                <img src="images/square.png">
                             </figure>
                         </a>
                     </div>
                     <div v-else class="column is-2 album_box">
                         <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                            <img src="images/square.png">
                         </figure>
                     </div>
                     [[pass]]
                 [[pass]]
             </div>
         </div>
-        </section>
+        
 
-        <section>
         <div class="row">
             <div class="columns is-mobile is-1">
                 [[for i in range(6, 12):]]
@@ -162,18 +161,21 @@
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                                <img src="images/square.png">
                             </figure>
                         </a>
                     </div>
-                    <div v-else class="column is-2 album_box">
+                    <div v-else class="column is-2 album_box" >
                         <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                            <img src="images/square.png">
                         </figure>
                     </div>
                     [[pass]]
                 [[pass]]
             </div>
+        </div>
+        </div>
+        <section>
             [[if (editable==True):]]
                 <div class="level-item">
                 <div id="editButton">
@@ -186,7 +188,7 @@
                 </div>
             [[elif isFriend==True:]]
                 <div class="level-item">
-                    <a class="button is-danger" href="[[=URL('unfollowProfile', userID, signer=url_signer)]]">
+                    <a class="button is-danger" href="[[=URL('unfollowProfileFromProfile', userID, signer=url_signer)]]">
                         Unfollow
                     </a>
                 </div>
@@ -198,10 +200,10 @@
                 </div>
             [[pass]]
 
-        </div>
+        
         </section>
         
-        <br>
+        <br><br>
         
         <!-- profile features -->
         <section>
@@ -211,7 +213,7 @@
                         <div class="tile">
                             <figure class="image is-128x128 index_pfp">
                                 [[if (profile_pic != ""):]]
-                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]" style="width:128px;height:102px;">
+                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
                                 [[else:]]
                                 <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
                                 [[pass]]
@@ -357,9 +359,10 @@
                                             <!-- Artist Genres with link to their Spotify page -->
                                             <a :href="artistURLs[i]" target="_blank" style="color:#000000"> 
                                                 <span v-if="genres != null">
-                                                <span v-if="genres[i] != ''">{{genres[i]}}<br></span>
+                                                <span v-if="genres[i] != ''">{{genres[i]}}</span>
                                                 </span>
                                             </a>
+                                            <br>
                                             <!-- Artist followers with link to their Spotify page -->
                                             <a :href="artistURLs[i]" target="_blank" style="color:#000000">
                                                 <span v-if="followers[i] != undefined">{{followers[i]}} Followers</span>
@@ -369,11 +372,13 @@
                                 </div>
                             </section>
                             </div>
+                            
+                            <a href="[[=URL('artists', user)]]" style="color:#000000"><strong>See All</strong></a>
+                            
                         </div>
                         <!--  
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             Song of the day
-
                         </div>
                          -->
                     </div>
@@ -388,7 +393,7 @@
                             <div class="columns">
                                 <div class="column">
                                     <!-- Album art image with link to track -->
-                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]] style="width:auto;height:64px;"></a>
+                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]]></a>
                                 </div>
                                 <div class="column is-9">
                                     <div>
