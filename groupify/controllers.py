@@ -416,6 +416,23 @@ def getUserProfile(userID=None):
         userID=userID, isFriend=isFriend, url_signer=url_signer, urlList=urlList, coverList=coverList,
         userBio=URL("userBio", userID), getTopSongs=URL("getTopSongs", userID), getPlaylists=URL("getPlaylists"),
         getTopArtists=URL("getTopArtists", userID), userStat=URL("userStat", session.get("userID")))
+        
+@action('artists/<userID>', method=['GET'])
+@action.uses('artists.html', session, db)
+def artists_page(userID):
+    profileURL = (URL("user", userID))
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+    return dict(session=session, 
+    userID=userID, editable=False,
+    profileURL=profileURL,
+    
+    getTopArtists=URL("getTopArtists", userID),
+    
+    background_bot=theme_colors[0],
+    background_top=theme_colors[1],
+    friend_tile=theme_colors[2],
+    tile_color=theme_colors[3],
+    text_color=theme_colors[4])
 
 # -----------------------------------Search Page-------------------------------------
 
@@ -910,6 +927,24 @@ def getTopArtistsFunction(term):
     # Returned to the user profile
     return BigList
 
+# Gives the amount of time between API calls. 
+# Hidden in controllers.py so users cannot edit the value in their 
+# javascript files.
+@action('getAPICallTime', method=["GET"])
+@action.uses(session)
+def getAPICallTime():
+    getAPICallTime = 4
+    return dict(getAPICallTime=getAPICallTime)
+
+@action('isGroupSessionHost/<userID>', method=["GET"])
+@action.uses(session)
+def isGroupSessionHost(userID=None):
+    isHost = False
+    if (session.get("userID") == userID):
+        isHost = True
+        print ("This person is the host")
+    return dict(isHost=isHost)
+
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
@@ -926,6 +961,13 @@ def groupSession(userID=None):
         return redirect(URL('login'))
     print ("TOKEN IS ", token["access_token"])
 
+    dbGroupSessionEntry = db(db.groupSession.userID == userID).select().as_list()
+    if ((dbGroupSessionEntry == None) or (dbGroupSessionEntry == [])):
+        insertedID = getIDFromUserTable(userID)
+        db.groupSession.insert(userID=userID, trackURI="", imageURL="", trackName="", 
+        artistName = "", curPosition="", trackLength="", isPlaying=False,
+        secondsPassedSinceCall=0, deviceID="", groupSessionOfWho=insertedID)
+
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
@@ -941,48 +983,117 @@ def groupSession(userID=None):
         return dict(session=session, editable=False,
             background_bot=theme_colors[0],background_top=theme_colors[1], token=token["access_token"], 
             profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
-            squares_url = URL('get_squares'),search_url = URL('group_search'))
+            squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
+            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID))
     else:
         return dict( session=session, editable=False, 
             background_bot=None, background_top=None, token=token["access_token"],
             profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
-            squares_url = URL('get_squares'),search_url = URL('group_search'))
+            squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
+            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID))
 
 @action('currentPlaying/<userID>', method=["GET"])
 @action.uses(session)
 def getCurrentPlaying(userID=None):
+    if (session.get("userID") != userID):
+        return
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.current_playback()
+    #print (results)
     try:
-        trackName = results["item"]["name"]
-        artistName = results["item"]["album"]["artists"][0]["name"]
-        isLocal = results["item"]["is_local"]
-        trackURI = results["item"]["uri"]
+        deviceID = results["device"]["id"]
+        item = results["item"]
+        trackName = item["name"]
+        artistName = item["album"]["artists"][0]["name"]
+        isLocal = item["is_local"]
+        trackURI = item["uri"]
         # Isolating the URI
+        ogTrackURI = trackURI
         trackURI = trackURI.replace("spotify:track:", "")
         curPosition = results["progress_ms"]
+        isPlaying = results["is_playing"]
         #print("curPosition = ", curPosition)
-        trackLength = results["item"]["duration_ms"]
+        trackLength = item["duration_ms"]
         #print("trackLength = ", trackLength)
 
     except:
         trackName = "None"
         isLocal = "False"
+        ogTrackURI = ""
         artistName = "None"
         trackURI = ""
         curPosition = ""
         trackLength = ""
+        isPlaying = "false"
+        deviceID = ""
     try:
         imageURL = results["item"]["album"]["images"][1]["url"]
     except:
         imageURL = "https://bulma.io/images/placeholders/128x128.png"
 
+    try:
+        dbGroupSessionEntry = (db(db.groupSession.userID == userID))
+    except:
+        return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
+        imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
+        isPlaying=isPlaying, deviceID=deviceID)
+
+    dbGroupSessionEntry.update(trackURI=ogTrackURI, 
+                               imageURL=imageURL,
+                               trackName=trackName,
+                               artistName=artistName,
+                               curPosition=curPosition,
+                               trackLength=trackLength,
+                               isPlaying=isPlaying,
+                                #secondsPassedSinceCall=secondsPassedSinceCall                              
+                                                )
+
     return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
-    imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength)
+    imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
+    isPlaying=isPlaying, deviceID=deviceID)
+
+@action('synchronizeVisitor/<userID>', method=["GET"])
+@action.uses(session)
+def synchronizeVisitor(userID=None):
+    dbGroupSessionEntry = (db(db.groupSession.userID == userID).select().as_list())
+    if (dbGroupSessionEntry == []):
+        print ("No groupSession table exists for ", userID)
+        return dict(session=session)
+    trackURI=dbGroupSessionEntry[0]["trackURI"]
+    trackName=dbGroupSessionEntry[0]["trackName"]
+    artistName=dbGroupSessionEntry[0]["artistName"]
+    imageURL=dbGroupSessionEntry[0]["imageURL"]
+    curPosition=dbGroupSessionEntry[0]["curPosition"]
+    trackLength=dbGroupSessionEntry[0]["trackLength"]
+    isPlaying=dbGroupSessionEntry[0]["isPlaying"]
+    #deviceID=dbGroupSessionEntry[0]["deviceID"]
+
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect(URL('login'))
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    results = spotify.devices()
+    print (results)
+    print (results["devices"][0]["id"])
+    #deviceID = results["devices"][0]["id"]
+    try:
+        print("trackURI = ", trackURI)
+        trackList = []
+        trackList.append(trackURI)
+        trackList.append("spotify:track:718purgMpFb2Axhuz0Hbq1")
+        print("trackList = ", trackList)
+        spotify.start_playback(None, None, trackList, None, curPosition)
+    except:
+        print ("Could not start playack")
+
+    return dict(session=session, trackName=trackName, artistName=artistName, 
+    imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
+    isPlaying=isPlaying)
 
 #start_playback(device_id=None, context_uri=None, uris=None, offset=None, position_ms=None)
 
@@ -1096,9 +1207,7 @@ def addFriend():
     for frand in friendsList:
         print(frand["display_name"])
         friend_ids.append(frand["userID"])
-    print(friend_ids)   
-
-
+    # print(friend_ids)   
     if request.method == "GET":
         return dict(
             session=session, 
@@ -1196,6 +1305,34 @@ def addFriendFromProfile(userID=None):
                             profile_pic=dbUserEntry[0]["profile_pic"], display_name=dbUserEntry[0]["display_name"], bio_status=dbUserEntry[0]["bio_status"],
                             active_stat=dbUserEntry[0]["active_stat"])
     return redirect(URL('user', userID))
+
+@action('unfollowProfile/<userID>', method=['GET'])
+@action.uses(session, db)
+def deleteFriend(userID=None):
+    person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
+    if person is None or person == []:
+        # Nothing to edit.  This should happen only if you tamper manually with the URL.
+        return redirect(URL('add_friend'))
+    else:
+        person = person[0]
+        friendToWhoID = person["friendToWhoID"]
+        if friendToWhoID == getIDFromUserTable(session.get("userID")):
+            db(db.dbFriends.id == person["id"]).delete()
+            return redirect(URL('add_friend'))
+
+@action('unfollowProfileFromProfile/<userID>', method=['GET'])
+@action.uses(session, db)
+def deleteFriend(userID=None):
+    person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
+    if person is None or person == []:
+        # Nothing to edit.  This should happen only if you tamper manually with the URL.
+        return redirect(URL('user', userID))
+    else:
+        person = person[0]
+        friendToWhoID = person["friendToWhoID"]
+        if friendToWhoID == getIDFromUserTable(session.get("userID")):
+            db(db.dbFriends.id == person["id"]).delete()
+            return redirect(URL('user', userID))
 
 # Function used by seeTerm() in user.js to extract the top song information
 # from the correct table in the database. 
@@ -1369,20 +1506,6 @@ def postUserStat(userID=None):
             dbRow.update(active_stat=content)
 
     return dict(session=session, content=content)
-
-@action('unfollowProfile/<userID>', method=['GET'])
-@action.uses(session, db)
-def delete_contact(userID=None):
-    person = db((db.dbFriends.userID == userID) & (db.dbFriends.friendToWhoID == getIDFromUserTable(session.get("userID")))).select().as_list()
-    if person is None or person == []:
-        # Nothing to edit.  This should happen only if you tamper manually with the URL.
-        return redirect(URL('add_friend'))
-    else:
-        person = person[0]
-        friendToWhoID = person["friendToWhoID"]
-        if friendToWhoID == getIDFromUserTable(session.get("userID")):
-            db(db.dbFriends.id == person["id"]).delete()
-            return redirect(URL('add_friend'))
 
 # change the db.user's perfered theme
 @action('user/<userID>/theme/<theme_id:int>')

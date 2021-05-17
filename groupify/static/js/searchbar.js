@@ -6,6 +6,7 @@ function searchBar() {
   input = document.getElementById('barInput');
   filter = input.value.toUpperCase();
   ul = document.getElementById("listItems");
+  console.log(ul);
   li = ul.getElementsByTagName('li');
 
   // Hide entries that don't match input

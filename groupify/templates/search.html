@@ -2,12 +2,13 @@
 
 
 <div id="vue-target" class="search_section">
+<div class="columns">
 <!-- Banner Title -->
-<div class="column is-centered">
+<div class="column is-9">
     <h1 class="title has-text-centered" style="padding: 1%;">
         Select Album to Edit
     </h1>
-</div>
+
 
     <!-- Albums Banner -->
 <section >
@@ -83,16 +84,20 @@
         </div>
     </div>
 </section>
+</div>
 <br>
-<section>
+
     <!-- Seahc Title -->
+    <div class="column">
+    <div class="queue_panel panel_spec" style="background-color: white;">
     <div>
-        <br>
-        <h1 class="title has-text-centered">
+        <h1>
             Search For Cover Art
         </h1>
     </div>
     <div><br></div>
+    
+    
     <div class="columns is-mobile is-centered">
         <div class="column">
             <!-- user types search here -->
@@ -128,7 +133,11 @@
             </div>
         </div>
     </div>
-</section>
+    </div>
+    </div>
+
+</div>
+
 <!-- defines the box tha confirms save/shows error -->
 <div id="snackbar">{{message}}</div>
 </div>
