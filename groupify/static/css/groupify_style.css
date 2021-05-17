@@ -151,11 +151,23 @@ body{
   }
   
   /* The overlay effect - lays on top of the container and over the image */
-  .overlay {
+  /*.overlay {
     position: absolute;
     bottom: 5px;
     background: rgb(0, 0, 0);
     background: rgba(0, 0, 0, 0.5); /* Black see-through */
+    /*color: #f1f1f1;
+    width: 100%;
+    transition: .5s ease;
+    opacity:0;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+  }*/
+  
+  .overlay {
+    position: absolute;
+    bottom: 5px;
     color: #f1f1f1;
     width: 100%;
     transition: .5s ease;
@@ -169,14 +181,13 @@ body{
     position: absolute;
     top: -1px;
     left: -1px;
-    background: rgba(0, 0, 0, 0); /* Black see-through */
     color: #f1f1f1;
-    width: 100%;
+    /*width: 100%;
     transition: .5s ease;
     opacity:0;
     font-size: 20px;
     color: white;
-    text-align: justify;
+    text-align: justify;*/
   }
   
   /* When you mouse over the container, fade in the overlay title */
@@ -184,7 +195,9 @@ body{
   
   .selected_box .overlay_button { opacity: 1; }
   
-  .selected_box .overlay { opacity: 1; }
+  .selected_box .overlay { opacity: 0; pointer-events: none; }
+  
+  /*.selected_box img { filter: brightness(50%); }*/
   
   /* The snackbar - position it at the bottom and in the middle of the screen */
   #snackbar {
