@@ -1,6 +1,8 @@
 [[extend 'layout.html']]
 <!--script src="js/drop.js"></script-->
 <div id="vue-target" class="search_section">
+<!-- page display for debugging-->
+<!--textarea class="textarea" rows="1" style="width:50px">{{page}}</textarea-->
 <div class="columns">
 <!-- Banner Title -->
 <div class="column is-9">
@@ -16,22 +18,25 @@
         <div class="column">
             <div class="columns is-mobile is-multiline">
                 <!-- for all albums in js list -->
-                
+                <!-- The field ":id" is used for passing index of dragged albums to search.js -->
                 <div v-for="(c, index) in coverList" class="column is-2" style="padding: 0.2%;">
                     <!-- if album is selected and cover is not empty... -->
                     <div v-if="page==index && c!='x'">
                         <div class="selected_box">
                             <!-- overlay edit icon and show delete button -->
-                            <img @click="goto(index)"
-                            :src="c">
-                            <div class="overlay">
-                                <br><br>
-                                search to edit album
-                            </div>
-                            <div class="overlay_button">
-                                <button class="button is-danger" @click="delete_album(index)">
-                                <i class="fa fa-times"></i>
-                                </button>
+                            <div :id="index" ondragstart="drag(event)" ondragover="allowDrop(event)"
+                                ondrop="drop(event)" :draggable="true">
+                                <img :id="index" @click="goto(index)"
+                                :src="c">
+                                <div :id="index" class="overlay">
+                                    <br><br>
+                                    search to edit album
+                                </div>
+                                <div :id="index" class="overlay_button">
+                                    <button class="button is-danger" @click="delete_album(index)">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -39,8 +44,11 @@
                     
                     <div v-else-if="page==index && c=='x'">
                         <div class="selected_box">
+                            
                             <!-- overlay edit icon, but no delete button -->
-                            <img @click="goto(index)" :src="'images/filler_square.png'">
+                            <img :id="index" @click="goto(index)" ondragstart="drag(event)" ondragover="allowDrop(event)"
+                                ondrop="drop(event)" :draggable="true"
+                            :src="'images/filler_square.png'">
                             <div class="overlay">
                                 <br><br>
                                 search to edit album
@@ -52,7 +60,7 @@
                         <div class="edit_box">
                             <!-- no overlay or button, show either cover or placeholder -->
                                 <img :id="index" @click="goto(index)" ondragstart="drag(event)" ondragover="allowDrop(event)"
-                                ondrop="drop(event)" :draggable="reorder"
+                                ondrop="drop(event)" :draggable="true"
                                 :src="c === 'x' ? 'images/filler_square.png' : c ">
                         </div>
                     </div>
@@ -67,15 +75,15 @@
             <div class="columns">
                 <!-- Exit and Save buttons -->
                 [[userPage = "user/" + session.get("userID") ]]
-                <div class="column is-3">
+                <!--div class="column is-3">
                 <div v-if="reorder">
                     <button class="button is-warning" style="float:left; width:100px" @click="setReorder(false)">Add</button>
                 </div>
                 <div v-else>
                     <button class="button is-link" style="float:left; width:100px" @click="setReorder(true)">Reorder</button>
                 </div>
-                </div>
-                <div class="column is-6">
+                </div-->
+                <div class="column">
                     <!-- Exit button redirects to profile, changes are not saved -->
                     <div class="level">
                         <div class="level-item is-pulled-right">

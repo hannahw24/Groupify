@@ -14,6 +14,7 @@ let init = (app) => {
       secondsPassedSinceCall: 0,
 
       isPlaying: false,      
+      isHost: false,
 
       playingTrackName: "",
       playingTrackArtist: "",
@@ -192,8 +193,17 @@ let init = (app) => {
       if (app.data.currSeconds < 10) {
         app.data.currSeconds = "0" + (app.data.currSeconds).toString();
       }
-
-      if (app.data.playingTrackPos >= app.data.playingTrackLength) {
+      
+      // If the host is done with a song, sync their next song. 
+      if (app.data.isHost) {
+        if ((app.data.playingTrackPos >= app.data.playingTrackLength)) {
+          app.getPlayingTrack();
+          // Just made a call, so no need to update less than 5 seconds from now
+          app.data.secondsPassedSinceCall = 0;
+        }
+      }
+      // If user is not host and the track has finished, sync the next song. 
+      else if (app.data.playingTrackPos >= app.data.playingTrackLength) {
         app.synchronizeVisitor();
       }
   };
@@ -269,6 +279,7 @@ let init = (app) => {
       axios.get(isGroupSessionHost).then((result) => {
           if (result.data.isHost == true) {
             console.log("isHost");
+            app.data.isHost = true;
             //immediately get the song a user is playing. 
             app.getPlayingTrack();
             var t=setInterval(app.increaseTime, 1000);
