@@ -3670,6 +3670,13 @@ success!
 success!
 success!
 success!
+timestamp: 2021-05-16T19:50:21.497765
+CREATE TABLE "queue"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "queuelistimage" TEXT,
+    "queuelisturl" TEXT,
+    "queueofwho" CHAR(512)
+);
 success!
 success!
 success!
@@ -3725,8 +3732,6 @@ success!
 success!
 success!
 success!
-timestamp: 2021-05-16T16:57:28.510660
-ALTER TABLE "groupSession" ADD "track_number" CHAR(512);
 success!
 success!
 success!
@@ -3755,8 +3760,6 @@ success!
 success!
 success!
 success!
-timestamp: 2021-05-16T17:02:03.043002
-ALTER TABLE "groupSession" ADD "tracknumber" CHAR(512);
 success!
 success!
 success!
@@ -3790,8 +3793,8 @@ success!
 success!
 success!
 success!
-success!
-success!
+timestamp: 2021-05-17T10:25:07.650827
+ALTER TABLE "groupSession" ADD "tracknumber" INTEGER;
 success!
 success!
 success!

@@ -34,6 +34,8 @@ let init = (app) => {
       totalResults: 0, // Number of results
       queueListImage: [], //list of songs in queue; picture
       queueListURL: [], //list of songs in queue; link
+      message: "", // Text to show in pop-up
+      page: -1,
     };
     
     app.getPlayingTrack = () => {
@@ -64,7 +66,7 @@ let init = (app) => {
         }
 
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-        console.log("songProgressBar in getPlayingTrack() is ", app.data.songProgressBar);
+
         //var spotifyTrackLinkPrefix = "https://open.spotify.com/embed/track/";
         //app.data.playingTrackURI = spotifyTrackLinkPrefix.concat(result.data.trackURI);
         }).then(() => {
@@ -76,7 +78,7 @@ let init = (app) => {
         
       input2 = document.getElementById('songSearch'); // Get input from searcg bar
       input2 = input2.value;
-      console.log(input2);
+      //console.log(input2);
       // Send to server
       axios.post(search_url, {
           input2: input2,
@@ -88,23 +90,89 @@ let init = (app) => {
           app.vue.trackLinks = result.data.trackLinks;
           app.vue.artistLinks = result.data.artistLinks;
           app.vue.totalResults = result.data.totalResults;
-          console.log(result2);
+          //console.log(result2);
       }).catch(() => {
           console.log("Caught error");
       });
   };
 
     // Adds an album to the banner
-    app.addSong = (cover, url) =>{
-        // If valid index of a song
-        // if (i >= 0 && i < 12) {
-        //     // Update album data
-        //     app.vue.queueListImage[i] = cover;
-        //     app.vue.queueListURL[i] = url;
-        // }
-        app.vue.queueListImage[i] = cover;
-        app.vue.queueListURL[i] = url;
+    app.add_song = (cover, url) =>{
+        let i=0;
+       for(i = 0; i<10; i++){
+         if(app.vue.queueListImage[i] == null){
+           app.vue.queueListImage[i] = cover;
+           app.vue.queueListURL[i] = url;
+           app.refresh_page(); // Update display
+           app.barAlert("Added to list!");
+           break;
+         }
+         app.refresh_page(); // Update display
+       }
+       if(i>=10){
+         app.barAlert("Only 10 songs queued at once!");
+       }
+      //maybe add a post????
+      //Do basically this:
+      // Send to server
+      // axios.post(search_url, {
+      //   input2: input2,
+      // }).then((result) => {
+      //     // Update all search result fields with server result
+      //     app.vue.topTracks = result.data.topTracks;
+      //     app.vue.topArtists = result.data.topArtists;
+      //     app.vue.imgList = result.data.imgList;
+      //     app.vue.trackLinks = result.data.trackLinks;
+      //     app.vue.artistLinks = result.data.artistLinks;
+      //     app.vue.totalResults = result.data.totalResults;
+      //     //console.log(result2);
+      // }).catch(() => {
+      //     console.log("Caught error");
+      // });
+      
+      //In controller: add if post line which then adds to database
     };
+
+    // Take in a message and display with alert
+   // Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp
+    app.barAlert = (msg) => {
+    // Update message to be displayed
+      app.vue.message = msg;
+    
+      // Get the snackbar DIV
+      var bar = document.getElementById("snackbar");
+
+      //clear the search input and all the resulting searches
+      document.getElementById("songSearch").value = null;
+      axios.post(search_url, {
+        input2: input2,
+      }).then((result) => {
+          // Update all search result fields with null values so nothing pops up
+          app.vue.topTracks = null;
+          app.vue.topArtists = null;
+          app.vue.imgList = null;
+          app.vue.trackLinks = null;
+          app.vue.artistLinks = null;
+          app.vue.totalResults = null;
+          //console.log(result2);
+      }).catch(() => {
+          console.log("Caught error");
+      });
+
+      // Add the "show" class to DIV
+      bar.className = "show";
+
+      // After 3 seconds, remove the show class from DIV
+      setTimeout(function(){ bar.className = bar.className.replace("show", ""); }, 3000);
+    };
+
+    app.refresh_page = () => {
+      let temp = app.vue.page;
+      app.vue.page = -1;
+      app.vue.page = temp; 
+    };
+ 
+
 
     app.updateSongTimeEachSecond = () =>{
       if (app.data.isPlaying == false) {
@@ -180,13 +248,12 @@ let init = (app) => {
             console.log("synchronizeVisitor Finished");
         });
     }
-
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
       getPlayingTrack: app.getPlayingTrack,
       search_spotify_songs: app.search_spotify_songs,
-      addSong: app.addSong,
+      add_song: app.add_song,
       increaseTime: app.increaseTime,
     };
 
