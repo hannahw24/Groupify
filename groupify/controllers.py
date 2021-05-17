@@ -1112,15 +1112,15 @@ def group_search():
    totalResults = 0
    # Get user input from search.js
    form_SearchValue = request.json.get("input2")
-   queueListImage = request.json.get('queueListImage')
-   queueListURL = request.json.get('queueListURL')
+#    queueListImage = request.json.get('queueListImage')
+#    queueListURL = request.json.get('queueListURL')
  
     #try to insert the list of songs into the database 
-   db.queue.insert(
-       queueOfWho=getUserID(),
-       queueListImage=queueListImage,
-       queueListURL=queueListURL,
-   )
+#    db.queue.insert(
+#        queueOfWho=getUserID(),
+#        queueListImage=queueListImage,
+#        queueListURL=queueListURL,
+#    )
  
    # If empty, return empty lists
    if form_SearchValue == "":
