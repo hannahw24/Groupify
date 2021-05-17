@@ -147,6 +147,7 @@ body{
 /* Container needed to position the overlay. Adjust the width as needed */
 .selected_box {
     position: relative;
+    
   }
   
   /* The overlay effect - lays on top of the container and over the image */
