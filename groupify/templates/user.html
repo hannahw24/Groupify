@@ -188,7 +188,7 @@
                 </div>
             [[elif isFriend==True:]]
                 <div class="level-item">
-                    <a class="button is-danger" href="[[=URL('unfollowProfile', userID, signer=url_signer)]]">
+                    <a class="button is-danger" href="[[=URL('unfollowProfileFromProfile', userID, signer=url_signer)]]">
                         Unfollow
                     </a>
                 </div>
@@ -372,11 +372,13 @@
                                 </div>
                             </section>
                             </div>
+                            
+                            <a href="[[=URL('artists', userID, signer=url_signer)]]" style="color:#000000"><strong>See All</strong></a>  
+                                                      
                         </div>
                         <!--  
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             Song of the day
-
                         </div>
                          -->
                     </div>

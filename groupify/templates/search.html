@@ -1,20 +1,22 @@
 [[extend 'layout.html']]
-
-
+<!--script src="js/drop.js"></script-->
 <div id="vue-target" class="search_section">
+<div class="columns">
 <!-- Banner Title -->
-<div class="column is-centered">
+<div class="column is-9">
     <h1 class="title has-text-centered" style="padding: 1%;">
         Select Album to Edit
     </h1>
-</div>
+
 
     <!-- Albums Banner -->
 <section >
     <div class="columns is-mobile is-centered">
-        <div class="column ">
+        <div class="drop-zone">
+        <div class="column">
             <div class="columns is-mobile is-multiline">
                 <!-- for all albums in js list -->
+                
                 <div v-for="(c, index) in coverList" class="column is-2" style="padding: 0.2%;">
                     <!-- if album is selected and cover is not empty... -->
                     <div v-if="page==index && c!='x'">
@@ -34,11 +36,11 @@
                         </div>
                     </div>
                     <!-- else if album is selected and cover is empty... -->
+                    
                     <div v-else-if="page==index && c=='x'">
                         <div class="selected_box">
                             <!-- overlay edit icon, but no delete button -->
-                            <img @click="goto(index)"
-                            :src="'images/filler_square.png'">
+                            <img @click="goto(index)" :src="'images/filler_square.png'">
                             <div class="overlay">
                                 <br><br>
                                 search to edit album
@@ -49,50 +51,69 @@
                     <div v-else>
                         <div class="edit_box">
                             <!-- no overlay or button, show either cover or placeholder -->
-                            <img  @click="goto(index)"
-                            :src="c === 'x' ? 'images/filler_square.png' : c ">
+                                <img :id="index" @click="goto(index)" ondragstart="drag(event)" ondragover="allowDrop(event)"
+                                ondrop="drop(event)" :draggable="reorder"
+                                :src="c === 'x' ? 'images/filler_square.png' : c ">
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        </div>
+    </div>
+    <div class="columns is-mobile is-centered">
+        <div class="column">
+            <div class="columns">
+                <!-- Exit and Save buttons -->
+                [[userPage = "user/" + session.get("userID") ]]
+                <div class="column is-3">
+                <div v-if="reorder">
+                    <button class="button is-warning" style="float:left; width:100px" @click="setReorder(false)">Add</button>
+                </div>
+                <div v-else>
+                    <button class="button is-link" style="float:left; width:100px" @click="setReorder(true)">Reorder</button>
+                </div>
+                </div>
+                <div class="column is-6">
+                    <!-- Exit button redirects to profile, changes are not saved -->
+                    <div class="level">
+                        <div class="level-item is-pulled-right">
+                            <button class="button is-danger" @click="confirmExit()">Exit</button>
+                            &nbsp;&nbsp;
+                            <!-- if albums have been edited and save is not pending, Save button is clickable -->
+                            <div v-if="edited && !pending">
+                                <button class="button is-primary" @click="save_albums">Save</button>
+                            </div>
+                            <!-- else if albums have been edited but save is pending, Save button shows loading icon -->
+                            <div v-else-if="edited && pending">
+                                <button class="button is-primary is-loading">Save</button>
+                            </div>
+                            <!-- else, if albums not edited, Save button is not clickable (nothing to save) -->
+                            <div v-else>
+                                <button class="button is-static">Save</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="columns is-mobile is-centered">
-        <div class="column">
-            <div class="level">
-                <!-- Exit and Save buttons -->
-                [[userPage = "user/" + session.get("userID") ]]
-                <div class="level-item is-pulled-right">
-                    <!-- Exit button redirects to profile, changes are not saved -->
-                    <button class="button is-danger" @click="confirmExit()">Exit</button>
-                    &nbsp;&nbsp;
-                    <!-- if albums have been edited and save is not pending, Save button is clickable -->
-                    <div v-if="edited && !pending">
-                        <button class="button is-primary" @click="save_albums">Save</button>
-                    </div>
-                    <!-- else if albums have been edited but save is pending, Save button shows loading icon -->
-                    <div v-else-if="edited && pending">
-                        <button class="button is-primary is-loading">Save</button>
-                    </div>
-                    <!-- else, if albums not edited, Save button is not clickable (nothing to save) -->
-                    <div v-else>
-                        <button class="button is-static">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </section>
+</div>
 <br>
-<section>
+
     <!-- Seahc Title -->
+    <div class="column">
+    <div class="queue_panel panel_spec" style="background-color: white;">
     <div>
-        <br>
-        <h1 class="title has-text-centered">
-            Search For Cover Art
+        <h1>
+            Search for Cover Art
         </h1>
     </div>
     <div><br></div>
+    
+    
     <div class="columns is-mobile is-centered">
         <div class="column">
             <!-- user types search here -->
@@ -128,7 +149,11 @@
             </div>
         </div>
     </div>
-</section>
+    </div>
+    </div>
+
+</div>
+
 <!-- defines the box tha confirms save/shows error -->
 <div id="snackbar">{{message}}</div>
 </div>
