@@ -1102,8 +1102,8 @@ def synchronizeVisitor(userID=None):
 @action.uses(session)
 def group_search():
    # Initialize empty lists
-   # queueListImage = ""
-   # queueListURL = ""
+   queueListImage = ""
+   queueListURL = ""
    topTracks = ""
    topArtists = ""
    imgList = ""
@@ -1115,6 +1115,7 @@ def group_search():
    queueListImage = request.json.get('queueListImage')
    queueListURL = request.json.get('queueListURL')
  
+    #try to insert the list of songs into the database 
    db.queue.insert(
        queueOfWho=getUserID(),
        queueListImage=queueListImage,
@@ -1156,8 +1157,8 @@ def group_search():
    imgList = biglist[2]
    trackLinks = biglist[3]
    artistLinks = biglist[4]
-   # queueListImage = biglist[2]
-   # queueListURL = biglist[0]
+   queueListImage = biglist[2]
+   queueListURL = biglist[0]
    # Return this information to display
    return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
    trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,

@@ -112,6 +112,14 @@ let init = (app) => {
        if(i>=10){
          app.barAlert("Only 10 songs queued at once!");
        }
+      //maybe add a post????
+      
+      //  axios.post(add_to_queue{
+      //     queueListURL: queueListURL,
+      //     queueListImage: queueListImage,
+      //  }).then((result)=>{
+
+      //  });
     };
 
     // Take in a message and display with alert
