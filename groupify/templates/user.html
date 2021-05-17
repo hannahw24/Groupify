@@ -101,7 +101,7 @@
 
     <div class="main_profile">
         <!-- albumns features -->
-        <section>
+        <div class="album_section">
         <div class="row">
             <div class="columns is-mobile is-1">
                 [[for i in range(6):]]
@@ -124,22 +124,21 @@
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                                <img src="images/square.png">
                             </figure>
                         </a>
                     </div>
                     <div v-else class="column is-2 album_box">
                         <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                            <img src="images/square.png">
                         </figure>
                     </div>
                     [[pass]]
                 [[pass]]
             </div>
         </div>
-        </section>
+        
 
-        <section>
         <div class="row">
             <div class="columns is-mobile is-1">
                 [[for i in range(6, 12):]]
@@ -162,18 +161,21 @@
                     <div v-if = "isEditingAlbums===1" class="column is-2 album_box">
                         <a href="[[=URL('user', userID, 'edit', i, signer=url_signer)]]">
                             <figure class="image">
-                                <img src="https://bulma.io/images/placeholders/128x128.png">
+                                <img src="images/square.png">
                             </figure>
                         </a>
                     </div>
-                    <div v-else class="column is-2 album_box">
+                    <div v-else class="column is-2 album_box" >
                         <figure class="image">
-                            <img src="https://bulma.io/images/placeholders/128x128.png">
+                            <img src="images/square.png">
                         </figure>
                     </div>
                     [[pass]]
                 [[pass]]
             </div>
+        </div>
+        </div>
+        <section>
             [[if (editable==True):]]
                 <div class="level-item">
                 <div id="editButton">
@@ -198,7 +200,7 @@
                 </div>
             [[pass]]
 
-        </div>
+        
         </section>
         
         <br><br>
@@ -374,7 +376,6 @@
                         <!--  
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             Song of the day
-
                         </div>
                          -->
                     </div>
