@@ -124,6 +124,10 @@ let init = (app) => {
       if (app.data.currSeconds < 10) {
         app.data.currSeconds = "0" + (app.data.currSeconds).toString();
       }
+
+      if (app.data.playingTrackPos >= app.data.playingTrackLength) {
+        app.synchronizeVisitor();
+      }
   };
 
     app.increaseTime = () =>{
@@ -171,10 +175,9 @@ let init = (app) => {
           app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
         }
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-        console.log("songProgressBar in synchronizeVisitor() is ", app.data.songProgressBar);
-
+        //var t=setInterval(app.synchronizeVisitor, 1000);
         }).then(() => {
-            //console.log("getPlayingTrack Finished");
+            console.log("synchronizeVisitor Finished");
         });
     }
 

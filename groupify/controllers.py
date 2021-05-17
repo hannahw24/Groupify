@@ -958,6 +958,7 @@ def groupSession(userID=None):
     try:
         token = auth_manager.get_access_token()
     except:
+        print("ok epic 1")
         return redirect(URL('login'))
     print ("TOKEN IS ", token["access_token"])
 
@@ -966,7 +967,7 @@ def groupSession(userID=None):
         insertedID = getIDFromUserTable(userID)
         db.groupSession.insert(userID=userID, trackURI="", imageURL="", trackName="", 
         artistName = "", curPosition="", trackLength="", isPlaying=False,
-        secondsPassedSinceCall=0, deviceID="", groupSessionOfWho=insertedID)
+        secondsPassedSinceCall=0, deviceID="", trackNumber="", groupSessionOfWho=insertedID)
 
     profileURL = (URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
@@ -1000,36 +1001,34 @@ def getCurrentPlaying(userID=None):
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        print("ok epic 2")
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.current_playback()
-    #print (results)
     try:
         deviceID = results["device"]["id"]
         item = results["item"]
         trackName = item["name"]
         artistName = item["album"]["artists"][0]["name"]
         isLocal = item["is_local"]
-        trackURI = item["uri"]
-        # Isolating the URI
-        ogTrackURI = trackURI
-        trackURI = trackURI.replace("spotify:track:", "")
+        trackURI = item["album"]["uri"]
+        trackNumber = item["track_number"]
+        # Album tracks start at index 0, but Spotify returns a value that starts at 1.
+        trackNumber -= 1
         curPosition = results["progress_ms"]
         isPlaying = results["is_playing"]
-        #print("curPosition = ", curPosition)
         trackLength = item["duration_ms"]
-        #print("trackLength = ", trackLength)
 
     except:
         trackName = "None"
         isLocal = "False"
-        ogTrackURI = ""
         artistName = "None"
         trackURI = ""
         curPosition = ""
         trackLength = ""
         isPlaying = "false"
         deviceID = ""
+        trackNumber= ""
     try:
         imageURL = results["item"]["album"]["images"][1]["url"]
     except:
@@ -1040,21 +1039,22 @@ def getCurrentPlaying(userID=None):
     except:
         return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
         imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-        isPlaying=isPlaying, deviceID=deviceID)
+        isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
-    dbGroupSessionEntry.update(trackURI=ogTrackURI, 
+    dbGroupSessionEntry.update(trackURI=trackURI, 
                                imageURL=imageURL,
                                trackName=trackName,
                                artistName=artistName,
                                curPosition=curPosition,
                                trackLength=trackLength,
                                isPlaying=isPlaying,
+                               trackNumber=trackNumber,
                                 #secondsPassedSinceCall=secondsPassedSinceCall                              
                                                 )
 
     return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-    isPlaying=isPlaying, deviceID=deviceID)
+    isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
 @action('synchronizeVisitor/<userID>', method=["GET"])
 @action.uses(session)
@@ -1070,6 +1070,7 @@ def synchronizeVisitor(userID=None):
     curPosition=dbGroupSessionEntry[0]["curPosition"]
     trackLength=dbGroupSessionEntry[0]["trackLength"]
     isPlaying=dbGroupSessionEntry[0]["isPlaying"]
+    trackNumber=dbGroupSessionEntry[0]["trackNumber"]
     #deviceID=dbGroupSessionEntry[0]["deviceID"]
 
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
@@ -1078,18 +1079,13 @@ def synchronizeVisitor(userID=None):
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.devices()
-    print (results)
-    print (results["devices"][0]["id"])
-    #deviceID = results["devices"][0]["id"]
-    try:
-        print("trackURI = ", trackURI)
-        trackList = []
-        trackList.append(trackURI)
-        trackList.append("spotify:track:718purgMpFb2Axhuz0Hbq1")
-        print("trackList = ", trackList)
-        spotify.start_playback(None, None, trackList, None, curPosition)
-    except:
-        print ("Could not start playack")
+    if (isPlaying == True):
+        try:
+            # offset must be {“position”: <int>} or {“uri”: “<track uri>”}
+            trackNumber = {"position": trackNumber}
+            spotify.start_playback(results["devices"][0]["id"], trackURI, None, trackNumber, curPosition)
+        except:
+            print ("Could not start playack")
 
     return dict(session=session, trackName=trackName, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,

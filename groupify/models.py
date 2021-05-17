@@ -140,6 +140,7 @@ db.define_table(
     Field('trackURI', 'string'), 
     Field('imageURL', 'string'),
     Field('trackName', 'string'),
+    Field('trackNumber', 'integer'),
     Field('artistName', 'string'), 
     Field('curPosition', 'string'),
     Field('trackLength', 'string'),
