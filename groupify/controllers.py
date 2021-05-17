@@ -1101,67 +1101,67 @@ def synchronizeVisitor(userID=None):
 @action('group_search', method=["GET", "POST"])
 @action.uses(session)
 def group_search():
-    # Initialize empty lists
-    # queueListImage = ""
-    # queueListURL = ""
-    topTracks = ""
-    topArtists = ""
-    imgList = ""
-    trackLinks = ""
-    artistLinks = ""   
-    totalResults = 0
-    # Get user input from search.js
-    form_SearchValue = request.json.get("input2")
-    queueListImage = request.json.get('queueListImage')
-    queueListURL = request.json.get('queueListURL')
-
-    db.queue.insert(
-        queueOfWho=getUserID(),
-        queueListImage=queueListImage,
-        queueListURL=queueListURL,
-    )
-
-    # If empty, return empty lists
-    if form_SearchValue == "":
-        return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, queueListImage=queueListImage, queueListURL=queueListURL)
-    
-    # Get results from Spotify
-    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
-    if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect('login')
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
-    results = spotify.search(form_SearchValue, type='track', limit=10)
-    #print(results)
-    try:
-        # If the search results yielded no results, then return nothing. 
-        totalResults = results["tracks"]["total"]
-        if (totalResults == 0):
-            return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-            trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
-            queueListImage=queueListImage, queueListURL=queueListURL)
-        # Else begin to parse the JSON by looking at the albums
-        results = results["tracks"]
-    except:
-        #print(results)
-        return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
-        queueListImage=queueListImage, queueListURL=queueListURL)
-
-    # Parses through the JSON and returns a list of lists with the information we desire
-    biglist = getSearchResults(results)
-    topTracks = biglist[0]
-    topArtists = biglist[1]
-    imgList = biglist[2]
-    trackLinks = biglist[3]
-    artistLinks = biglist[4]
-    # queueListImage = biglist[2]
-    # queueListURL = biglist[0]
-    # Return this information to display
-    return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-    trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
-    queueListImage=queueListImage, queueListURL=queueListURL)
+   # Initialize empty lists
+   # queueListImage = ""
+   # queueListURL = ""
+   topTracks = ""
+   topArtists = ""
+   imgList = ""
+   trackLinks = ""
+   artistLinks = ""  
+   totalResults = 0
+   # Get user input from search.js
+   form_SearchValue = request.json.get("input2")
+   queueListImage = request.json.get('queueListImage')
+   queueListURL = request.json.get('queueListURL')
+ 
+   db.queue.insert(
+       queueOfWho=getUserID(),
+       queueListImage=queueListImage,
+       queueListURL=queueListURL,
+   )
+ 
+   # If empty, return empty lists
+   if form_SearchValue == "":
+       return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+       trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, queueListImage=queueListImage, queueListURL=queueListURL)
+  
+   # Get results from Spotify
+   cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+   auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+   if not auth_manager.validate_token(cache_handler.get_cached_token()):
+       return redirect('login')
+   spotify = spotipy.Spotify(auth_manager=auth_manager)
+   results = spotify.search(form_SearchValue, type='track', limit=10)
+   #print(results)
+   try:
+       # If the search results yielded no results, then return nothing.
+       totalResults = results["tracks"]["total"]
+       if (totalResults == 0):
+           return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+           trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
+           queueListImage=queueListImage, queueListURL=queueListURL)
+       # Else begin to parse the JSON by looking at the albums
+       results = results["tracks"]
+   except:
+       #print(results)
+       return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+       trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
+       queueListImage=queueListImage, queueListURL=queueListURL)
+ 
+   # Parses through the JSON and returns a list of lists with the information we desire
+   biglist = getSearchResults(results)
+   topTracks = biglist[0]
+   topArtists = biglist[1]
+   imgList = biglist[2]
+   trackLinks = biglist[3]
+   artistLinks = biglist[4]
+   # queueListImage = biglist[2]
+   # queueListURL = biglist[0]
+   # Return this information to display
+   return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
+   trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
+   queueListImage=queueListImage, queueListURL=queueListURL)
 
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)

@@ -90,36 +90,36 @@ let init = (app) => {
           app.vue.trackLinks = result.data.trackLinks;
           app.vue.artistLinks = result.data.artistLinks;
           app.vue.totalResults = result.data.totalResults;
-          //console.log(result2);
+          console.log(result2);
       }).catch(() => {
           console.log("Caught error");
       });
   };
 
     // Adds an album to the banner
-    app.add_song = (cover, url) =>{
+    app.addSong = (cover, url) =>{
         let i=0;
-        for(i = 0; i<10; i++){
-          if(app.vue.queueListImage[i] == null){
-            app.vue.queueListImage[i] = cover;
-            app.vue.queueListURL[i] = url;
-            app.refresh_page(); // Update display
-            app.barAlert("Added to list!");
-            break;
-          }
-          app.refresh_page(); // Update display
-        }
-        if(i>=10){
-          app.barAlert("Only 10 songs queued at once!");
-        }
+       for(i = 0; i<10; i++){
+         if(app.vue.queueListImage[i] == null){
+           app.vue.queueListImage[i] = cover;
+           app.vue.queueListURL[i] = url;
+           app.refresh_page(); // Update display
+           app.barAlert("Added to list!");
+           break;
+         }
+         app.refresh_page(); // Update display
+       }
+       if(i>=10){
+         app.barAlert("Only 10 songs queued at once!");
+       }
     };
 
     // Take in a message and display with alert
-    // Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp
+   // Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp
     app.barAlert = (msg) => {
-      // Update message to be displayed
+    // Update message to be displayed
       app.vue.message = msg;
-      
+    
       // Get the snackbar DIV
       var bar = document.getElementById("snackbar");
 
@@ -150,8 +150,10 @@ let init = (app) => {
     app.refresh_page = () => {
       let temp = app.vue.page;
       app.vue.page = -1;
-      app.vue.page = temp;  
+      app.vue.page = temp; 
     };
+ 
+
 
     app.updateSongTimeEachSecond = () =>{
       if (app.data.isPlaying == false) {
@@ -225,8 +227,7 @@ let init = (app) => {
     app.methods = {
       getPlayingTrack: app.getPlayingTrack,
       search_spotify_songs: app.search_spotify_songs,
-      add_song: app.add_song,
-      barAlert: app.barAlert,
+      addSong: app.addSong,
       increaseTime: app.increaseTime,
     };
 

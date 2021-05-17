@@ -132,11 +132,6 @@ db.define_table(
 )
 
 db.define_table(
-    'queue',
-    Field('queueListImage', 'list:string'),
-    Field('queueListURL', 'list:string'),
-    Field('queueOfWho'),
-)
     'groupSession',
     #Change this to one big field with 1 list with 6 index [0][1]...
     #Also just return the albumsOfWho ID for albumInput because it should be unique. 
@@ -151,6 +146,13 @@ db.define_table(
     Field('isPlaying', 'boolean'),
     Field('secondsPassedSinceCall', 'string'),
     Field('groupSessionOfWho', db.dbUser)
+)
+
+db.define_table(
+   'queue',
+   Field('queueListImage', 'list:string'),
+   Field('queueListURL', 'list:string'),
+   Field('queueOfWho'),
 )
 
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:

@@ -476,9 +476,6 @@ p.friend_text{
 .add_friend_results{
     overflow-x: hidden;
     overflow-y: scroll;
-<<<<<<< HEAD
-    height: 75%;
-=======
     height: 60vh;
     
 }
@@ -494,6 +491,5 @@ p.friend_text{
     overflow-x: hidden;
     overflow-y: scroll;
     height: 700px;
->>>>>>> 108d94c82bf22393a13f9ed3e5a3157a24a86744
     
 }

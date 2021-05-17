@@ -40,7 +40,7 @@
             <div v-for="(n, i) in 10">
             <section>
                 <!-- when result is clicked, add album to list at selected index -->
-                
+               
                     <div class="columns">
                         <div v-if="queueListImage[i] != null" class="column">
                             <!-- Album art image with link to track -->
@@ -53,10 +53,11 @@
                             </div>
                         </div>
                     </div>
-                 
+                
               </section>
             </div>
         </div>
+        
     </div>
     <div class="queue_panel panel_spec" style="background-color: white;"> 
         <div class="box">
@@ -119,7 +120,7 @@
 
   </div>
   <!-- defines the box tha confirms save/shows error -->
-    <div id="snackbar">{{message}}</div>
+  <div id="snackbar">{{message}}</div>
 </div>
 
 <script>
