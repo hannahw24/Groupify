@@ -10,6 +10,7 @@ let init = (app) => {
     app.data = {
         isEditing: 0,
         bio: "",
+        //reorder: false,
         page: -1, // Index of album being edited, -1 means none selected
         edited: false, // Albums edited or not edited
         pending: false, // Save pending
@@ -66,6 +67,11 @@ let init = (app) => {
         app.vue.page = -1;
         app.vue.page = temp;  
     };
+    
+    /*app.setReorder = (val) => {
+        app.vue.goto(-1);
+        app.vue.reorder = val;
+    }*/
     
     // Adds an album to the banner
     app.add_album = (cover, url, i) =>{
@@ -126,6 +132,9 @@ let init = (app) => {
     
     // Go to specific page (album index)
     app.goto = (pg) => {
+        /*if (app.vue.reorder){
+            return;
+        }*/
         app.vue.page = pg;
         console.log(app.vue.page);
     };
@@ -160,6 +169,14 @@ let init = (app) => {
         }  
     };
     
+    app.rearrange = (covers, urls, edit) => {
+        app.vue.coverList = covers;
+        app.vue.urlList = urls;
+        if (app.vue.edited === false){
+            app.vue.edited = edit;
+        }
+    };
+    
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
@@ -172,6 +189,13 @@ let init = (app) => {
         compare: app.compare,
         barAlert: app.barAlert,
         confirmExit: app.confirmExit,
+        //setReorder: app.setReorder,
+        rearrange: app.rearrange,
+        
+        // drag and drop methods (outside app)
+        drag: drag,
+        drop: drop,
+        allowDrop: allowDrop,
     };
 
     // This creates the Vue instance.
@@ -202,3 +226,53 @@ let init = (app) => {
 // This takes the (empty) app object, and initializes it,
 // putting all the code i
 init(app);
+
+// page and lists editable outside app
+let tempPage = app.data.page;
+let tempCovers = app.data.coverList;
+let tempUrls = app.data.urlList;
+let src = 0; // initial index of album being moved
+let dest = 0; // index album is being moved to
+
+// drag and drop functions partially based on: https://www.w3schools.com/html/html5_draganddrop.asp
+
+function allowDrop(ev) {
+    ev.preventDefault(); // prevent default behavior
+    dest = ev.target.id; // id is the index of the album
+}
+
+function drag(ev) {
+    // save state of albums and page
+    tempCovers = app.data.coverList;
+    tempUrls = app.data.urlList;
+    tempPage = app.data.page;
+    console.log("PAGE: " + tempPage);
+    // store data from id
+    //ev.dataTransfer.setData("text", ev.target.id);
+    // save index
+    src = ev.target.id;
+}
+
+function drop(ev) {
+    event.preventDefault(); // prevent default behavior
+    console.log("INDEXES: " + src + ", " + dest);
+    // update page based on where selected album moves
+    if (src > tempPage && dest <= tempPage) {
+        app.goto(parseInt(tempPage)+1);
+    }
+    else if (src < tempPage && dest >= tempPage) {
+        app.goto(parseInt(tempPage)-1);
+    }
+    else if (src == tempPage) {
+        app.goto(dest);
+    }
+    // reorder albums
+    tempCovers.splice(dest, 0, tempCovers.splice(src, 1)[0]);
+    tempUrls.splice(dest, 0, tempUrls.splice(src, 1)[0]);
+    console.log(tempCovers);
+    // send new order to app
+    edit = (src != dest);
+    app.rearrange(tempCovers, tempUrls, edit);
+  //var data = ev.dataTransfer.getData("text");
+  //ev.target.appendChild(document.getElementById(data));
+}

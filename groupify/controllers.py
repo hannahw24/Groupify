@@ -422,17 +422,23 @@ def getUserProfile(userID=None):
 def artists_page(userID):
     profileURL = (URL("user", userID))
     theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
+    display_name=dbUserEntry[0]["display_name"]
     return dict(session=session, 
     userID=userID, editable=False,
     profileURL=profileURL,
     
     getTopArtists=URL("getTopArtists", userID),
     
+    url_signer=url_signer,
+    
     background_bot=theme_colors[0],
     background_top=theme_colors[1],
     friend_tile=theme_colors[2],
     tile_color=theme_colors[3],
-    text_color=theme_colors[4])
+    text_color=theme_colors[4],
+    user=getUserID(),
+    display_name=display_name)
 
 # -----------------------------------Search Page-------------------------------------
 
@@ -588,8 +594,8 @@ def editable_profile(userID):
 def update_theme(userID=None, theme_id=None):
     assert theme_id is not None
     assert userID is not None
-    print(theme_id)
-    print(userID)
+    #print(theme_id)
+    #print(userID)
     user_data = db.dbUser[getIDFromUserTable(userID)]
     db(db.user_data.id == getIDFromUserTable(userID).update(chosen_theme=theme_id))
 
@@ -778,7 +784,7 @@ def parsePlaylistResults(results):
         trLink = item['external_urls']['spotify']
         description = item['description']
         description = unescape(description)
-        print ("description is ", description, "\n")
+        #print ("description is ", description, "\n")
         #artLink = item['artists'][0]['external_urls']['spotify']
         TopSongsList.append(playlistName)
         #TopArtistsList.append(trackInfo)
@@ -951,24 +957,24 @@ def groupSession(userID=None):
     # Makes user log in if they go to a group session link and have not logged in yet
     if (session.get("userID") == None):
         return redirect(URL('login'))
-    # Ash: set editable to False for now, not sure if setting the theme
-    #      on the groupSession page will change it for everyone
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyClientCredentials(cache_handler=cache_handler)
     try:
         token = auth_manager.get_access_token()
     except:
+        print("ok epic 1")
         return redirect(URL('login'))
     print ("TOKEN IS ", token["access_token"])
 
     dbGroupSessionEntry = db(db.groupSession.userID == userID).select().as_list()
+    # Creating the table for groupSession if it does not exist
     if ((dbGroupSessionEntry == None) or (dbGroupSessionEntry == [])):
         insertedID = getIDFromUserTable(userID)
         db.groupSession.insert(userID=userID, trackURI="", imageURL="", trackName="", 
         artistName = "", curPosition="", trackLength="", isPlaying=False,
-        secondsPassedSinceCall=0, deviceID="", groupSessionOfWho=insertedID)
+         secondsPassedSinceCall=0, deviceID="", trackNumber="", groupSessionOfWho=insertedID)
 
-    profileURL = (URL("user", userID))
+    profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
@@ -992,6 +998,7 @@ def groupSession(userID=None):
             squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
             isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID))
 
+# Function that hosts run in groupSession
 @action('currentPlaying/<userID>', method=["GET"])
 @action.uses(session)
 def getCurrentPlaying(userID=None):
@@ -1000,36 +1007,34 @@ def getCurrentPlaying(userID=None):
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        print("ok epic 2")
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.current_playback()
-    #print (results)
     try:
         deviceID = results["device"]["id"]
         item = results["item"]
         trackName = item["name"]
         artistName = item["album"]["artists"][0]["name"]
         isLocal = item["is_local"]
-        trackURI = item["uri"]
-        # Isolating the URI
-        ogTrackURI = trackURI
-        trackURI = trackURI.replace("spotify:track:", "")
+        trackURI = item["album"]["uri"]
+        trackNumber = item["track_number"]
+        # Album tracks start at index 0, but Spotify returns a value that starts at 1.
+        trackNumber -= 1
         curPosition = results["progress_ms"]
         isPlaying = results["is_playing"]
-        #print("curPosition = ", curPosition)
         trackLength = item["duration_ms"]
-        #print("trackLength = ", trackLength)
 
     except:
         trackName = "None"
         isLocal = "False"
-        ogTrackURI = ""
         artistName = "None"
         trackURI = ""
         curPosition = ""
         trackLength = ""
         isPlaying = "false"
         deviceID = ""
+        trackNumber= ""
     try:
         imageURL = results["item"]["album"]["images"][1]["url"]
     except:
@@ -1040,22 +1045,24 @@ def getCurrentPlaying(userID=None):
     except:
         return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
         imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-        isPlaying=isPlaying, deviceID=deviceID)
+        isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
-    dbGroupSessionEntry.update(trackURI=ogTrackURI, 
+    dbGroupSessionEntry.update(trackURI=trackURI, 
                                imageURL=imageURL,
                                trackName=trackName,
                                artistName=artistName,
                                curPosition=curPosition,
                                trackLength=trackLength,
                                isPlaying=isPlaying,
+                               trackNumber=trackNumber,
                                 #secondsPassedSinceCall=secondsPassedSinceCall                              
                                                 )
 
     return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-    isPlaying=isPlaying, deviceID=deviceID)
+    isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
+# Function that visitors run in groupSession
 @action('synchronizeVisitor/<userID>', method=["GET"])
 @action.uses(session)
 def synchronizeVisitor(userID=None):
@@ -1070,6 +1077,7 @@ def synchronizeVisitor(userID=None):
     curPosition=dbGroupSessionEntry[0]["curPosition"]
     trackLength=dbGroupSessionEntry[0]["trackLength"]
     isPlaying=dbGroupSessionEntry[0]["isPlaying"]
+    trackNumber=dbGroupSessionEntry[0]["trackNumber"]
     #deviceID=dbGroupSessionEntry[0]["deviceID"]
 
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
@@ -1078,18 +1086,15 @@ def synchronizeVisitor(userID=None):
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     results = spotify.devices()
-    print (results)
-    print (results["devices"][0]["id"])
-    #deviceID = results["devices"][0]["id"]
-    try:
-        print("trackURI = ", trackURI)
-        trackList = []
-        trackList.append(trackURI)
-        trackList.append("spotify:track:718purgMpFb2Axhuz0Hbq1")
-        print("trackList = ", trackList)
-        spotify.start_playback(None, None, trackList, None, curPosition)
-    except:
-        print ("Could not start playack")
+
+    # If host is playing the song, then play it. If it is paused, do not.
+    if (isPlaying == True):
+        try:
+            # offset must be {“position”: <int>} or {“uri”: “<track uri>”}
+            trackNumber = {"position": trackNumber}
+            spotify.start_playback(results["devices"][0]["id"], trackURI, None, trackNumber, curPosition)
+        except:
+            print ("Could not start playack")
 
     return dict(session=session, trackName=trackName, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
@@ -1102,18 +1107,40 @@ def synchronizeVisitor(userID=None):
 @action.uses(session)
 def group_search():
     # Initialize empty lists
+    queueListImage = ""
+    queueListURL = ""
     topTracks = ""
     topArtists = ""
     imgList = ""
     trackLinks = ""
-    artistLinks = ""   
+    artistLinks = ""  
     totalResults = 0
     # Get user input from search.js
     form_SearchValue = request.json.get("input2")
+
+    if request.method == "POST":
+        print('posty posty')
+        queueListImage = request.json.get('queueListImage')
+        queueListURL = request.json.get('queueListURL')
+
+        if queueListImage and queueListURL:
+            print(queueListImage)
+            print(queueListURL)
+            print("")
+
+            # try to insert the list of songs into the database 
+            # db.queue.insert(
+            #     queueOfWho=getUserID(),
+            #     queueListImage=queueListImage,
+            #     queueListURL=queueListURL,
+            # )
+                
+    
     # If empty, return empty lists
-    if form_SearchValue == "":
+    if form_SearchValue == "" or form_SearchValue == None:
         return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults, queueListImage=queueListImage, queueListURL=queueListURL)
+    
     
     # Get results from Spotify
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
@@ -1124,18 +1151,19 @@ def group_search():
     results = spotify.search(form_SearchValue, type='track', limit=10)
     #print(results)
     try:
-        # If the search results yielded no results, then return nothing. 
+        # If the search results yielded no results, then return nothing.
         totalResults = results["tracks"]["total"]
         if (totalResults == 0):
             return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-            trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+            trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
+            queueListImage=queueListImage, queueListURL=queueListURL)
         # Else begin to parse the JSON by looking at the albums
         results = results["tracks"]
     except:
         #print(results)
         return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
-
+        trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
+        queueListImage=queueListImage, queueListURL=queueListURL)
     # Parses through the JSON and returns a list of lists with the information we desire
     biglist = getSearchResults(results)
     topTracks = biglist[0]
@@ -1143,9 +1171,12 @@ def group_search():
     imgList = biglist[2]
     trackLinks = biglist[3]
     artistLinks = biglist[4]
+    queueListImage = biglist[2]
+    queueListURL = biglist[0]
     # Return this information to display
     return dict(session=session, topTracks=topTracks, topArtists=topArtists, imgList=imgList,
-    trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults)
+    trackLinks=trackLinks, artistLinks=artistLinks, totalResults=totalResults,
+    queueListImage=queueListImage, queueListURL=queueListURL)
 
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)
@@ -1329,12 +1360,12 @@ def getTopSongs(userID=None):
 
     # This is populated if a person who is not the owner wants to see a different term
     term = request.params.get('term')
-    print ("1term is ", term)
+    #print ("1term is ", term)
 
     # This is populated if by default
     if term == None:
         term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term    # Obtains the whole entry of the user in the correct table.
-    print ("term is ", term)
+    #print ("term is ", term)
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
         term_str = 'last 4 weeks'	
@@ -1378,7 +1409,7 @@ def getTopSongsPost(userID=None):
     # Gets the term selected by the user, which is currently in user.js 
     # in the changeTerm() function
     term = request.params.get('term')
-    print("postTerm ", term)
+    #print("postTerm ", term)
     db(db.dbUser.id == getIDFromUserTable(userID)).update(chosen_term=term)	
     return dict(session=session)	
 

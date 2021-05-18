@@ -140,12 +140,20 @@ db.define_table(
     Field('trackURI', 'string'), 
     Field('imageURL', 'string'),
     Field('trackName', 'string'),
+    Field('trackNumber', 'integer'),
     Field('artistName', 'string'), 
     Field('curPosition', 'string'),
     Field('trackLength', 'string'),
     Field('isPlaying', 'boolean'),
     Field('secondsPassedSinceCall', 'string'),
     Field('groupSessionOfWho', db.dbUser)
+)
+
+db.define_table(
+   'queue',
+   Field('queueListImage', 'list:string'),
+   Field('queueListURL', 'list:string'),
+   Field('queueOfWho'),
 )
 
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:

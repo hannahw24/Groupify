@@ -34,6 +34,30 @@
         <div class="box" style="width:25%;">
             Friend 4
         </div>
+
+        <div>
+            <div class="title"><bold>Queue</bold></div>
+            <div v-for="(n, i) in 10">
+            <section>
+                <!-- when result is clicked, add album to list at selected index -->
+               
+                    <div class="columns">
+                        <div v-if="queueListImage[i] != null" class="column">
+                            <!-- Album art image with link to track -->
+                            <img width="64" height="64" :src="queueListImage[i]">
+                        </div>
+                        <div class="column is-9">
+                            <div>
+                                <!-- Song title with link to track -->
+                                <span target="_blank" style="color:#000000"><strong>{{queueListURL[i]}}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                
+              </section>
+            </div>
+        </div>
+        
     </div>
     <div class="queue_panel panel_spec" style="background-color: white;"> 
         <div class="box">
@@ -95,6 +119,8 @@
           </div>
 
   </div>
+  <!-- defines the box tha confirms save/shows error -->
+  <div id="snackbar">{{message}}</div>
 </div>
 
 <script>
