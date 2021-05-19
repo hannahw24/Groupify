@@ -41,6 +41,7 @@ let init = (app) => {
     
     app.getPlayingTrack = () => {
       axios.get(currentPlaying).then((result) => {
+        console.log("In getPlayingTrack");
         //include local variable checking later.
         app.data.isPlaying = result.data.isPlaying;
 
@@ -259,6 +260,21 @@ let init = (app) => {
             console.log("synchronizeVisitor Finished");
         });
     }
+
+    // Takes in whether or not to play or pause a track. 
+    // true is playing, false is paused.
+    app.playOrPause = (content) => {
+      console.log("playOrPause");
+      axios.get(pauseOrPlayTrack, {params: {
+        content: content
+        }}).then((result) => {
+              app.data.isPlaying = content;
+              //app.getPlayingTrack();
+          }).catch(() => {
+              console.log("Caught error");
+          });
+      };
+
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
@@ -267,6 +283,7 @@ let init = (app) => {
       add_song: app.add_song,
       increaseTime: app.increaseTime,
       synchronizeVisitor: app.synchronizeVisitor,
+      playOrPause: app.playOrPause,
     };
 
     // This creates the Vue instance.

@@ -70,12 +70,12 @@
             <div class="level-item">
                 <div v-if="isPlaying == false" >
                     <!-- "key" added to avoid Vue's efficient rendering -->
-                    <button @click="" class="button is-white" key="play">
+                    <button @click="playOrPause(true)" class="button is-white" key="play">
                         <i class="fa fa-play" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div v-else-if="isPlaying == true" >
-                    <button @click="" class="button is-white"  key="pause">
+                    <button @click="playOrPause(false)" class="button is-white"  key="pause">
                         <i class="fa fa-pause" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -162,6 +162,7 @@ function getGroupLink() {
     let getAPICallTime = "[[=XML(getAPICallTime)]]";
     let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
+    let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]

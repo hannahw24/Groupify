@@ -14,7 +14,8 @@ The path follows the bottlepy syntax.
 @action.uses(auth.user)       indicates that the action requires a logged in user
 @action.uses(auth)            indicates that the action requires the auth object
 session, db, T, auth, and tempates are examples of Fixtures.
-Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
+Warning: Fixtures MUST be declared with @action.uses({fixtures}) 
+else your app will result in undefined behavior
 """
 
 from py4web import action, request, abort, redirect, URL, Field
@@ -35,9 +36,8 @@ os.environ["SPOTIPY_CLIENT_ID"] = "f4cfb74420ed4bcaab8408922adb5820"
 os.environ["SPOTIPY_CLIENT_SECRET"] = "d9ff6b1b8e0d4dd3a421f0c1e4f70e67"
 os.environ["SPOTIPY_REDIRECT_URI"] = "http://127.0.0.1:8000/groupify/callback"
 
-
 # The cache folder is located in the /py4web folder. 
-# Keep this in mind when we move on from local hosting. 
+# Keep this in mind when we move on from local hosting.
 caches_folder = './.spotify_caches/'
 if not os.path.exists(caches_folder):
     os.makedirs(caches_folder)
@@ -62,7 +62,7 @@ def getUserID():
 def getIndex(userID=None):
     # If session is still active, we do not ask users to login again.
     if session.get("userID") is not None:
-        # Instead of redirecting them to their profiles, we send them 
+        # Instead of redirecting them to their profiles, we send them
         # to "getUserInfo" to see any of their information has changed.
         print (session.get("userID"))
         return getUserInfo()
@@ -71,23 +71,23 @@ def getIndex(userID=None):
         theme_colors = return_theme(user_from_table.chosen_theme)
 
         return dict(
-            session=session, 
+            session=session,
             editable=False,
-            background_bot=theme_colors[0], 
+            background_bot=theme_colors[0],
             background_top=theme_colors[1],
             )
     else:
         return dict( 
-            session=session, editable=False, 
-            background_bot=None, 
+            session=session, editable=False,
+            background_bot=None,
             background_top=None,)
 
 # https://github.com/plamere/spotipy/blob/master/examples/search.py
-# Emulates the caching, authentication managing, and uuid assigning as 
+# Emulates the caching, authentication managing, and uuid assigning as
 # shown in the above git repository. It is an example of multi-person login
-# with spotipy. 
+# with spotipy.
 # See License of code at https://github.com/plamere/spotipy/blob/master/LICENSE.md 
-# Step 0: Visitor is unknown, give random ID, then make them sign in 
+# Step 0: Visitor is unknown, give random ID, then make them sign in
 # with Spotify
 @action('login', method='GET')
 @action.uses('index.html', session)
@@ -95,10 +95,10 @@ def userLogin():
     if not session.get('uuid'):
         session['uuid'] = str(uuid.uuid4())
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    # Magic code; takes in our client_id, secret_id, and redirect_uri and 
+    # Magic code; takes in our client_id, secret_id, and redirect_uri and
     # and once the user accepts the requested permissions it retrieves a token for us.
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope=scopes,
-                                                cache_handler=cache_handler, 
+                                                cache_handler=cache_handler,
                                                 show_dialog=True)
     auth_url = auth_manager.get_authorize_url()
     # In this case the auth_url is [localhost]/callback
@@ -108,8 +108,8 @@ def userLogin():
 @action('callback')
 @action.uses(session)
 def getCallback():
-    # Ash: Clear the session in case a user has logged out. If we don't do this and a user tries to login with another
-    # account then they will be logged in to their first account no matter what. 
+    # Clear the session in case a user has logged out. If we don't do this and a user tries to login with another
+    # account then they will be logged in to their first account no matter what.
     session.clear()
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope=scopes,
@@ -952,9 +952,33 @@ def isGroupSessionHost(userID=None):
     return dict(isHost=isHost)
 
 # Function that hosts run in groupSession
-@action('pauseTrack/<userID>/<deviceID>', method=["GET"])
+@action('pauseOrPlayTrack/<userID>/<deviceID>', method=["GET"])
 @action.uses(session)
-def pauseTrack(userID=None, deviceID=None):
+def pauseOrPlayTrack(userID=None, deviceID=None):
+    isPlaying = request.params.get('content')
+    print("isPlaying = ", isPlaying)
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect(URL('login'))
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    if (isPlaying == "false"):
+        spotify.pause_playback(deviceID)
+    # If host, resume with function that checks what song you are playing.
+    # Playing a track is MUCH more expensive than pausing a track
+    elif (isGroupSessionHost(userID)):
+        print("is host")
+        dbGroupSessionEntry = (db(db.groupSession.userID == userID).select().as_list())
+        trackURI=dbGroupSessionEntry[0]["trackURI"]
+        trackNumber=dbGroupSessionEntry[0]["trackNumber"]
+        trackNumber = {"position": trackNumber}
+        curPosition=dbGroupSessionEntry[0]["curPosition"]
+        spotify.start_playback(deviceID, trackURI, None, trackNumber, curPosition)
+        #return getCurrentPlaying(userID)
+    # If visitor, resume with function that checks what song the host is playing.
+    else:
+        print("is visitor")
+        synchronizeVisitor(userID, deviceID)
     return
 
 @action('groupSession/<userID>')
@@ -968,8 +992,11 @@ def groupSession(userID=None):
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    results = spotify.devices()
-    deviceID = results["devices"][0]["id"]
+    try:
+        results = spotify.devices()
+        deviceID = results["devices"][0]["id"]
+    except:
+        deviceID = ""
 
     dbGroupSessionEntry = db(db.groupSession.userID == userID).select().as_list()
     # Creating the table for groupSession if it does not exist
@@ -991,17 +1018,33 @@ def groupSession(userID=None):
             theme_colors = return_theme(user_from_table.chosen_theme)
         except:
             theme_colors = return_theme(0)
-        return dict(session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1], 
-            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
-            squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
-            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID))
+        return dict(session=session, 
+                    editable=False,
+                    background_bot=theme_colors[0],
+                    background_top=theme_colors[1], 
+                    profile_pic=profile_pic, 
+                    profileURL = profileURL, 
+                    currentPlaying=URL("currentPlaying", userID),
+                    squares_url = URL('get_squares'),
+                    search_url = URL('group_search'), 
+                    getAPICallTime = URL('getAPICallTime'),
+                    isGroupSessionHost=URL("isGroupSessionHost", userID), 
+                    synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
+                    pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID))
     else:
-        return dict( session=session, editable=False, 
-            background_bot=None, background_top=None, 
-            profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
-            squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
-            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID))
+        return dict(session=session, 
+                    editable=False, 
+                    background_bot=None, 
+                    background_top=None, 
+                    profile_pic=profile_pic, 
+                    profileURL = profileURL, 
+                    currentPlaying=URL("currentPlaying", userID),
+                    squares_url = URL('get_squares'),
+                    search_url = URL('group_search'), 
+                    getAPICallTime = URL('getAPICallTime'),
+                    isGroupSessionHost=URL("isGroupSessionHost", userID), 
+                    synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
+                    pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID))
 
 # Function that hosts run in groupSession
 @action('currentPlaying/<userID>', method=["GET"])
@@ -1100,7 +1143,6 @@ def synchronizeVisitor(userID=None, deviceID=None):
             spotify.start_playback(deviceID, trackURI, None, trackNumber, curPosition)
         except:
             print ("Could not start playack")
-
     # Returns these variable to update information on visitor's page.
     return dict(session=session, trackName=trackName, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
