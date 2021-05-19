@@ -951,6 +951,12 @@ def isGroupSessionHost(userID=None):
         print ("This person is the host")
     return dict(isHost=isHost)
 
+# Function that hosts run in groupSession
+@action('pauseTrack/<userID>/<deviceID>', method=["GET"])
+@action.uses(session)
+def pauseTrack(userID=None, deviceID=None):
+    return
+
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
@@ -958,13 +964,12 @@ def groupSession(userID=None):
     if (session.get("userID") == None):
         return redirect(URL('login'))
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    auth_manager = spotipy.oauth2.SpotifyClientCredentials(cache_handler=cache_handler)
-    try:
-        token = auth_manager.get_access_token()
-    except:
-        print("ok epic 1")
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect(URL('login'))
-    print ("TOKEN IS ", token["access_token"])
+    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    results = spotify.devices()
+    deviceID = results["devices"][0]["id"]
 
     dbGroupSessionEntry = db(db.groupSession.userID == userID).select().as_list()
     # Creating the table for groupSession if it does not exist
@@ -972,7 +977,7 @@ def groupSession(userID=None):
         insertedID = getIDFromUserTable(userID)
         db.groupSession.insert(userID=userID, trackURI="", imageURL="", trackName="", 
         artistName = "", curPosition="", trackLength="", isPlaying=False,
-         secondsPassedSinceCall=0, deviceID="", trackNumber="", groupSessionOfWho=insertedID)
+         secondsPassedSinceCall=0, deviceID=deviceID, trackNumber="", groupSessionOfWho=insertedID)
 
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
@@ -987,16 +992,16 @@ def groupSession(userID=None):
         except:
             theme_colors = return_theme(0)
         return dict(session=session, editable=False,
-            background_bot=theme_colors[0],background_top=theme_colors[1], token=token["access_token"], 
+            background_bot=theme_colors[0],background_top=theme_colors[1], 
             profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
             squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
             isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID))
     else:
         return dict( session=session, editable=False, 
-            background_bot=None, background_top=None, token=token["access_token"],
+            background_bot=None, background_top=None, 
             profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
             squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
-            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID))
+            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID))
 
 # Function that hosts run in groupSession
 @action('currentPlaying/<userID>', method=["GET"])
@@ -1024,7 +1029,6 @@ def getCurrentPlaying(userID=None):
         curPosition = results["progress_ms"]
         isPlaying = results["is_playing"]
         trackLength = item["duration_ms"]
-
     except:
         trackName = "None"
         isLocal = "False"
@@ -1035,6 +1039,7 @@ def getCurrentPlaying(userID=None):
         isPlaying = "false"
         deviceID = ""
         trackNumber= ""
+    # If song is None or has no image, put placeholder.
     try:
         imageURL = results["item"]["album"]["images"][1]["url"]
     except:
@@ -1043,7 +1048,7 @@ def getCurrentPlaying(userID=None):
     try:
         dbGroupSessionEntry = (db(db.groupSession.userID == userID))
     except:
-        return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
+        return dict(userID=userID, trackName=trackName, isLocal=isLocal, artistName=artistName, 
         imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
         isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
@@ -1058,14 +1063,15 @@ def getCurrentPlaying(userID=None):
                                 #secondsPassedSinceCall=secondsPassedSinceCall                              
                                                 )
 
-    return dict(trackName=trackName, isLocal=isLocal, artistName=artistName, 
+    # Returns these variables to update the information on groupSession page.
+    return dict(userID=userID, trackName=trackName, isLocal=isLocal, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
     isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
 # Function that visitors run in groupSession
-@action('synchronizeVisitor/<userID>', method=["GET"])
+@action('synchronizeVisitor/<userID>/<deviceID>', method=["GET"])
 @action.uses(session)
-def synchronizeVisitor(userID=None):
+def synchronizeVisitor(userID=None, deviceID=None):
     dbGroupSessionEntry = (db(db.groupSession.userID == userID).select().as_list())
     if (dbGroupSessionEntry == []):
         print ("No groupSession table exists for ", userID)
@@ -1078,7 +1084,6 @@ def synchronizeVisitor(userID=None):
     trackLength=dbGroupSessionEntry[0]["trackLength"]
     isPlaying=dbGroupSessionEntry[0]["isPlaying"]
     trackNumber=dbGroupSessionEntry[0]["trackNumber"]
-    #deviceID=dbGroupSessionEntry[0]["deviceID"]
 
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
@@ -1092,10 +1097,11 @@ def synchronizeVisitor(userID=None):
         try:
             # offset must be {“position”: <int>} or {“uri”: “<track uri>”}
             trackNumber = {"position": trackNumber}
-            spotify.start_playback(results["devices"][0]["id"], trackURI, None, trackNumber, curPosition)
+            spotify.start_playback(deviceID, trackURI, None, trackNumber, curPosition)
         except:
             print ("Could not start playack")
 
+    # Returns these variable to update information on visitor's page.
     return dict(session=session, trackName=trackName, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
     isPlaying=isPlaying)

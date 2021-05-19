@@ -179,21 +179,6 @@ let init = (app) => {
       if (app.data.isPlaying == false) {
         return;
       }
-      app.data.currSeconds = parseInt(app.data.currSeconds);
-      app.data.currSeconds++;
-      app.data.playingTrackPos++;
-      if (app.data.currSeconds >= 60) {
-        app.data.currMinutes++;
-        app.data.currSeconds -= 60;
-      }
-
-      app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
-
-      if (app.data.currSeconds < 10) {
-        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
-      }
-      
       // If the host is done with a song, sync their next song. 
       if (app.data.isHost) {
         if ((app.data.playingTrackPos >= app.data.playingTrackLength)) {
@@ -206,6 +191,21 @@ let init = (app) => {
       else if (app.data.playingTrackPos >= app.data.playingTrackLength) {
         app.synchronizeVisitor();
       }
+      app.data.currSeconds = parseInt(app.data.currSeconds);
+      // Might lead to 61 for a flash second
+      app.data.currSeconds++;
+      app.data.playingTrackPos++;
+      if (app.data.currSeconds >= 60) {
+        app.data.currMinutes++;
+        app.data.currSeconds -= 60;
+      }
+      if (app.data.currSeconds < 10) {
+        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+      }
+
+      app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
+      
   };
 
     app.increaseTime = () =>{
