@@ -995,7 +995,7 @@ def groupSession(userID=None):
             background_bot=theme_colors[0],background_top=theme_colors[1], 
             profile_pic=profile_pic, profileURL = profileURL, currentPlaying=URL("currentPlaying", userID),
             squares_url = URL('get_squares'),search_url = URL('group_search'), getAPICallTime = URL('getAPICallTime'),
-            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID))
+            isGroupSessionHost=URL("isGroupSessionHost", userID), synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID))
     else:
         return dict( session=session, editable=False, 
             background_bot=None, background_top=None, 

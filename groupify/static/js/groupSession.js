@@ -176,6 +176,7 @@ let init = (app) => {
 
 
     app.updateSongTimeEachSecond = () =>{
+      console.log("isPlaying ", app.data.isPlaying);
       if (app.data.isPlaying == false) {
         return;
       }
@@ -265,6 +266,7 @@ let init = (app) => {
       search_spotify_songs: app.search_spotify_songs,
       add_song: app.add_song,
       increaseTime: app.increaseTime,
+      synchronizeVisitor: app.synchronizeVisitor,
     };
 
     // This creates the Vue instance.
