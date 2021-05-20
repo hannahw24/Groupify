@@ -389,6 +389,7 @@
                     <strong>Public Playlists</strong> <br> <br>
                     <!-- v-for wants to start at 1, "(n, i)" makes it start at 0-->
                     <div> [[for i in range(len(playlistNames)):]]
+                        [[if i < 12:]]
                         <section>
                             <div class="columns">
                                 <div class="column">
@@ -414,7 +415,9 @@
                             </div>
                         </section>
                         [[pass]]
+                        [[pass]]
                     </div> 
+                    <a href="[[=URL('playlists', userID, signer=url_signer)]]" style="color:#000000"><strong>See All</strong></a>
                 </article>
             </div>
         </div>

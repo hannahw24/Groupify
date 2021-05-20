@@ -1,0 +1,86 @@
+[[extend 'layout.html']]
+
+<script src="js/searchbar.js"></script>
+<div id="vue-target">
+    <section>
+        <div class="addfriend_panel " style="background-color: [[=tile_color]];">
+            <!-- get back to profile -->
+            <a class="button is-primary" href="[[=URL(profileURL)]]">
+                <i class="fa fa-backward" aria-hidden="true"></i> &nbsp; Back
+            </a>
+            <div>
+                <h1 class="title has-text-centered blackoutline">
+                    [[if user==userID:]]
+                        <p>Your Playlists</p>
+                    [[else:]]
+                        <p>[[=display_name]]'s Playlists</p>
+                    [[pass]]
+                </h1>
+                <br>
+            </div>
+            <div class="tile is-child field">
+                <!-- search bar -->
+                <div>
+                    <div class="control has-icons-left has-icons-right">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <!-- Calls function when something is entered -->
+                        <form>
+                            <input id="barInput" class="input" type="text" name="search" onkeyup="searchBar()" placeholder="Filter">
+                        </form>
+                    </div>
+                </div>
+                <!-- search results -->
+                <!-- TODO toggle display based off of search results as opposed to automatic updating -->
+                <!-- TODO based off of username or display name -->
+                <div class="add_friend_results">
+                    <ul id="listItems">
+                        
+                        [[for i in range(len(playlistNames)):]]
+                            <li>
+                                <div class="tile is-parent">
+                                    <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
+                                        <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; font-size:x-large; text-decoration:none;"><strong>[[=(playlistNames[i])]]</strong></a>
+                                        <!--strong class="is-pulled-right" style="color:[[=text_color]]; font-size:x-large; margin-right:15px">{{i+1}}</strong-->
+                                        <section>
+                                             <div class="columns">
+                                                <div class="column">
+                                                    <!-- Album art image with link to track -->
+                                                    <a href="[[=(playlistURLs[i])]]" target="_blank"><img src="[[=(playlistImages[i])]]" style="height:175px"></a>
+                                                </div>
+                                                <div class="column is-9">
+                                                <!-- Song title with link to track -->
+                                                    <div>
+                                                        <!-- Artist Genres with link to their Spotify page -->
+                                                        <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                            <!--span v-if="desc != null">
+                                                                <span v-if="playlistDescriptions[i] != ''">{{desc[i]}}</span>
+                                                            </span-->
+                                                            [[if playlistDescriptions[i] != None and playlistDescriptions[i] != "[]":]]
+                                                            <span>[[=(playlistDescriptions[i])]]</span>
+                                                            [[pass]]
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </div>
+                            </li>
+                            [[pass]]
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+[[block page_scripts]]
+<script>
+    let getPlaylists = "[[=XML(getPlaylists)]]";
+</script>
+<!-- Loads the user-specific js for Vue -->
+<!--script src="js/playlists.js"></script-->
+[[end]]

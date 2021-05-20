@@ -41,6 +41,7 @@ let init = (app) => {
     
     app.getPlayingTrack = () => {
       axios.get(currentPlaying).then((result) => {
+        console.log("In getPlayingTrack");
         //include local variable checking later.
         app.data.isPlaying = result.data.isPlaying;
 
@@ -176,24 +177,10 @@ let init = (app) => {
 
 
     app.updateSongTimeEachSecond = () =>{
+      console.log("isPlaying ", app.data.isPlaying);
       if (app.data.isPlaying == false) {
         return;
       }
-      app.data.currSeconds = parseInt(app.data.currSeconds);
-      app.data.currSeconds++;
-      app.data.playingTrackPos++;
-      if (app.data.currSeconds >= 60) {
-        app.data.currMinutes++;
-        app.data.currSeconds -= 60;
-      }
-
-      app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
-
-      if (app.data.currSeconds < 10) {
-        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
-      }
-      
       // If the host is done with a song, sync their next song. 
       if (app.data.isHost) {
         if ((app.data.playingTrackPos >= app.data.playingTrackLength)) {
@@ -206,6 +193,21 @@ let init = (app) => {
       else if (app.data.playingTrackPos >= app.data.playingTrackLength) {
         app.synchronizeVisitor();
       }
+      app.data.currSeconds = parseInt(app.data.currSeconds);
+      // Might lead to 61 for a flash second
+      app.data.currSeconds++;
+      app.data.playingTrackPos++;
+      if (app.data.currSeconds >= 60) {
+        app.data.currMinutes++;
+        app.data.currSeconds -= 60;
+      }
+      if (app.data.currSeconds < 10) {
+        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+      }
+
+      app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
+      
   };
 
     app.increaseTime = () =>{
@@ -258,6 +260,21 @@ let init = (app) => {
             console.log("synchronizeVisitor Finished");
         });
     }
+
+    // Takes in whether or not to play or pause a track. 
+    // true is playing, false is paused.
+    app.playOrPause = (content) => {
+      console.log("playOrPause");
+      axios.get(pauseOrPlayTrack, {params: {
+        content: content
+        }}).then((result) => {
+              app.data.isPlaying = content;
+              //app.getPlayingTrack();
+          }).catch(() => {
+              console.log("Caught error");
+          });
+      };
+
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
@@ -265,6 +282,8 @@ let init = (app) => {
       search_spotify_songs: app.search_spotify_songs,
       add_song: app.add_song,
       increaseTime: app.increaseTime,
+      synchronizeVisitor: app.synchronizeVisitor,
+      playOrPause: app.playOrPause,
     };
 
     // This creates the Vue instance.
