@@ -9,9 +9,11 @@ let init = (app) => {
     // This is the Vue data.
     app.data = {
       // The variable that determines how often an API call is made. 
-      apiCallTimer: 5,
+      hostAPICallTimer: 4,
       // Keeps track if it is time to make an API call.
       secondsPassedSinceCall: 0,
+
+      timeWhenDatabaseWasUpdated: 0,
 
       isPlaying: false,      
       isHost: false,
@@ -48,7 +50,20 @@ let init = (app) => {
         app.data.playingTrackName = result.data.trackName;
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
-
+        app.data.timeWhenDatabaseWasUpdated = parseFloat(result.data.timeWhenCallWasMade);
+        var d = new Date();
+        var n = d.getUTCSeconds();
+        console.log("n = ", n);
+        console.log("app.data.timeWhenDatabaseWasUpdated ", app.data.timeWhenDatabaseWasUpdated);
+        console.log("seconds until next call is ", (app.data.timeWhenDatabaseWasUpdated + 5));
+        var modulo = ((app.data.timeWhenDatabaseWasUpdated + 5) % n)
+        console.log("modulo ", modulo);
+        if (modulo >= 3.5) {
+          console.log("good time to synch ", modulo);
+        }
+        else {
+          console.log("wait for later");
+        }
         app.data.playingTrackPos = result.data.curPosition;
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
@@ -206,13 +221,13 @@ let init = (app) => {
       }
 
       app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
+      //console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
       
   };
 
     app.increaseTime = () =>{
       // If it is the time to make an API call, do so. 
-      if (app.data.secondsPassedSinceCall == app.data.apiCallTimer) {
+      if (app.data.secondsPassedSinceCall == app.data.hostAPICallTimer) {
         try {
           app.getPlayingTrack();
           app.data.secondsPassedSinceCall = 0;
@@ -238,6 +253,25 @@ let init = (app) => {
         app.data.playingTrackName = result.data.trackName;
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
+        app.data.timeWhenDatabaseWasUpdated = parseFloat(result.data.timeWhenCallWasMade);
+        var d = new Date();
+        var n = d.getUTCSeconds();
+        console.log("n = ", n);
+        console.log("app.data.timeWhenDatabaseWasUpdated ", app.data.timeWhenDatabaseWasUpdated);
+        console.log("seconds until next call is ", (app.data.timeWhenDatabaseWasUpdated + 5));
+        var modulo = ((app.data.timeWhenDatabaseWasUpdated + 5) % n)
+        console.log("modulo ", modulo);
+        if (modulo >= 3.5) {
+          console.log("good time to synch ", modulo);
+        }
+        else {
+          console.log("wait for later");
+        }
+
+
+        var d = new Date();
+        var n = d.getUTCSeconds();
+        console.log("n = ", n);
         app.data.playingTrackPos = result.data.curPosition;
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
@@ -259,6 +293,13 @@ let init = (app) => {
         }).then(() => {
             console.log("synchronizeVisitor Finished");
         });
+    }
+
+    app.synchronizeVisitorHandler = () => {
+      console.log("app.data.timeWhenDatabaseWasUpdated ", app.data.timeWhenDatabaseWasUpdated);
+      var d = new Date();
+      var n = d.getUTCSeconds();
+      console.log("n = ", n);
     }
 
     // Takes in whether or not to play or pause a track. 
@@ -284,6 +325,7 @@ let init = (app) => {
       increaseTime: app.increaseTime,
       synchronizeVisitor: app.synchronizeVisitor,
       playOrPause: app.playOrPause,
+      synchronizeVisitorHandler: app.synchronizeVisitorHandler,
     };
 
     // This creates the Vue instance.
@@ -308,9 +350,7 @@ let init = (app) => {
             app.synchronizeVisitor();
             var t=setInterval(app.updateSongTimeEachSecond, 1000);
           }
-      }).then(() => {
-          console.log("hey");
-      });
+      })
     };
 
     // Call to the initializer.

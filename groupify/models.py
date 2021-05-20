@@ -25,12 +25,12 @@ db.define_table(
     Field('userID', notnull=True, unique=True),
     Field('display_name'),
     Field('chosen_theme'),
-    #Ash: email may be unnecessary. 
     Field('bio_status'),
     Field('active_stat'),
     Field('profile_pic'),
     Field('chosen_term'),
     Field('artist_term'),
+    Field('premiumStatus'),
 )
 
 db.define_table(
@@ -150,7 +150,7 @@ db.define_table(
     Field('curPosition', 'string'),
     Field('trackLength', 'string'),
     Field('isPlaying', 'boolean'),
-    Field('secondsPassedSinceCall', 'string'),
+    Field('timeWhenCallWasMade', 'string'),
     Field('groupSessionOfWho', db.dbUser),
     Field('groupSessionPeopleReference', db.groupSessionPeople)
 )

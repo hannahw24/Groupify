@@ -24,6 +24,7 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.url_signer import URLSigner
 from html.parser import HTMLParser
+from datetime import datetime
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -142,10 +143,12 @@ def getUserInfo():
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     # url to user, id, images (profile pic), and premium status
     results = spotify.current_user()
-
+    print (results)
     display_name = results["display_name"]
     display_name = display_name.capitalize()
     userID = results["id"]
+    premiumStatus = results["product"]
+
     # Sets the profile pic of the user, if no profile pic found on spotify, set it to nothing
     if (len(results["images"]) != 0):
         profile_pic = results["images"][0]["url"]
@@ -168,13 +171,15 @@ def getUserInfo():
 
     # Not sure if returns as None or an empty list if user is new.
     if (dbUserEntry == None) or dbUserEntry == []:
-        db.dbUser.insert(userID=userID, display_name=display_name, profile_pic=profile_pic)
+        db.dbUser.insert(userID=userID, display_name=display_name, 
+                        profile_pic=profile_pic, premiumStatus=premiumStatus)
         insertedID = getIDFromUserTable(userID)
     # If it is in the database, update its top tracks
     else:
         # Update all info
         db(db.dbUser.userID == userID).update(display_name=display_name)
         db(db.dbUser.userID == userID).update(profile_pic=profile_pic)
+        db(db.dbUser.userID == userID).update(premiumStatus=premiumStatus)
     # Updates the information in friends database so the friends NAV bar is up to date. 
     if (friendsEntries != None) and (friendsEntries != []):
         # If user profile or name has changed, update it.
@@ -219,25 +224,31 @@ def getTopTracksLen(userID, term):
 
     # Selects the correct user entry from the desired time period
     if term == 'short_term':
-        termEntry = (db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+        termEntry = (db(db.shortTerm.topTracksOfWho 
+                    == getIDFromUserTable(userID)).select().as_list())
     elif term == 'medium_term':
-        termEntry = (db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+        termEntry = (db(db.mediumTerm.topTracksOfWho 
+                    == getIDFromUserTable(userID)).select().as_list())
     elif term == 'long_term':
-        termEntry = (db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list())
+        termEntry = (db(db.longTerm.topTracksOfWho 
+                    == getIDFromUserTable(userID)).select().as_list())
 
     # Is their desired term of top tracks populated?
     # If it isn't, then the information from tracksList will be inserted.
     if (termEntry == None) or (termEntry == []):
         insertedID = getIDFromUserTable(userID)
         if term == 'short_term':
-            db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
-                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+            db.shortTerm.insert(topTracks=topTracks, topArtists=topArtists,
+                                imgList=imgList, trackLinks=trackLinks, 
+                                artistLinks=artistLinks, topTracksOfWho=insertedID)
         elif term == 'medium_term':
-            db.mediumTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
-                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+            db.mediumTerm.insert(topTracks=topTracks, topArtists=topArtists, 
+                                imgList=imgList, trackLinks=trackLinks, 
+                                artistLinks=artistLinks, topTracksOfWho=insertedID)
         elif term == 'long_term':
-            db.longTerm.insert(topTracks=topTracks, topArtists=topArtists, imgList=imgList, 
-                            trackLinks=trackLinks, artistLinks=artistLinks, topTracksOfWho=insertedID)
+            db.longTerm.insert(topTracks=topTracks, topArtists=topArtists, 
+                                imgList=imgList, trackLinks=trackLinks, 
+                                artistLinks=artistLinks, topTracksOfWho=insertedID)
 
     # If there are already tracks, then update the information
     else:
@@ -277,11 +288,14 @@ def getTopArtistsLen(userID, term):
 
     # Selects the correct user entry from the desired time period
     if term == 'shortArtists':
-        termEntry = (db(db.shortArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list())
+        termEntry = (db(db.shortArtists.topArtistsOfWho 
+                    == getIDFromUserTable(userID)).select().as_list())
     elif term == 'mediumArtists':
-        termEntry = (db(db.mediumArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list())
+        termEntry = (db(db.mediumArtists.topArtistsOfWho 
+                    == getIDFromUserTable(userID)).select().as_list())
     elif term == 'longArtists':
-        termEntry = (db(db.longArtists.topArtistsOfWho == getIDFromUserTable(userID)).select().as_list())
+        termEntry = (db(db.longArtists.topArtistsOfWho 
+                    == getIDFromUserTable(userID)).select().as_list())
 
     # Is their desired term of top tracks populated?
     # If it isn't, then the information from tracksList will be inserted.
@@ -559,6 +573,27 @@ def getIDFromUserTable(userID):
 @action.uses('user_not_found.html', session)
 def userNotFound(userID):
     # Sets the userNotFound page's colors to the user's chosen theme.
+    try:
+        user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
+        theme_colors = return_theme(user_from_table.chosen_theme)
+    # If the user has no chosen theme, because they have never logged in or deleted
+    # their profile, then the theme will be default.
+    except:
+        theme_colors = return_theme(0)
+    # If the user has never logged in or deleted their profile, the user not found page 
+    # will redirect them to the login page.
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    if (loggedInUserEntry == []):
+        return redirect(URL('index'))
+    return dict(session=session, editable=False, userID=userID, url_signer=url_signer, 
+                background_bot=theme_colors[0], 
+                background_top=theme_colors[1])
+
+# When a user tries to see a profile that is not in our database, return this.
+@action('nonPremiumUser', method='GET')
+@action.uses('nonpremiumuser.html', session)
+def nonPremiumUser(userID):
+    # Sets the nonPremiumUser page's colors to the user's chosen theme.
     try:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
@@ -1004,7 +1039,13 @@ def groupSession(userID=None):
         insertedID = getIDFromUserTable(userID)
         db.groupSession.insert(userID=userID, trackURI="", imageURL="", trackName="", 
         artistName = "", curPosition="", trackLength="", isPlaying=False,
-         secondsPassedSinceCall=0, deviceID=deviceID, trackNumber="", groupSessionOfWho=insertedID)
+        timeWhenCallWasMade=0, deviceID=deviceID, trackNumber="", groupSessionOfWho=insertedID)
+    userEntry = (db.dbUser[dbGroupSessionEntry[0]["groupSessionOfWho"]])
+    premiumStatus = userEntry["premiumStatus"]
+    print ("premiumStatus ", premiumStatus)
+
+    #if (premiumStatus != "premium"):
+        #return nonPremiumUser(session.get("userID"))
 
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
@@ -1047,6 +1088,8 @@ def groupSession(userID=None):
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID))
 
 # Function that hosts run in groupSession
+# Finds what song the host is listening to by making a Spotify API call
+# Then updates the song information in the host's groupSession table in the database.
 @action('currentPlaying/<userID>', method=["GET"])
 @action.uses(session)
 def getCurrentPlaying(userID=None):
@@ -1095,6 +1138,8 @@ def getCurrentPlaying(userID=None):
         imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
         isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
 
+    now = datetime.now().time()
+    timeWhenCallWasMade = int(now.strftime("%S")) + float("." + now.strftime("%f"))
     dbGroupSessionEntry.update(trackURI=trackURI, 
                                imageURL=imageURL,
                                trackName=trackName,
@@ -1103,13 +1148,13 @@ def getCurrentPlaying(userID=None):
                                trackLength=trackLength,
                                isPlaying=isPlaying,
                                trackNumber=trackNumber,
-                                #secondsPassedSinceCall=secondsPassedSinceCall                              
-                                                )
+                               timeWhenCallWasMade=timeWhenCallWasMade)
 
     # Returns these variables to update the information on groupSession page.
     return dict(userID=userID, trackName=trackName, isLocal=isLocal, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-    isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
+    isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber,
+    timeWhenCallWasMade=timeWhenCallWasMade)
 
 # Function that visitors run in groupSession
 @action('synchronizeVisitor/<userID>/<deviceID>', method=["GET"])
@@ -1127,6 +1172,7 @@ def synchronizeVisitor(userID=None, deviceID=None):
     trackLength=dbGroupSessionEntry[0]["trackLength"]
     isPlaying=dbGroupSessionEntry[0]["isPlaying"]
     trackNumber=dbGroupSessionEntry[0]["trackNumber"]
+    timeWhenCallWasMade=dbGroupSessionEntry[0]["timeWhenCallWasMade"]
 
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
@@ -1146,7 +1192,7 @@ def synchronizeVisitor(userID=None, deviceID=None):
     # Returns these variable to update information on visitor's page.
     return dict(session=session, trackName=trackName, artistName=artistName, 
     imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-    isPlaying=isPlaying)
+    isPlaying=isPlaying, timeWhenCallWasMade=timeWhenCallWasMade)
 
 #start_playback(device_id=None, context_uri=None, uris=None, offset=None, position_ms=None)
 
