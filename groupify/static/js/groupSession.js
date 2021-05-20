@@ -51,19 +51,19 @@ let init = (app) => {
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
         app.data.timeWhenDatabaseWasUpdated = parseFloat(result.data.timeWhenCallWasMade);
-        var d = new Date();
-        var n = d.getUTCSeconds();
-        console.log("n = ", n);
-        console.log("app.data.timeWhenDatabaseWasUpdated ", app.data.timeWhenDatabaseWasUpdated);
-        console.log("seconds until next call is ", (app.data.timeWhenDatabaseWasUpdated + 5));
-        var modulo = ((app.data.timeWhenDatabaseWasUpdated + 5) % n)
-        console.log("modulo ", modulo);
-        if (modulo >= 3.5) {
-          console.log("good time to synch ", modulo);
-        }
-        else {
-          console.log("wait for later");
-        }
+        //var d = new Date();
+        //var n = d.getUTCSeconds();
+        //console.log("n = ", n);
+        //console.log("app.data.timeWhenDatabaseWasUpdated ", app.data.timeWhenDatabaseWasUpdated);
+        //console.log("seconds until next call is ", (app.data.timeWhenDatabaseWasUpdated + 5));
+        //var modulo = ((app.data.timeWhenDatabaseWasUpdated + 5) % n)
+        //console.log("modulo ", modulo);
+        //if (modulo >= 3.5) {
+        //  console.log("good time to synch ", modulo);
+        //}
+        //else {
+        //  console.log("wait for later");
+        //}
         app.data.playingTrackPos = result.data.curPosition;
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
@@ -91,8 +91,8 @@ let init = (app) => {
         });
     }
 
+
     app.search_spotify_songs = () => {
-        
       input2 = document.getElementById('songSearch'); // Get input from searcg bar
       input2 = input2.value;
       //console.log(input2);
@@ -115,40 +115,31 @@ let init = (app) => {
 
     // Adds an album to the banner
     app.add_song = (cover, url) =>{
-        let i=0;
-       for(i = 0; i<10; i++){
-         if(app.vue.queueListImage[i] == null){
-           app.vue.queueListImage[i] = cover;
-           app.vue.queueListURL[i] = url;
-           app.refresh_page(); // Update display
-           app.barAlert("Added to list!");
-           break;
-         }
-         app.refresh_page(); // Update display
-       }
-       if(i>=10){
-         app.barAlert("Only 10 songs queued at once!");
-       }
-      //maybe add a post????
-      //Do basically this:
-      // Send to server
-      // axios.post(search_url, {
-      //   input2: input2,
-      // }).then((result) => {
-      //     // Update all search result fields with server result
-      //     app.vue.topTracks = result.data.topTracks;
-      //     app.vue.topArtists = result.data.topArtists;
-      //     app.vue.imgList = result.data.imgList;
-      //     app.vue.trackLinks = result.data.trackLinks;
-      //     app.vue.artistLinks = result.data.artistLinks;
-      //     app.vue.totalResults = result.data.totalResults;
-      //     //console.log(result2);
-      // }).catch(() => {
-      //     console.log("Caught error");
-      // });
+      let i=0;
+      for(i = 0; i<10; i++){
+        if(app.vue.queueListImage[i] == null){
+          app.vue.queueListImage[i] = cover;
+          app.vue.queueListURL[i] = url;
+          app.refresh_page(); // Update display
+          app.barAlert("Added to list!");
+          break;
+        }
+        app.refresh_page(); // Update display
+      }
+      if(i>=10){
+        app.barAlert("Only 10 songs queued at once!");
+      }
       
+      axios.post(search_url, {
+        queueListImage: app.vue.queueListImage,
+        queueListURL: app.vue.queueListURL,
+      }).catch(() => {
+        console.log("Caught error");
+      });
+
       //In controller: add if post line which then adds to database
     };
+
 
     // Take in a message and display with alert
    // Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp

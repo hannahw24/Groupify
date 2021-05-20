@@ -155,6 +155,13 @@ db.define_table(
     Field('groupSessionPeopleReference', db.groupSessionPeople)
 )
 
+db.define_table(
+   'queue',
+   Field('queueListImage', 'list:string'),
+   Field('queueListURL', 'list:string'),
+   Field('queueOfWho'),
+)
+
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
 #db.table._extra = {}
 
