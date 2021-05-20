@@ -14,6 +14,7 @@ let init = (app) => {
       secondsPassedSinceCall: 0,
 
       isPlaying: false,      
+      isHost: false,
 
       playingTrackName: "",
       playingTrackArtist: "",
@@ -75,7 +76,6 @@ let init = (app) => {
     }
 
     app.search_spotify_songs = () => {
-        
       input2 = document.getElementById('songSearch'); // Get input from searcg bar
       input2 = input2.value;
       //console.log(input2);
@@ -98,38 +98,28 @@ let init = (app) => {
 
     // Adds an album to the banner
     app.add_song = (cover, url) =>{
-        let i=0;
-       for(i = 0; i<10; i++){
-         if(app.vue.queueListImage[i] == null){
-           app.vue.queueListImage[i] = cover;
-           app.vue.queueListURL[i] = url;
-           app.refresh_page(); // Update display
-           app.barAlert("Added to list!");
-           break;
-         }
-         app.refresh_page(); // Update display
-       }
-       if(i>=10){
-         app.barAlert("Only 10 songs queued at once!");
-       }
-      //maybe add a post????
-      //Do basically this:
-      // Send to server
-      // axios.post(search_url, {
-      //   input2: input2,
-      // }).then((result) => {
-      //     // Update all search result fields with server result
-      //     app.vue.topTracks = result.data.topTracks;
-      //     app.vue.topArtists = result.data.topArtists;
-      //     app.vue.imgList = result.data.imgList;
-      //     app.vue.trackLinks = result.data.trackLinks;
-      //     app.vue.artistLinks = result.data.artistLinks;
-      //     app.vue.totalResults = result.data.totalResults;
-      //     //console.log(result2);
-      // }).catch(() => {
-      //     console.log("Caught error");
-      // });
+      let i=0;
+      for(i = 0; i<10; i++){
+        if(app.vue.queueListImage[i] == null){
+          app.vue.queueListImage[i] = cover;
+          app.vue.queueListURL[i] = url;
+          app.refresh_page(); // Update display
+          app.barAlert("Added to list!");
+          break;
+        }
+        app.refresh_page(); // Update display
+      }
+      if(i>=10){
+        app.barAlert("Only 10 songs queued at once!");
+      }
       
+      axios.post(search_url, {
+        queueListImage: app.vue.queueListImage,
+        queueListURL: app.vue.queueListURL,
+      }).catch(() => {
+        console.log("Caught error");
+      });
+
       //In controller: add if post line which then adds to database
     };
 
@@ -172,22 +162,36 @@ let init = (app) => {
       app.vue.page = temp; 
     };
  
-
-
     app.updateSongTimeEachSecond = () =>{
       if (app.data.isPlaying == false) {
         return;
       }
       app.data.currSeconds = parseInt(app.data.currSeconds);
       app.data.currSeconds++;
+      app.data.playingTrackPos++;
       if (app.data.currSeconds >= 60) {
         app.data.currMinutes++;
         app.data.currSeconds -= 60;
       }
-      app.data.songProgressBar = (((app.data.currMinutes*60) + app.data.currSeconds)/((app.data.lengthMinutes*60) + app.data.lengthSeconds)) * 100
+
+      app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+      console.log("songProgressBar in updateSongTimeEachSecond() is ", app.data.songProgressBar);
 
       if (app.data.currSeconds < 10) {
         app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+      }
+      
+      // If the host is done with a song, sync their next song. 
+      if (app.data.isHost) {
+        if ((app.data.playingTrackPos >= app.data.playingTrackLength)) {
+          app.getPlayingTrack();
+          // Just made a call, so no need to update less than 5 seconds from now
+          app.data.secondsPassedSinceCall = 0;
+        }
+      }
+      // If user is not host and the track has finished, sync the next song. 
+      else if (app.data.playingTrackPos >= app.data.playingTrackLength) {
+        app.synchronizeVisitor();
       }
   };
 
@@ -236,11 +240,11 @@ let init = (app) => {
           app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
         }
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
+        //var t=setInterval(app.synchronizeVisitor, 1000);
         }).then(() => {
-            //console.log("getPlayingTrack Finished");
+            console.log("synchronizeVisitor Finished");
         });
     }
-
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
@@ -262,6 +266,7 @@ let init = (app) => {
       axios.get(isGroupSessionHost).then((result) => {
           if (result.data.isHost == true) {
             console.log("isHost");
+            app.data.isHost = true;
             //immediately get the song a user is playing. 
             app.getPlayingTrack();
             var t=setInterval(app.increaseTime, 1000);
