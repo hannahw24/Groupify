@@ -18,6 +18,9 @@ let init = (app) => {
       isPlaying: false,      
       isHost: false,
 
+      preventButtonsFromBeingClicked: false,
+      displayError: "",
+
       playingTrackName: "",
       playingTrackArtist: "",
       playingTrackImage: "",
@@ -50,7 +53,7 @@ let init = (app) => {
         app.data.playingTrackName = result.data.trackName;
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
-        app.data.timeWhenDatabaseWasUpdated = parseFloat(result.data.timeWhenCallWasMade);
+        app.data.timeWhenDatabaseWasUpdated = result.data.timeWhenCallWasMade;
         //var d = new Date();
         //var n = d.getUTCSeconds();
         //console.log("n = ", n);
@@ -183,7 +186,7 @@ let init = (app) => {
 
 
     app.updateSongTimeEachSecond = () =>{
-      console.log("isPlaying ", app.data.isPlaying);
+      //console.log("isPlaying ", app.data.isPlaying);
       if (app.data.isPlaying == false) {
         return;
       }
@@ -239,12 +242,13 @@ let init = (app) => {
 
     app.synchronizeVisitor = () => {
       axios.get(synchronizeVisitor).then((result) => {
+        app.data.preventButtonsFromBeingClicked = true;
         //include local variable checking later.
         app.data.isPlaying = result.data.isPlaying;
         app.data.playingTrackName = result.data.trackName;
         app.data.playingTrackArtist = result.data.artistName;
         app.data.playingTrackImage = result.data.imageURL;
-        app.data.timeWhenDatabaseWasUpdated = parseFloat(result.data.timeWhenCallWasMade);
+        app.data.timeWhenDatabaseWasUpdated = result.data.timeWhenCallWasMade;
         var d = new Date();
         var n = d.getUTCSeconds();
         console.log("n = ", n);
@@ -258,8 +262,6 @@ let init = (app) => {
         else {
           console.log("wait for later");
         }
-
-
         var d = new Date();
         var n = d.getUTCSeconds();
         console.log("n = ", n);
@@ -280,8 +282,32 @@ let init = (app) => {
           app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
         }
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
-        //var t=setInterval(app.synchronizeVisitor, 1000);
+        }).catch(() => {
+          if ((synchronizeVisitor.toString()).slice(-1) == "/") {
+            app.data.displayError = "Spotify Is Not Open"
+            axios.get(getDevice).then((result) => {
+              // adding the deviceID to the axios get URL.
+              console.log("result.data.deviceID ", result.data.deviceID)
+              synchronizeVisitor = synchronizeVisitor + result.data.deviceID;
+            }).then(() => {
+              //app.synchronizeVisitor();
+              app.data.preventButtonsFromBeingClicked = false;
+              return
+            });
+          }
+          console.log("error caught in synchronizeVisitor");
+          app.data.isPlaying = "";
+          app.data.playingTrackName = "None";
+          app.data.playingTrackArtist = "None";
+          app.data.playingTrackImage = "https://bulma.io/images/placeholders/128x128.png";
+          app.data.currMinutes = NaN;
+          app.data.currSeconds = NaN;  
+          app.data.playingTrackLength = NaN;
+          app.data.lengthMinutes = NaN;
+          app.data.lengthSeconds = NaN;
+          app.data.songProgressBar = 0;
         }).then(() => {
+            app.data.preventButtonsFromBeingClicked = false;
             console.log("synchronizeVisitor Finished");
         });
     }
@@ -297,13 +323,49 @@ let init = (app) => {
     // true is playing, false is paused.
     app.playOrPause = (content) => {
       console.log("playOrPause");
+      app.data.preventButtonsFromBeingClicked = true;
+      if (app.data.isHost) {
+        app.data.secondsPassedSinceCall = 0;
+        app.getPlayingTrack();
+      }
+      
+      else if (app.data.isHost == false && content == true) {
+        app.synchronizeVisitor();
+        return;
+        content = app.data.isPlaying;
+
+      }
+      
       axios.get(pauseOrPlayTrack, {params: {
         content: content
         }}).then((result) => {
               app.data.isPlaying = content;
-              //app.getPlayingTrack();
+              app.data.preventButtonsFromBeingClicked = false;
           }).catch(() => {
-              console.log("Caught error");
+            // Checks to see if the problem is a missing deviceID, 
+            // This can occur when a user does not have an instance of spotify when entering
+            // the groupSession page. If they later open one, then this will get the deviceID
+            // and make the playOrPause call once again. 
+            if ((pauseOrPlayTrack.toString()).slice(-1) == "/") {
+              app.data.displayError = "Spotify Is Not Open"
+              axios.get(getDevice).then((result) => {
+                // adding the deviceID to the axios get URL.
+                console.log("result.data.deviceID ", result.data.deviceID)
+                pauseOrPlayTrack = pauseOrPlayTrack + result.data.deviceID;
+              }).then(() => {
+                //app.playOrPause(content);
+                app.data.preventButtonsFromBeingClicked = false;
+              });
+            }
+            // This error occurs when the user has already paused the song in their
+            // Spotify window, but then tries to pause on the groupSession page. 
+            // The Spotify API returns an error when trying to pause a song that is 
+            // already paused. 
+            else {
+              app.data.isPlaying = content;
+              app.data.preventButtonsFromBeingClicked = false;
+              return;
+            }
           });
       };
 

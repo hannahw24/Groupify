@@ -150,7 +150,7 @@ db.define_table(
     Field('curPosition', 'string'),
     Field('trackLength', 'string'),
     Field('isPlaying', 'boolean'),
-    Field('timeWhenCallWasMade', 'string'),
+    Field('timeWhenCallWasMade', 'float'),
     Field('groupSessionOfWho', db.dbUser),
     Field('groupSessionPeopleReference', db.groupSessionPeople)
 )

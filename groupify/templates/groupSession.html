@@ -70,12 +70,14 @@
             <div class="level-item">
                 <div v-if="isPlaying == false" >
                     <!-- "key" added to avoid Vue's efficient rendering -->
-                    <button @click="playOrPause(true)" class="button is-white" key="play">
+                    <button @click="playOrPause(true)" class="button is-white" 
+                    :class="preventButtonsFromBeingClicked ? 'is-loading' : ''" key="play">
                         <i class="fa fa-play" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div v-else-if="isPlaying == true" >
-                    <button @click="playOrPause(false)" class="button is-white"  key="pause">
+                    <button @click="playOrPause(false)" class="button is-white"  
+                    :class="preventButtonsFromBeingClicked ? 'is-loading' : ''" key="pause">
                         <i class="fa fa-pause" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -96,10 +98,13 @@
           <br>
         </nav>
         <span>{{playingTrackArtist}}</span>
+        <div v-if="displayError != ''" class="level-item has-text-danger has-text-weight-bold">
+            <span class="is-danger">{{displayError}}</span>
+        </div>
         <br><br>
         <div v-if="isHost == false" class="level-item">
             <button @click="synchronizeVisitor()" class="button is-black" key="play">
-                synchronize
+                Synchronize
             </button>
             <br><br><br>
         </div>
@@ -163,6 +168,7 @@ function getGroupLink() {
     let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
     let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
+    let getDevice = "[[=XML(getDevice)]]";
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]
