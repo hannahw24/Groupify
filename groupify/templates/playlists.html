@@ -37,38 +37,78 @@
                 <div class="add_friend_results">
                     <ul id="listItems">
                         
+                        <div class="columns is-multiline">
                         [[for i in range(len(playlistNames)):]]
+                            
+                            <div class="column is-4">
                             <li>
+                                
+                                
                                 <div class="tile is-parent">
                                     <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
-                                        <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; font-size:x-large; text-decoration:none;"><strong>[[=(playlistNames[i])]]</strong></a>
+                                        <center>
+                                        [[if len(playlistNames[i]) > 50:]]
+                                        <a href="[[=(playlistURLs[i])]]" target="_blank"
+                                        style="color:[[=text_color]]; font-size:large; text-decoration:none;">
+                                            <div class="overflow">
+                                                <strong>[[=(playlistNames[i])]]</strong>
+                                            </div>
+                                        </a>
+                                        [[else:]]
+                                        <a href="[[=(playlistURLs[i])]]" target="_blank"
+                                        style="color:[[=text_color]]; font-size:large; text-decoration:none">
+                                            <strong>[[=(playlistNames[i])]]</strong>
+                                        </a>
+                                        [[pass]]
+                                        </center>
+                                        
                                         <!--strong class="is-pulled-right" style="color:[[=text_color]]; font-size:x-large; margin-right:15px">{{i+1}}</strong-->
                                         <section>
-                                             <div class="columns">
-                                                <div class="column">
+                                            <div class="level">
+                                                <div class="level-item">
                                                     <!-- Album art image with link to track -->
                                                     <a href="[[=(playlistURLs[i])]]" target="_blank"><img src="[[=(playlistImages[i])]]" style="height:175px"></a>
                                                 </div>
-                                                <div class="column is-9">
-                                                <!-- Song title with link to track -->
-                                                    <div>
-                                                        <!-- Artist Genres with link to their Spotify page -->
-                                                        <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
-                                                            <!--span v-if="desc != null">
-                                                                <span v-if="playlistDescriptions[i] != ''">{{desc[i]}}</span>
-                                                            </span-->
-                                                            [[if playlistDescriptions[i] != None and playlistDescriptions[i] != "[]":]]
-                                                            <span>[[=(playlistDescriptions[i])]]</span>
-                                                            [[pass]]
-                                                        </a>
-                                                    </div>
-                                                </div>
                                             </div>
+                                            <!-- Song title with link to track -->
+                                            <center>
+                                                <!-- Artist Genres with link to their Spotify page -->
+                                                [[if len(playlistDescriptions[i]) > 80:]]
+                                                
+                                                <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                    <div class="overflow">
+                                                        <!--span v-if="desc != null">
+                                                            <span v-if="playlistDescriptions[i] != ''">{{desc[i]}}</span>
+                                                        </span-->
+                                                        [[if playlistDescriptions[i] != None and playlistDescriptions[i] != "[]":]]
+                                                        <span>[[=(playlistDescriptions[i])]]</span>
+                                                        [[pass]]
+                                                    </div>
+                                                </a>
+                                                
+                                                [[else:]]
+                                                <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                    <!--span v-if="desc != null">
+                                                        <span v-if="playlistDescriptions[i] != ''">{{desc[i]}}</span>
+                                                    </span-->
+                                                    [[if playlistDescriptions[i] != None and playlistDescriptions[i] != "[]":]]
+                                                    <span>[[=(playlistDescriptions[i])]]</span>
+                                                    [[pass]]
+                                                </a>
+                                                [[pass]]
+                                            </center>
+                                                
+                                            
                                         </section>
                                     </div>
                                 </div>
+                                
+                                
                             </li>
+                            </div>
+                            
                             [[pass]]
+                            </div>
                         
                     </ul>
                 </div>

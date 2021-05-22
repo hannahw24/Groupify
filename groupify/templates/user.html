@@ -397,19 +397,40 @@
                                     <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]]></a>
                                 </div>
                                 <div class="column is-9">
+                                    [[if len(playlistNames[i]) > 50:]]
+                                    <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000">
+                                    <div class="overflow">
+                                    <!-- Playlist title with link to track -->
+                                    <strong>[[=(playlistNames[i])]]</strong>
+                                    </div>
+                                    </a>
+                                    [[else:]]
                                     <div>
                                     <!-- Playlist title with link to track -->
                                     <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"><strong>[[=(playlistNames[i])]]</strong></a>
                                     </div>
+                                    [[pass]]
                                     <div>
                                         <!-- Playlist description with link to their Spotify page -->
+                                        [[if len(playlistDescriptions[i]) > 50:]]
+                                        <div class="desc_overflow">
                                         <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"> 
                                             [[if playlistDescriptions[i] != "[]":]]
                                                 <p class="playlist_text">[[=(playlistDescriptions[i])]]</p>
                                             [[else:]]
                                                 <br>
                                             [[pass]]
-                                            </a>
+                                        </a>
+                                        </div>
+                                        [[else:]]
+                                        <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"> 
+                                            [[if playlistDescriptions[i] != "[]":]]
+                                                <p class="playlist_text">[[=(playlistDescriptions[i])]]</p>
+                                            [[else:]]
+                                                <br>
+                                            [[pass]]
+                                        </a>
+                                        [[pass]]
                                     </div>
                                 </div>
                             </div>
