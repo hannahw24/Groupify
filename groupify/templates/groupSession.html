@@ -22,17 +22,21 @@
             <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
             [[pass]]
         </figure>
-        <div class="box" style="width:25%;">
-            Friend 1
-        </div>
-        <div class="box" style="width:25%;">
-            Friend 2
-        </div>
-        <div class="box" style="width:25%;">
-            Friend 3
-        </div>
-        <div class="box" style="width:25%;">
-            Friend 4
+        <div v-for="(n, i) in displayNames.length">
+            <div class="tile is-parent" style="width:25%;">
+                <div class="tile is-child notification">
+                    <div class="columns">
+                        <figure class="image is-64x64" >
+                            <img class="is-rounded profile_photo"  
+                                :src=displayPictures[i] width="50">
+                        </figure>
+                        <div style="padding-left: 15px; width: 78%; ">
+                            <a class="friendname">
+                                <strong>{{displayNames[i]}}</strong></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div>
@@ -169,6 +173,7 @@ function getGroupLink() {
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
     let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
     let getDevice = "[[=XML(getDevice)]]";
+    let getPeopleInSession = "[[=XML(getPeopleInSession)]]";
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]

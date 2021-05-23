@@ -1103,15 +1103,39 @@ def groupSession(userID=None):
     premiumStatus = userEntry["premiumStatus"]
     print ("premiumStatus ", premiumStatus)
 
+    dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
+                        == dbGroupSessionEntry[0]["id"]).select().as_list()
+    loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    # If the host doesn't have a group session people table, then create one and add the host user.
+    if ((dbGroupSessionPeople == None) or (dbGroupSessionPeople == [])):
+        print("loggedInProfileEntry ", loggedInProfileEntry)
+        # If it is a visitor creating the table, then the host is not on the page and therefore
+        # the user should go to a page telling them the host is not online. 
+        if (session.get("userID") != userID):
+            return nonPremiumUser(session.get("userID")) #TEMP CHANGE TO SOMETHING ELSE
+        db.groupSessionPeople.insert(displayNames=[loggedInProfileEntry[0]["display_name"]], 
+                                    profilePictures=[loggedInProfileEntry[0]["profile_pic"]], 
+                                    groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
+                                    groupSessionReference=dbGroupSessionEntry[0]["id"])
+    else:
+        displayNames = dbGroupSessionPeople[0]["displayNames"]
+        if loggedInProfileEntry[0]["display_name"] not in displayNames:
+            displayNames.append(loggedInProfileEntry[0]["display_name"])
+            profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+            profilePictures.append(loggedInProfileEntry[0]["profile_pic"])
+            dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
+                        == dbGroupSessionEntry[0]["id"])
+            dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures)
+        print("displayNames are ", displayNames)
+
     #if (premiumStatus != "premium"):
         #return nonPremiumUser(session.get("userID"))
 
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
-    currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     profile_pic = ""
-    if (currentProfileEntry != None) and (currentProfileEntry != []):
-       # Setting the top tracks and profile pic variables
-       profile_pic = currentProfileEntry[0]["profile_pic"]
+    if (loggedInProfileEntry != None) and (loggedInProfileEntry != []):
+       # Setting the top tracks and profile pic loggedInProfileEntry
+       profile_pic = loggedInProfileEntry[0]["profile_pic"]
     if userID is not None:
         try:
             user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
@@ -1131,6 +1155,7 @@ def groupSession(userID=None):
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
+                    getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
                     getDevice=URL('getDevice'))
     else:
         return dict(session=session, 
@@ -1146,6 +1171,7 @@ def groupSession(userID=None):
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
+                    getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
                     getDevice=URL('getDevice'))
 
 # Function that hosts run in groupSession
@@ -1195,9 +1221,17 @@ def getCurrentPlaying(userID=None):
     try:
         dbGroupSessionEntry = (db(db.groupSession.userID == userID))
     except:
-        return dict(userID=userID, trackName=trackName, isLocal=isLocal, artistName=artistName, 
-        imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-        isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber)
+        return dict(userID=userID, 
+        trackName=trackName, 
+        isLocal=isLocal, 
+        artistName=artistName, 
+        imageURL=imageURL, 
+        trackURI=trackURI, 
+        curPosition=curPosition, 
+        trackLength=trackLength,
+        isPlaying=isPlaying, 
+        deviceID=deviceID, 
+        trackNumber=trackNumber)
 
     now = datetime.now().time()
     timeWhenCallWasMade = int(now.strftime("%S")) + float("." + now.strftime("%f"))
@@ -1212,10 +1246,18 @@ def getCurrentPlaying(userID=None):
                                timeWhenCallWasMade=timeWhenCallWasMade)
 
     # Returns these variables to update the information on groupSession page.
-    return dict(userID=userID, trackName=trackName, isLocal=isLocal, artistName=artistName, 
-    imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-    isPlaying=isPlaying, deviceID=deviceID, trackNumber=trackNumber,
-    timeWhenCallWasMade=timeWhenCallWasMade)
+    return dict(userID=userID, 
+                trackName=trackName, 
+                isLocal=isLocal, 
+                artistName=artistName, 
+                imageURL=imageURL, 
+                trackURI=trackURI, 
+                curPosition=curPosition, 
+                trackLength=trackLength,
+                isPlaying=isPlaying, 
+                deviceID=deviceID, 
+                trackNumber=trackNumber,
+                timeWhenCallWasMade=timeWhenCallWasMade)
 
 # Function that visitors run in groupSession
 @action('synchronizeVisitor/<userID>/<deviceID>', method=["GET"])
@@ -1266,10 +1308,28 @@ def synchronizeVisitor(userID=None, deviceID=None):
             print("User is not playing anything")
 
     # Returns these variable to update information on visitor's page.
-    return dict(session=session, trackName=trackName, artistName=artistName, 
-    imageURL=imageURL, trackURI=trackURI, curPosition=curPosition, trackLength=trackLength,
-    isPlaying=isPlaying, timeWhenCallWasMade=timeWhenCallWasMade)
+    return dict(session=session, 
+                trackName=trackName, 
+                artistName=artistName, 
+                imageURL=imageURL, 
+                trackURI=trackURI, 
+                curPosition=curPosition, 
+                trackLength=trackLength,
+                isPlaying=isPlaying, 
+                timeWhenCallWasMade=timeWhenCallWasMade)
 
+# Retrieves the names and profile picture links of the people in the group session.
+@action('getPeopleInSession/<groupSessionReferenceNumber>', method=["GET"])
+@action.uses(session)
+def getPeopleInSession(groupSessionReferenceNumber=None):
+    print("in getPeopleInSession ")
+    dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
+                            == groupSessionReferenceNumber).select().as_list()
+    print(dbGroupSessionPeople[0]["displayNames"])
+    print(dbGroupSessionPeople[0]["profilePictures"])
+    return dict(session=session, 
+                displayNames = dbGroupSessionPeople[0]["displayNames"],
+                profilePictures = dbGroupSessionPeople[0]["profilePictures"])
 
 #Search element for group session
 @action('group_search', method=["GET", "POST"])
