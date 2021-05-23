@@ -135,6 +135,7 @@ let init = (app) => {
         /*if (app.vue.reorder){
             return;
         }*/
+        //updateCursor()
         app.vue.page = pg;
         console.log(app.vue.page);
     };
@@ -233,29 +234,58 @@ let tempCovers = app.data.coverList;
 let tempUrls = app.data.urlList;
 let src = 0; // initial index of album being moved
 let dest = 0; // index album is being moved to
+let allowed = false;
 
 // drag and drop functions partially based on: https://www.w3schools.com/html/html5_draganddrop.asp
+
+/*window.onload = function updateCursor() {
+    if (!allowed) {
+        for(i = 0; i < 12; i++) {
+            document.getElementById(i).style.cursor = "move";
+        }
+    }
+}*/
 
 function allowDrop(ev) {
     ev.preventDefault(); // prevent default behavior
     dest = ev.target.id; // id is the index of the album
+    //console.log("SRC: " + src);
+    
+    // cursor change, work in progress
+    
+    /*if(!allowed && src === -1) {
+        for(i = 0; i < 12; i++) {
+            document.getElementById(i).style.cursor = "no-drop";
+        }
+    }
+    else {
+        document.body.style.cursor = "auto";
+    }*/
 }
 
 function drag(ev) {
     // save state of albums and page
+    allowed = true;
     tempCovers = app.data.coverList;
     tempUrls = app.data.urlList;
     tempPage = app.data.page;
     console.log("PAGE: " + tempPage);
-    // store data from id
-    //ev.dataTransfer.setData("text", ev.target.id);
     // save index
     src = ev.target.id;
+    // store data from id
+    //ev.dataTransfer.setData("text", ev.target.id);
 }
 
 function drop(ev) {
     event.preventDefault(); // prevent default behavior
     console.log("INDEXES: " + src + ", " + dest);
+    if(!allowed) {
+        src = 0;
+        dest = 0;
+        allowed = false;
+        document.body.style.cursor = "auto";
+        return;
+    }
     // update page based on where selected album moves
     if (src > tempPage && dest <= tempPage) {
         app.goto(parseInt(tempPage)+1);
@@ -273,6 +303,10 @@ function drop(ev) {
     // send new order to app
     edit = (src != dest);
     app.rearrange(tempCovers, tempUrls, edit);
+    allowed = false;
+    src = 0;
+    dest = 0;
+    document.body.style.cursor = "auto";
   //var data = ev.dataTransfer.getData("text");
   //ev.target.appendChild(document.getElementById(data));
 }
