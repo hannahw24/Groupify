@@ -1,0 +1,126 @@
+[[extend 'layout.html']]
+
+<script src="js/searchbar.js"></script>
+<div id="vue-target">
+    <section>
+        <div class="addfriend_panel " style="background-color: [[=tile_color]];">
+            <!-- get back to profile -->
+            <a class="button is-primary" href="[[=URL(profileURL)]]">
+                <i class="fa fa-backward" aria-hidden="true"></i> &nbsp; Back
+            </a>
+            <div>
+                <h1 class="title has-text-centered blackoutline">
+                    [[if user==userID:]]
+                        <p>Your Playlists</p>
+                    [[else:]]
+                        <p>[[=display_name]]'s Playlists</p>
+                    [[pass]]
+                </h1>
+                <br>
+            </div>
+            <div class="tile is-child field">
+                <!-- search bar -->
+                <div>
+                    <div class="control has-icons-left has-icons-right">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <!-- Calls function when something is entered -->
+                        <form>
+                            <input id="barInput" class="input" type="text" name="search" onkeyup="searchBar()" placeholder="Filter">
+                        </form>
+                    </div>
+                </div>
+                <!-- search results -->
+                <!-- TODO toggle display based off of search results as opposed to automatic updating -->
+                <!-- TODO based off of username or display name -->
+                <div class="add_friend_results">
+                    <ul id="listItems">
+                        
+                        <div class="columns is-multiline">
+                        [[for i in range(len(playlistNames)):]]
+                            
+                            <div class="column is-4">
+                            <li>
+                                
+                                
+                                <div class="tile is-parent">
+                                    <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
+                                        <center>
+                                        [[if len(playlistNames[i]) > 50:]]
+                                        <a href="[[=(playlistURLs[i])]]" target="_blank"
+                                        style="color:[[=text_color]]; font-size:large; text-decoration:none;">
+                                            <div class="overflow">
+                                                <strong>[[=(playlistNames[i])]]</strong>
+                                            </div>
+                                        </a>
+                                        [[else:]]
+                                        <a href="[[=(playlistURLs[i])]]" target="_blank"
+                                        style="color:[[=text_color]]; font-size:large; text-decoration:none">
+                                            <strong>[[=(playlistNames[i])]]</strong>
+                                        </a>
+                                        [[pass]]
+                                        </center>
+                                        
+                                        <!--strong class="is-pulled-right" style="color:[[=text_color]]; font-size:x-large; margin-right:15px">{{i+1}}</strong-->
+                                        <section>
+                                            <div class="level">
+                                                <div class="level-item">
+                                                    <!-- Album art image with link to track -->
+                                                    <a href="[[=(playlistURLs[i])]]" target="_blank"><img src="[[=(playlistImages[i])]]" style="height:175px"></a>
+                                                </div>
+                                            </div>
+                                            <!-- Song title with link to track -->
+                                            <center>
+                                                <!-- Artist Genres with link to their Spotify page -->
+                                                [[if len(playlistDescriptions[i]) > 80:]]
+                                                
+                                                <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                    <div class="overflow">
+                                                        <!--span v-if="desc != null">
+                                                            <span v-if="playlistDescriptions[i] != ''">{{desc[i]}}</span>
+                                                        </span-->
+                                                        [[if playlistDescriptions[i] != None and playlistDescriptions[i] != "[]":]]
+                                                        <span>[[=(playlistDescriptions[i])]]</span>
+                                                        [[pass]]
+                                                    </div>
+                                                </a>
+                                                
+                                                [[else:]]
+                                                <a href="[[=(playlistURLs[i])]]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                    <!--span v-if="desc != null">
+                                                        <span v-if="playlistDescriptions[i] != ''">{{desc[i]}}</span>
+                                                    </span-->
+                                                    [[if playlistDescriptions[i] != None and playlistDescriptions[i] != "[]":]]
+                                                    <span>[[=(playlistDescriptions[i])]]</span>
+                                                    [[pass]]
+                                                </a>
+                                                [[pass]]
+                                            </center>
+                                                
+                                            
+                                        </section>
+                                    </div>
+                                </div>
+                                
+                                
+                            </li>
+                            </div>
+                            
+                            [[pass]]
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+[[block page_scripts]]
+<script>
+    let getPlaylists = "[[=XML(getPlaylists)]]";
+</script>
+<!-- Loads the user-specific js for Vue -->
+<!--script src="js/playlists.js"></script-->
+[[end]]
