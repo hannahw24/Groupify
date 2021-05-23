@@ -440,26 +440,71 @@ def getUserProfile(userID=None):
                 getTopArtists=URL("getTopArtists", userID), 
                 userStat=URL("userStat", session.get("userID")))
         
-@action('artists/<userID>', method=['GET'])
-@action.uses('artists.html', session, db)
-def artists_page(userID):
-    profileURL = (URL("user", userID))
-    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)
-    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())
-    display_name=dbUserEntry[0]["display_name"]
-    return dict(session=session, 
-                userID=userID, 
-                editable=False,
-                profileURL=profileURL,
-                getTopArtists=URL("getTopArtists", userID),
-                url_signer=url_signer,
-                background_bot=theme_colors[0],
-                background_top=theme_colors[1],
-                friend_tile=theme_colors[2],
-                tile_color=theme_colors[3],
-                text_color=theme_colors[4],
-                user=getUserID(),
-                display_name=display_name)
+@action('artists/<userID>', method=['GET'])	
+@action.uses('artists.html', session, db)	
+def artists_page(userID):	
+    profileURL = (URL("user", userID))	
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)	
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())	
+    display_name=dbUserEntry[0]["display_name"]	
+    return dict(session=session, 	
+    userID=userID, editable=False,	
+    profileURL=profileURL,	
+    	
+    getTopArtists=URL("getTopArtists", userID),	
+    	
+    url_signer=url_signer,	
+    	
+    background_bot=theme_colors[0],	
+    background_top=theme_colors[1],	
+    friend_tile=theme_colors[2],	
+    tile_color=theme_colors[3],	
+    text_color=theme_colors[4],	
+    user=getUserID(),	
+    display_name=display_name)
+
+@action('playlists/<userID>', method=['GET'])	
+@action.uses('playlists.html', session, db)	
+def playlists_page(userID):	
+    profileURL = (URL("user", userID))	
+    theme_colors = return_theme((db.dbUser[getIDFromUserTable(userID)]).chosen_theme)	
+    dbUserEntry = (db(db.dbUser.userID == userID).select().as_list())	
+    	
+    display_name=dbUserEntry[0]["display_name"]	
+    	
+    playlistEntry = (db(db.playlists.playlistsOfWho == getIDFromUserTable(userID)).select().as_list())	
+    # Remove this later, is here to make it so accessing users who haven't logged do not crash	
+    if playlistEntry == []:	
+        playlistNames = []	
+        playlistImages = []	
+        playlistURLs = []	
+        playlistDescriptions = []	
+    else:	
+        playlistNames = playlistEntry[0]["names"]	
+        playlistImages = playlistEntry[0]["images"]	
+        playlistURLs = playlistEntry[0]["links"]	
+        playlistDescriptions = playlistEntry[0]["descriptions"]	
+        	
+    return dict(session=session, 	
+    userID=userID, editable=False,	
+    profileURL=profileURL,	
+    	
+    getPlaylists=URL("getPlaylists", userID),	
+    	
+    url_signer=url_signer,	
+    	
+    playlistNames=playlistNames,	
+    playlistImages=playlistImages,	
+    playlistURLs=playlistURLs,	
+    playlistDescriptions=playlistDescriptions,	
+    	
+    background_bot=theme_colors[0],	
+    background_top=theme_colors[1],	
+    friend_tile=theme_colors[2],	
+    tile_color=theme_colors[3],	
+    text_color=theme_colors[4],	
+    user=getUserID(),	
+    display_name=display_name)
 
 # -----------------------------------Search Page-------------------------------------
 
@@ -660,7 +705,7 @@ def getPlaylists():
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     # 14 is an estimate on how long the box is 
-    results = spotify.current_user_playlists(limit=12)
+    results = spotify.current_user_playlists(limit=50)
     bigList = parsePlaylistResults(results)
     
     return bigList
