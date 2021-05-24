@@ -20,7 +20,7 @@
                 <div class="tile is-child notification">
                     <div class="columns">
                         <figure class="image is-64x64" >
-                            <div v-if="displayPictures[i] == null">
+                            <div v-if="displayPictures[i] == 'no_profile'">
                                 <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
                                 src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                             </div>

@@ -1077,14 +1077,27 @@ def pauseOrPlayTrack(userID=None, deviceID=None):
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
+    print("hi")
     # Makes user log in if they go to a group session link and have not logged in yet
     if (session.get("userID") == None):
         return redirect(URL('login'))
+    try:
+        # Getting the user table entry of the person calling this function. 
+        loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+        premiumStatus = loggedInProfileEntry[0]["premiumStatus"]
+    except:
+        print("error here")
+        return redirect(URL('login'))
+
+    #if (premiumStatus != "premium"):
+        #return nonPremiumUser(session.get("userID"))
+
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
+    # Try to get the deviceID of the instance of Spotify the user is listening on.
     try:
         results = spotify.devices()
         deviceID = results["devices"][0]["id"]
@@ -1099,47 +1112,52 @@ def groupSession(userID=None):
         artistName = "", curPosition="", trackLength="", isPlaying=False,
         timeWhenCallWasMade=0, deviceID=deviceID, trackNumber="", groupSessionOfWho=insertedID)
         dbGroupSessionEntry = db(db.groupSession.userID == userID).select().as_list()
-    userEntry = (db.dbUser[dbGroupSessionEntry[0]["groupSessionOfWho"]])
-    premiumStatus = userEntry["premiumStatus"]
-    print ("premiumStatus ", premiumStatus)
 
     dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
                         == dbGroupSessionEntry[0]["id"]).select().as_list()
-    loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    loggedInProfilePicture = loggedInProfileEntry[0]["profile_pic"]
+    # Stating that the user has no profile pic. A no profile icon is given to the user 
+    # in groupSession.html
+    print("loggedInProfilePicture = ", loggedInProfilePicture)
+    if loggedInProfilePicture == "":
+        loggedInProfilePicture = "no profile"
+    loggedInUserID = loggedInProfileEntry[0]["userID"]
+    loggedInUserDisplayName = loggedInProfileEntry[0]["display_name"]
+
     # If the host doesn't have a group session people table, then create one and add the host user.
-    print("dbGroupSessionPeople = ", dbGroupSessionPeople)
     if ((dbGroupSessionPeople == None) or (dbGroupSessionPeople == [])):
         print ("in if statement")
         # If it is a visitor creating the table, then the host is not on the page and therefore
         # the user should go to a page telling them the host is not online. 
         if (session.get("userID") != userID):
             return nonPremiumUser(session.get("userID")) #TEMP CHANGE TO SOMETHING ELSE
-        db.groupSessionPeople.insert(displayNames=[loggedInProfileEntry[0]["display_name"]], 
-                                    profilePictures=[loggedInProfileEntry[0]["profile_pic"]], 
+        db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName], 
+                                    profilePictures=[loggedInProfilePicture],
+                                    userIDs=[loggedInUserID], 
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
     else:
         print ("in else")
         displayNames = dbGroupSessionPeople[0]["displayNames"]
-        loggedInUserDisplayName = loggedInProfileEntry[0]["display_name"]
+        userIDs = dbGroupSessionPeople[0]["userIDs"]
+        profilePictures = dbGroupSessionPeople[0]["profilePictures"]
         ownerOfTableEntry = db(db.dbUser.userID == userID).select().as_list()
-        ownerName = ownerOfTableEntry[0]["display_name"]
-        if (ownerName not in displayNames) and (loggedInUserDisplayName != ownerName):
+        ownerID = ownerOfTableEntry[0]["userID"]
+        # Checking to see if the host is in the session,
+        # if not, do not let the visitor in the session.
+        if (ownerID not in userIDs) and (loggedInUserID != ownerID):
             return nonPremiumUser(session.get("userID")) #TEMP CHANGE TO SOMETHING ELSE
-        elif loggedInUserDisplayName not in displayNames:
+        elif loggedInUserID not in userIDs:
             displayNames.append(loggedInUserDisplayName)
-            profilePictures = dbGroupSessionPeople[0]["profilePictures"]
-            profile_pic = loggedInProfileEntry[0]["profile_pic"]
-            #if profile_pic == "":
-                #profile_pic = "https://bulma.io/images/placeholders/128x128.png"
-            profilePictures.append(profile_pic)
+            userIDs.append(loggedInUserID)
+            profilePictures.append(loggedInProfilePicture)
+            # dbGroupSessionPeople is currently a list, the next line of code converts it
+            # back to a database entry.
             dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
-                        == dbGroupSessionEntry[0]["id"])
-            dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures)
+                                == dbGroupSessionEntry[0]["id"])
+            dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
+                                        userIDs=userIDs)
         print("displayNames are ", displayNames)
-
-    #if (premiumStatus != "premium"):
-        #return nonPremiumUser(session.get("userID"))
 
     queues = db(db.queue.queueOfWho == userID).select().as_list()
     queueImage=""
@@ -1363,15 +1381,18 @@ def removePeopleInSession(groupSessionReferenceNumber=None):
     loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     displayNames = dbGroupSessionPeople[0]["displayNames"]
     profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+    userIDs = dbGroupSessionPeople[0]["userIDs"]
     print("before, displayNames are ", displayNames)
     print("before, profilePictures are ", profilePictures)
-    if loggedInProfileEntry[0]["display_name"] in dbGroupSessionPeople[0]["displayNames"]:
-        displayNames.remove(loggedInProfileEntry[0]["display_name"])
-        if loggedInProfileEntry[0]["profile_pic"] != "":
-            profilePictures.remove(loggedInProfileEntry[0]["profile_pic"])
+    if loggedInProfileEntry[0]["userID"] in dbGroupSessionPeople[0]["userIDs"]:
+        removalIndex = dbGroupSessionPeople[0]["userIDs"].index(loggedInProfileEntry[0]["userID"])
+        del userIDs[removalIndex]
+        del displayNames[removalIndex]
+        del profilePictures[removalIndex]
         dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
                             == groupSessionReferenceNumber)
-        dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures)
+        dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
+                                    userIDs=userIDs)
     print("after, displayNames are ", displayNames)
     print("after, profilePictures are ", profilePictures)
     return dict(session=session)
