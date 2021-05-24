@@ -42,8 +42,23 @@ let init = (app) => {
       queueListURL: [], //list of songs in queue; link
       message: "", // Text to show in pop-up
       page: -1,
+
+      displayNames: "",
+      displayPictures: "",
     };
     
+    app.getPeopleInSession = () => {
+      axios.get(getPeopleInSession).then((result) => {
+        app.data.displayNames = result.data.displayNames;
+        console.log("displayNames are", app.data.displayNames);
+        app.data.displayPictures = result.data.profilePictures;
+        console.log("displayPictures are", app.data.displayPictures);
+
+        }).catch(() => {
+          console.log("Error getting names and pictures");
+        });
+    }
+
     app.getPlayingTrack = () => {
       axios.get(currentPlaying).then((result) => {
         console.log("In getPlayingTrack");
@@ -390,6 +405,7 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
+      app.getPeopleInSession();
       axios.get(isGroupSessionHost).then((result) => {
           if (result.data.isHost == true) {
             console.log("isHost");

@@ -131,12 +131,6 @@ db.define_table(
     Field('playlistsOfWho', db.dbUser)
 )
 
-db.define_table(
-    'groupSessionPeople',
-    Field('displayNames', 'list:string'),
-    Field('profilePictures', 'list:string'),
-    Field('groupSessionPeopleOfWho', db.dbUser),
-)
 
 db.define_table(
     'groupSession',
@@ -152,7 +146,14 @@ db.define_table(
     Field('isPlaying', 'boolean'),
     Field('timeWhenCallWasMade', 'float'),
     Field('groupSessionOfWho', db.dbUser),
-    Field('groupSessionPeopleReference', db.groupSessionPeople)
+)
+
+db.define_table(
+    'groupSessionPeople',
+    Field('displayNames', 'list:string'),
+    Field('profilePictures', 'list:string'),
+    Field('groupSessionPeopleOfWho', db.dbUser),
+    Field('groupSessionReference', db.groupSession)
 )
 
 db.define_table(

@@ -15,47 +15,56 @@
         <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
         <p class="smallgreentext"> Send your friends this link to share your group session!</p>
 
-        <figure class="image is-128x128 profile_photo group_pfp">
-            [[if (profile_pic != ""):]]
-            <img class="is-rounded" src="[[=(profile_pic)]]">
-            [[else:]]
-            <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
-            [[pass]]
-        </figure>
-        <div class="box" style="width:25%;">
-            Friend 1
-        </div>
-        <div class="box" style="width:25%;">
-            Friend 2
-        </div>
-        <div class="box" style="width:25%;">
-            Friend 3
-        </div>
-        <div class="box" style="width:25%;">
-            Friend 4
+        <div v-for="(n, i) in displayNames.length">
+            <div class="tile is-parent" style="width:25%;">
+                <div class="tile is-child notification">
+                    <div class="columns">
+                        <figure class="image is-64x64" >
+                            <div v-if="displayPictures[i] == null">
+                                <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
+                                src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                            </div>
+                            <img class="is-rounded profile_photo"  
+                                :src=displayPictures[i] width="50">
+                        </figure>
+                        <div style="padding-left: 15px; width: 78%; ">
+                            <span class="friendname">
+                            <strong>{{displayNames[i]}}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div>
             <div class="title"><bold>Queue</bold></div>
-            <div v-for="(n, i) in 10">
+            <!-- <div v-for="(n, i) in 10"> -->
+            [[for i in range(0, len(queueImage)):]]
             <section>
                 <!-- when result is clicked, add album to list at selected index -->
-               
+              
                     <div class="columns">
-                        <div v-if="queueListImage[i] != null" class="column">
+                        [[if queueImage[i] != None:]]
+                        <div class="column">
                             <!-- Album art image with link to track -->
-                            <img width="64" height="64" :src="queueListImage[i]">
+                            <!-- <img width="64" height="64" :src="queueListImage[i]"> -->
+                            <img width="64" height="64" src="[[=(queueImage[i])]]">
                         </div>
+                        [[pass]]
+                        [[if queueURL[i] != None:]]
                         <div class="column is-9">
                             <div>
                                 <!-- Song title with link to track -->
-                                <span target="_blank" style="color:#000000"><strong>{{queueListURL[i]}}</strong></span>
+                                <!-- <span target="_blank" style="color:#000000"><strong>{{queueListURL[i]}}</strong></span> -->
+                                <a href="[[=(queueURL[i])]]">Song Link</a>
                             </div>
                         </div>
+                        [[pass]]
                     </div>
-                
+               
               </section>
-            </div>
+              [[pass]]
+            <!-- </div> -->
         </div>
         
     </div>
@@ -169,6 +178,7 @@ function getGroupLink() {
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
     let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
     let getDevice = "[[=XML(getDevice)]]";
+    let getPeopleInSession = "[[=XML(getPeopleInSession)]]";
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]
