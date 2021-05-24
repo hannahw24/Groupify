@@ -18,7 +18,7 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures})
 else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL, Field
+from py4web import action, request, abort, redirect, URL, Field, response
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
 from py4web.utils.form import Form, FormStyleBulma
@@ -350,6 +350,7 @@ def getUserProfile(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     # If the profile they want to access does not exist, return userNotFound page
     if currentProfileEntry == []:
+        response.status = 302
         return userNotFound(session.get("userID"))
 
     # Looks at the dbUser database to see what the chosen term of the top 10 songs are for
@@ -1073,6 +1074,9 @@ def pauseOrPlayTrack(userID=None, deviceID=None):
         #print("is visitor")
         #synchronizeVisitor(userID, deviceID)
     return
+
+def add(a, b):
+    return a + b
 
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
