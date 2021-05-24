@@ -147,17 +147,29 @@ body{
 /* Container needed to position the overlay. Adjust the width as needed */
 .selected_box {
     position: relative;
+    
   }
   
   /* The overlay effect - lays on top of the container and over the image */
-  .overlay {
+  /*.overlay {
     position: absolute;
     bottom: 5px;
     background: rgb(0, 0, 0);
     background: rgba(0, 0, 0, 0.5); /* Black see-through */
+    /*color: #f1f1f1;
+    width: 100%;
+    transition: .5s ease;
+    opacity:0;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+  }*/
+  
+  .overlay {
+    position: absolute;
+    bottom: 5px;
     color: #f1f1f1;
     width: 100%;
-    max-width: 128px;
     transition: .5s ease;
     opacity:0;
     font-size: 20px;
@@ -169,15 +181,13 @@ body{
     position: absolute;
     top: -1px;
     left: -1px;
-    background: rgba(0, 0, 0, 0); /* Black see-through */
     color: #f1f1f1;
-    width: 100%;
-    max-width: 128px;
+    /*width: 100%;
     transition: .5s ease;
     opacity:0;
     font-size: 20px;
     color: white;
-    text-align: justify;
+    text-align: justify;*/
   }
   
   /* When you mouse over the container, fade in the overlay title */
@@ -185,7 +195,9 @@ body{
   
   .selected_box .overlay_button { opacity: 1; }
   
-  .selected_box .overlay { opacity: 1; }
+  .selected_box .overlay { opacity: 0; pointer-events: none; }
+  
+  /*.selected_box img { filter: brightness(50%); }*/
   
   /* The snackbar - position it at the bottom and in the middle of the screen */
   #snackbar {
@@ -270,17 +282,97 @@ p.friend_text{
     -webkit-line-clamp: 2; /* truncates at 3 lines */	
     -webkit-box-orient: vertical;	
 }
- 
-.album_box {
-    border-radius: 0px; 
-    display: block;
-    padding: .25rem;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    opacity: 1;
-}
+		
+.album_section{	
+    position: sticky; 	
+    z-index: 1; 	
+    padding-left: 1%;	
+    padding-right: 1%;	
+    padding-top: 1%;	
+    padding-bottom: 3%;	
+}	
+ 	
+.album_box {	
+    border-radius: 0px; 	
+    display: block;	
+    padding: .25rem;	
+    margin-top: 5px;	
+    margin-bottom: 5px;	
+    opacity: 1;	
+}	
+
 
 .album_box:hover{ opacity: 0.75;}
+
+.empty_album_box {	
+    background-color: white;	
+    /* border-radius: 6px; */	
+    /* box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1); */	
+    /* padding: .25rem; */	
+    margin-top: 10px;	
+    margin-bottom: 10px;	
+    color: #4a4a4a;	
+    display: block;	
+    /* padding: 1.25rem; */	
+}	
+.empty_album_box:hover{ opacity: 0.75;}	
+/* ********************** SEARCH/EDIT ALBUM PAGE ********************** */	
+/* Based on: https://www.w3schools.com/howto/howto_css_image_overlay_title.asp */	
+/* Container needed to position the overlay. Adjust the width as needed */	
+/* The overlay effect - lays on top of the container and over the image */	
+.overlay {	
+    position: absolute;	
+    top: 0%;	
+    background: rgba(0, 0, 0, 0.5); /* Black see-through */	
+    width: 100%;	
+    height: 98%;	
+    transition: .5s ease;	
+    opacity: 0;	
+    font-size: 100%;	
+    color: white;	
+    text-align: center;	
+}	
+  	
+.overlay_button {	
+    position: absolute;	
+    top: -1px;	
+    left: -1px;	
+    background: rgba(0, 0, 0, 0); /* Black see-through */	
+    color: #f1f1f1;	
+    width: 100%;	
+    height: 100%;	
+    transition: .5s ease;	
+    opacity: 0;	
+    font-size: 20px;	
+    color: white;	
+    text-align: justify;	
+}	
+/* When you mouse over the container, fade in the overlay title */	
+.edit_box:hover { 	
+    /* background: rgba(0, 0, 0, 0.164); */	
+    opacity: 0.75; 	
+}	
+.selected_box {	
+    position: relative;	
+}	
+.selected_box .overlay_button { 	
+    opacity: 1; }	
+.selected_box .overlay { 	
+    padding: 0%;	
+    margin: 0%;	
+    opacity: 1; 	
+}	
+.search_section{	
+    height: 100%; 	
+    width: 100%; 	
+    position: absolute; 	
+    z-index: 1; 	
+    padding-left: 4%;	
+    padding-right: 4%;	
+    top: 10%;	
+    overflow-y: scroll;	
+}	
+
 
 .search_result {
     background-color: white;
@@ -295,6 +387,48 @@ p.friend_text{
 .search_result:hover{
     background-color: rgb(240, 240, 240);
 }
+
+/* The snackbar - position it at the bottom and in the middle of the screen */	
+#snackbar {	
+    visibility: hidden; /* Hidden by default. Visible on click */	
+    min-width: 250px; /* Set a default minimum width */	
+    margin-left: -125px; /* Divide value of min-width by 2 */	
+    background-color: #333; /* Black background color */	
+    color: #fff; /* White text color */	
+    text-align: center; /* Centered text */	
+    border-radius: 2px; /* Rounded borders */	
+    padding: 16px; /* Padding */	
+    position: fixed; /* Sit on top of the screen */	
+    z-index: 1; /* Add a z-index if needed */	
+    left: 50%; /* Center the snackbar */	
+    bottom: 30px; /* 30px from the bottom */	
+}	
+/* Show the snackbar when clicking on a button (class added with JavaScript) */	
+/* Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp */	
+#snackbar.show {	
+    visibility: visible; /* Show the snackbar */	
+    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.	
+    However, delay the fade out process for 2.5 seconds */	
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;	
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;	
+}	
+/* Animations to fade the snackbar in and out */	
+@-webkit-keyframes fadein {	
+    from {bottom: 0; opacity: 0;}	
+    to {bottom: 30px; opacity: 1;}	
+}	
+@keyframes fadein {	
+    from {bottom: 0; opacity: 0;}	
+    to {bottom: 30px; opacity: 1;}	
+}	
+@-webkit-keyframes fadeout {	
+    from {bottom: 30px; opacity: 1;}	
+    to {bottom: 0; opacity: 0;}	
+}	
+@keyframes fadeout {	
+    from {bottom: 30px; opacity: 1;}	
+    to {bottom: 0; opacity: 0;}	
+}	
 
 
 /* ********************** GROUP PAGE ********************** */
@@ -337,4 +471,78 @@ p.friend_text{
 .smallgreentext {
     color: green;
     font-size: small;
+}
+
+/* ********************** ADD FRIEND PAGE ********************** */
+
+.addfriend_panel{
+    height: 90%;
+    width: 80%;
+    top: 10%;
+    left: 10%;
+    position: fixed;
+    overflow-x: hidden;
+    overflow-y: hidden; 
+    padding: 20px;
+    z-index: 1; /* Stay on top */
+}
+
+.add_friend_results{
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 60vh;
+    
+}
+
+.add_friend_full_page{
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 100%;
+    
+}
+
+.artist_results{
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 700px;
+    
+}
+
+/* ********************** OVERFLOW (FOR PLAYLISTS) ********************** */
+
+/* Based on: https://css-tricks.com/line-clampin/ */
+
+/*html {
+  line-height: 1.4rem;
+}*/
+.overflow {
+  position: relative;
+  max-height: 50px;
+  overflow: hidden;
+  word-break: break-word;
+  padding-right: 1rem; /* space for ellipsis */
+}
+.overflow::before {
+  position: absolute;
+  content: "...";
+/*   inset-block-end: 0;
+  inset-inline-end: 0; */
+  bottom: 0;
+  right: 0;
+}
+.overflow::after {
+  content: "";
+  position: absolute;
+/*   inset-inline-end: 0; */
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  /*background: white;*/
+}
+
+.desc_overflow {
+  position: relative;
+  max-height: 50px;
+  overflow: hidden;
+  word-break: break-word;
 }
