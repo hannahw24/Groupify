@@ -59,6 +59,13 @@ let init = (app) => {
         });
     }
 
+    app.removePeopleInSession = () => {
+      axios.post(removePeopleInSession).then((result) => {
+        }).catch(() => {
+          console.log("Error removing people in session");
+        });
+    }
+
     app.getPlayingTrack = () => {
       axios.get(currentPlaying).then((result) => {
         console.log("In getPlayingTrack");
@@ -348,7 +355,6 @@ let init = (app) => {
         app.synchronizeVisitor();
         return;
         content = app.data.isPlaying;
-
       }
       
       axios.get(pauseOrPlayTrack, {params: {
@@ -424,6 +430,12 @@ let init = (app) => {
 
     // Call to the initializer.
     app.init();
+
+    window.addEventListener('beforeunload', function(event) {
+      //app.playOrPause(true);
+      app.removePeopleInSession();
+    });
+
 };
 
 

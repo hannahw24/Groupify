@@ -1107,8 +1107,9 @@ def groupSession(userID=None):
                         == dbGroupSessionEntry[0]["id"]).select().as_list()
     loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     # If the host doesn't have a group session people table, then create one and add the host user.
+    print("dbGroupSessionPeople = ", dbGroupSessionPeople)
     if ((dbGroupSessionPeople == None) or (dbGroupSessionPeople == [])):
-        print("loggedInProfileEntry ", loggedInProfileEntry)
+        print ("in if statement")
         # If it is a visitor creating the table, then the host is not on the page and therefore
         # the user should go to a page telling them the host is not online. 
         if (session.get("userID") != userID):
@@ -1118,11 +1119,20 @@ def groupSession(userID=None):
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
     else:
+        print ("in else")
         displayNames = dbGroupSessionPeople[0]["displayNames"]
-        if loggedInProfileEntry[0]["display_name"] not in displayNames:
-            displayNames.append(loggedInProfileEntry[0]["display_name"])
+        loggedInUserDisplayName = loggedInProfileEntry[0]["display_name"]
+        ownerOfTableEntry = db(db.dbUser.userID == userID).select().as_list()
+        ownerName = ownerOfTableEntry[0]["display_name"]
+        if (ownerName not in displayNames) and (loggedInUserDisplayName != ownerName):
+            return nonPremiumUser(session.get("userID")) #TEMP CHANGE TO SOMETHING ELSE
+        elif loggedInUserDisplayName not in displayNames:
+            displayNames.append(loggedInUserDisplayName)
             profilePictures = dbGroupSessionPeople[0]["profilePictures"]
-            profilePictures.append(loggedInProfileEntry[0]["profile_pic"])
+            profile_pic = loggedInProfileEntry[0]["profile_pic"]
+            #if profile_pic == "":
+                #profile_pic = "https://bulma.io/images/placeholders/128x128.png"
+            profilePictures.append(profile_pic)
             dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
                         == dbGroupSessionEntry[0]["id"])
             dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures)
@@ -1163,6 +1173,7 @@ def groupSession(userID=None):
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
+                    removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
                     getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
@@ -1181,6 +1192,7 @@ def groupSession(userID=None):
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
+                    removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
                     getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
@@ -1341,6 +1353,28 @@ def getPeopleInSession(groupSessionReferenceNumber=None):
     return dict(session=session, 
                 displayNames = dbGroupSessionPeople[0]["displayNames"],
                 profilePictures = dbGroupSessionPeople[0]["profilePictures"])
+
+@action('removePeopleInSession/<groupSessionReferenceNumber>', method=["POST"])
+@action.uses(session)
+def removePeopleInSession(groupSessionReferenceNumber=None):
+    print("in removePeopleInSession ")
+    dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
+                            == groupSessionReferenceNumber).select().as_list()
+    loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    displayNames = dbGroupSessionPeople[0]["displayNames"]
+    profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+    print("before, displayNames are ", displayNames)
+    print("before, profilePictures are ", profilePictures)
+    if loggedInProfileEntry[0]["display_name"] in dbGroupSessionPeople[0]["displayNames"]:
+        displayNames.remove(loggedInProfileEntry[0]["display_name"])
+        if loggedInProfileEntry[0]["profile_pic"] != "":
+            profilePictures.remove(loggedInProfileEntry[0]["profile_pic"])
+        dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
+                            == groupSessionReferenceNumber)
+        dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures)
+    print("after, displayNames are ", displayNames)
+    print("after, profilePictures are ", profilePictures)
+    return dict(session=session)
 
 #Search element for group session
 @action('group_search/<userID>', method=["GET", "POST"])
