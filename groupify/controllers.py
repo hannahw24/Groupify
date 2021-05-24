@@ -18,7 +18,7 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures})
 else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL, Field, response
+from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
 from py4web.utils.form import Form, FormStyleBulma
@@ -350,7 +350,6 @@ def getUserProfile(userID=None):
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
     # If the profile they want to access does not exist, return userNotFound page
     if currentProfileEntry == []:
-        response.status = 302
         return userNotFound(session.get("userID"))
 
     # Looks at the dbUser database to see what the chosen term of the top 10 songs are for
@@ -1075,9 +1074,6 @@ def pauseOrPlayTrack(userID=None, deviceID=None):
         #synchronizeVisitor(userID, deviceID)
     return
 
-def add(a, b):
-    return a + b
-
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
@@ -1135,6 +1131,13 @@ def groupSession(userID=None):
     #if (premiumStatus != "premium"):
         #return nonPremiumUser(session.get("userID"))
 
+    queues = db(db.queue.queueOfWho == userID).select().as_list()
+    queueImage=""
+    queueURL=""
+    if queues != []:
+        queueImage = queues[0]["queueListImage"]
+        queueURL = queues[0]["queueListURL"]  
+
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
     profile_pic = ""
     if (loggedInProfileEntry != None) and (loggedInProfileEntry != []):
@@ -1154,13 +1157,15 @@ def groupSession(userID=None):
                     profileURL = profileURL, 
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
-                    search_url = URL('group_search'), 
+                    search_url = URL('group_search', userID), 
                     getAPICallTime = URL('getAPICallTime'),
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
-                    getDevice=URL('getDevice'))
+                    getDevice=URL('getDevice'),
+                    queueImage=queueImage,
+                    queueURL=queueURL)
     else:
         return dict(session=session, 
                     editable=False, 
@@ -1170,13 +1175,15 @@ def groupSession(userID=None):
                     profileURL = profileURL, 
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
-                    search_url = URL('group_search'), 
+                    search_url = URL('group_search', userID), 
                     getAPICallTime = URL('getAPICallTime'),
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
-                    getDevice=URL('getDevice'))
+                    getDevice=URL('getDevice'),
+                    queueImage=queueImage,
+                    queueURL=queueURL)
 
 # Function that hosts run in groupSession
 # Finds what song the host is listening to by making a Spotify API call
@@ -1336,9 +1343,9 @@ def getPeopleInSession(groupSessionReferenceNumber=None):
                 profilePictures = dbGroupSessionPeople[0]["profilePictures"])
 
 #Search element for group session
-@action('group_search', method=["GET", "POST"])
+@action('group_search/<userID>', method=["GET", "POST"])
 @action.uses(session)
-def group_search():
+def group_search(userID=None):
     # Initialize empty lists
     queueListImage = ""
     queueListURL = ""
@@ -1349,6 +1356,8 @@ def group_search():
     artistLinks = ""  
     totalResults = 0
     queues = ""
+    queueImage=""
+    queueURL=""
     # Get user input from search.js
     form_SearchValue = request.json.get("input2")
 
@@ -1362,25 +1371,28 @@ def group_search():
             print(queueListURL)
             print("")
 
-            entries = db(db.queue.queueOfWho == getUserID()).select().as_list()
+            entries = db(db.queue.queueOfWho == userID).select().as_list()
             #print(entries)
             # try to insert the list of songs into the database 
             if entries != []:
-                    db(db.queue.queueOfWho == getUserID()).update(
-                        queueOfWho=getUserID(),
+                    db(db.queue.queueOfWho == userID).update(
+                        queueOfWho=userID,
                         queueListImage=queueListImage,
                         queueListURL=queueListURL,
                     )
             else:
                 db.queue.insert(
-                    queueOfWho=getUserID(),
+                    queueOfWho=userID,
                     queueListImage=queueListImage,
                     queueListURL=queueListURL,
                 )
             #entries = db(db.queue.queueOfWho == getUserID()).select().as_list()
             #print(queues)
-    queues = db(db.queue.queueOfWho == getUserID()).select().as_list()   
-    print(queues)      
+    queues = db(db.queue.queueOfWho == userID).select().as_list()
+    print(queues)
+    if queues != []:
+        queueImage = queues[0]["queueListImage"]
+        queueURL = queues[0]["queueListURL"]      
     
     # If empty, return empty lists
     if form_SearchValue == "" or form_SearchValue == None:
@@ -1393,7 +1405,9 @@ def group_search():
                     artistLinks=artistLinks, 
                     totalResults=totalResults, 
                     queueListImage=queueListImage, 
-                    queueListURL=queueListURL)
+                    queueListURL=queueListURL,
+                    queueImage=queueImage,
+                    queueURL=queueURL)
     
     
     # Get results from Spotify
@@ -1417,7 +1431,9 @@ def group_search():
                         totalResults=totalResults, 
                         queues=queues,
                         queueListImage=queueListImage, 
-                        queueListURL=queueListURL)
+                        queueListURL=queueListURL,
+                        queueImage=queueImage,
+                        queueURL=queueURL)
         # Else begin to parse the JSON by looking at the albums
         results = results["tracks"]
     except:
@@ -1431,7 +1447,9 @@ def group_search():
                     totalResults=totalResults,
                     queues=queues,
                     queueListImage=queueListImage, 
-                    queueListURL=queueListURL)
+                    queueListURL=queueListURL,
+                    queueImage=queueImage,
+                    queueURL=queueURL)
     # Parses through the JSON and returns a list of lists with the information we desire
     biglist = getSearchResults(results)
     topTracks = biglist[0]
@@ -1451,7 +1469,9 @@ def group_search():
                 totalResults=totalResults, 
                 queues=queues,
                 queueListImage=queueListImage, 
-                queueListURL=queueListURL)
+                queueListURL=queueListURL,
+                queueImage=queueImage,
+                queueURL=queueURL)
 
 @action('settings/<userID>')
 @action.uses(db, auth, 'settings.html', session)

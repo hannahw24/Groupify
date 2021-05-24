@@ -38,25 +38,33 @@
 
         <div>
             <div class="title"><bold>Queue</bold></div>
-            <div v-for="(n, i) in 10">
+            <!-- <div v-for="(n, i) in 10"> -->
+            [[for i in range(0, len(queueImage)):]]
             <section>
                 <!-- when result is clicked, add album to list at selected index -->
-               
+              
                     <div class="columns">
-                        <div v-if="queueListImage[i] != null" class="column">
+                        [[if queueImage[i] != None:]]
+                        <div class="column">
                             <!-- Album art image with link to track -->
-                            <img width="64" height="64" :src="queueListImage[i]">
+                            <!-- <img width="64" height="64" :src="queueListImage[i]"> -->
+                            <img width="64" height="64" src="[[=(queueImage[i])]]">
                         </div>
+                        [[pass]]
+                        [[if queueURL[i] != None:]]
                         <div class="column is-9">
                             <div>
                                 <!-- Song title with link to track -->
-                                <span target="_blank" style="color:#000000"><strong>{{queueListURL[i]}}</strong></span>
+                                <!-- <span target="_blank" style="color:#000000"><strong>{{queueListURL[i]}}</strong></span> -->
+                                <a href="[[=(queueURL[i])]]">Song Link</a>
                             </div>
                         </div>
+                        [[pass]]
                     </div>
-                
+               
               </section>
-            </div>
+              [[pass]]
+            <!-- </div> -->
         </div>
         
     </div>
