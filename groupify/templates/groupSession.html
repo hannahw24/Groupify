@@ -114,9 +114,16 @@
         </div>
         <br><br>
         <div v-if="isHost == false" class="level-item">
-            <button @click="synchronizeVisitor()" class="button is-black" key="play">
-                Synchronize
-            </button>
+            <span v-if="isSynchronizing == false">
+                <button @click="synchronizeVisitorHandler()" class="button is-black" key="synchEnabled" style="width:100px;">
+                    Synchronize
+                </button>            
+            </span>
+            <div v-else>
+                <button class="button is-black" key="synchDisabled" style="width:100px;">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                </button>    
+            </div>
             <br><br><br>
         </div>
         <div class="columns is-mobile is-centered">
@@ -179,10 +186,12 @@ function getGroupLink() {
     let getAPICallTime = "[[=XML(getAPICallTime)]]";
     let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
+    let shouldSynchronizeVisitor = "[[=XML(shouldSynchronizeVisitor)]]";
     let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
     let getDevice = "[[=XML(getDevice)]]";
     let getPeopleInSession = "[[=XML(getPeopleInSession)]]";
     let removePeopleInSession = "[[=XML(removePeopleInSession)]]";
+    let hostIsNotInSessionURL = "[[=XML(hostIsNotInSession)]]";
 
 </script>
 <script src="js/groupSession.js"></script>

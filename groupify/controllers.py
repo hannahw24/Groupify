@@ -1100,7 +1100,6 @@ def pauseOrPlayTrack(userID=None, deviceID=None):
 @action('groupSession/<userID>')
 @action.uses(db, auth, 'groupSession.html', session)
 def groupSession(userID=None):
-    print("hi")
     # Makes user log in if they go to a group session link and have not logged in yet
     if (session.get("userID") == None):
         return redirect(URL('login'))
@@ -1210,6 +1209,8 @@ def groupSession(userID=None):
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
                     removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
+                    shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
+                    hostIsNotInSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
@@ -1229,6 +1230,8 @@ def groupSession(userID=None):
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
                     removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
+                    shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
+                    hostIsNotInSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
@@ -1318,6 +1321,13 @@ def getCurrentPlaying(userID=None):
                 trackNumber=trackNumber,
                 timeWhenCallWasMade=timeWhenCallWasMade)
 
+@action('shouldSynchronizeVisitor/<userID>/', method=["GET"])
+@action.uses(session)
+def shouldSynchronizeVisitor(userID=None):
+    dbGroupSessionEntry = (db(db.groupSession.userID == userID).select().as_list())
+    timeWhenCallWasMade=dbGroupSessionEntry[0]["timeWhenCallWasMade"]
+    return dict(timeWhenCallWasMade=timeWhenCallWasMade)
+
 # Function that visitors run in groupSession
 @action('synchronizeVisitor/<userID>/<deviceID>', method=["GET"])
 @action.uses(session)
@@ -1334,7 +1344,6 @@ def synchronizeVisitor(userID=None, deviceID=None):
     trackLength=dbGroupSessionEntry[0]["trackLength"]
     isPlaying=dbGroupSessionEntry[0]["isPlaying"]
     trackNumber=dbGroupSessionEntry[0]["trackNumber"]
-    timeWhenCallWasMade=dbGroupSessionEntry[0]["timeWhenCallWasMade"]
 
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
@@ -1374,8 +1383,7 @@ def synchronizeVisitor(userID=None, deviceID=None):
                 trackURI=trackURI, 
                 curPosition=curPosition, 
                 trackLength=trackLength,
-                isPlaying=isPlaying, 
-                timeWhenCallWasMade=timeWhenCallWasMade)
+                isPlaying=isPlaying)
 
 # Retrieves the names and profile picture links of the people in the group session.
 @action('getPeopleInSession/<groupSessionReferenceNumber>', method=["GET"])
@@ -1393,13 +1401,16 @@ def getPeopleInSession(groupSessionReferenceNumber=None):
     ownerID = ownerOfTableEntry[0]["userID"]
     # Checking to see if the host is in the session,
     # if not, do not let the visitor in the session.
+    redirect = False
     if (ownerID not in userIDs):
-        return hostIsNotInSession(session.get("userID"))
+        print("Host is not here")
+        redirect = True
     print(dbGroupSessionPeople[0]["displayNames"])
     print(dbGroupSessionPeople[0]["profilePictures"])
     return dict(session=session, 
                 displayNames=displayNames,
-                profilePictures=profilePictures)
+                profilePictures=profilePictures,
+                redirect=redirect)
 
 @action('removePeopleInSession/<groupSessionReferenceNumber>', method=["POST"])
 @action.uses(session)
