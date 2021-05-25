@@ -27,14 +27,14 @@
                         <div class="columns">
                             <figure class="image is-64x64" >
                                 [[if (loggedInPicture == None) or (loggedInPicture == ""):]]
-                                <img class="is-rounded profile_photo" href=[[=URL('user', session.get("userID"))]] 
-                                        src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                <a href=[[=URL('user', session.get("userID"))]]><img class="is-rounded profile_photo" 
+                                        src=[[=URL('static', 'images/icon-crop.png')]] width="50"></a>
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]>
+                                <a href=[[=URL('user', session.get("userID"))]] ><img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]></a>
                                 [[pass]]
                             </figure>
                             <div style="padding-left: 15px; width: 78%; ">
-                                <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL("user", session.get("userID"))]]>
+                                <a  class="friendname"  style="color:[[=text_color]]; text-decoration:none" href=[[=URL("user", session.get("userID"))]]>
                                     <strong>[[=(loggedInName)]]</strong></a>
                                 <div>
                                     <div>
@@ -72,14 +72,14 @@
                             <div class="columns">
                                 <figure class="image is-64x64" >
                                     [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
-                                    <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
-                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                    <a href=[[=URL(profileURL)]]><img class="is-rounded profile_photo"  
+                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50"></a>
                                     [[else:]]
-                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]>
+                                    <a href=[[=URL(profileURL)]]><img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]></a>
                                     [[pass]]
                                 </figure>
                                 <div style="padding-left: 15px; width: 78%; ">
-                                    <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
+                                    <a  class="friendname"  style="color:[[=text_color]]; text-decoration:none" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
                                     <p class="friend_text" style="color:[[=text_color]]; height:45px; ">
                                         [[=(row["active_stat"])]] </p>
