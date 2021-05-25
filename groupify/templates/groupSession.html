@@ -20,12 +20,14 @@
                 <div class="tile is-child notification">
                     <div class="columns">
                         <figure class="image is-64x64" >
-                            <div v-if="displayPictures[i] == null">
+                            <div v-if="displayPictures[i] == 'no profile'">
                                 <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
                                 src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                             </div>
-                            <img class="is-rounded profile_photo"  
+                            <div v-else>
+                                <img class="is-rounded profile_photo"  
                                 :src=displayPictures[i] width="50">
+                            </div>
                         </figure>
                         <div style="padding-left: 15px; width: 78%; ">
                             <span class="friendname">
@@ -112,9 +114,16 @@
         </div>
         <br><br>
         <div v-if="isHost == false" class="level-item">
-            <button @click="synchronizeVisitor()" class="button is-black" key="play">
-                Synchronize
-            </button>
+            <span v-if="isSynchronizing == false">
+                <button @click="synchronizeVisitorHandler()" class="button is-black" key="synchEnabled" style="width:100px;">
+                    Synchronize
+                </button>            
+            </span>
+            <div v-else>
+                <button class="button is-black" key="synchDisabled" style="width:100px;">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                </button>    
+            </div>
             <br><br><br>
         </div>
         <div class="columns is-mobile is-centered">
@@ -152,11 +161,12 @@
                   </div>
               </div>
           </div>
-
   </div>
   <!-- defines the box tha confirms save/shows error -->
   <div id="snackbar">{{message}}</div>
 </div>
+
+
 
 <script>
 function getGroupLink() {
@@ -176,9 +186,13 @@ function getGroupLink() {
     let getAPICallTime = "[[=XML(getAPICallTime)]]";
     let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
+    let shouldSynchronizeVisitor = "[[=XML(shouldSynchronizeVisitor)]]";
     let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
     let getDevice = "[[=XML(getDevice)]]";
     let getPeopleInSession = "[[=XML(getPeopleInSession)]]";
+    let removePeopleInSession = "[[=XML(removePeopleInSession)]]";
+    let hostIsNotInSessionURL = "[[=XML(hostIsNotInSession)]]";
+
 </script>
 <script src="js/groupSession.js"></script>
 [[end]]
