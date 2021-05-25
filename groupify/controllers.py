@@ -623,7 +623,7 @@ def getIDFromUserTable(userID):
 
 # When a user tries to see a profile that is not in our database, return this.
 @action('userNotFound', method='GET')
-@action.uses('user_not_found.html', session)
+@action.uses('userNotFound.html', session)
 def userNotFound(userID):
     # Sets the userNotFound page's colors to the user's chosen theme.
     try:
@@ -649,25 +649,48 @@ def userNotFound(userID):
 @action('nonPremiumUser', method='GET')
 @action.uses('nonpremiumuser.html', session)
 def nonPremiumUser(userID):
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     # Sets the nonPremiumUser page's colors to the user's chosen theme.
     try:
-        user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
-        theme_colors = return_theme(user_from_table.chosen_theme)
+        themeColors = return_theme(loggedInUserEntry.chosen_theme)
     # If the user has no chosen theme, because they have never logged in or deleted
     # their profile, then the theme will be default.
     except:
-        theme_colors = return_theme(0)
+        themeColors = return_theme(0)
     # If the user has never logged in or deleted their profile, the user not found page 
     # will redirect them to the login page.
-    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     if (loggedInUserEntry == []):
         return redirect(URL('index'))
     return dict(session=session, 
                 editable=False, 
                 userID=userID, 
                 url_signer=url_signer, 
-                background_bot=theme_colors[0], 
-                background_top=theme_colors[1])
+                background_bot=themeColors[0], 
+                background_top=themeColors[1])
+
+# When a user tries to see a profile that is not in our database, return this.
+@action('hostIsNotInSession', method='GET')
+@action.uses('HostIsNotInSession.html', session)
+def hostIsNotInSession(userID):
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    # Sets the nonPremiumUser page's colors to the user's chosen theme.
+    try:
+        userEntry = db.dbUser[getIDFromUserTable(session.get("userID"))]
+        themeColors = return_theme(loggedInUserEntry.chosen_theme)
+    # If the user has no chosen theme, because they have never logged in or deleted
+    # their profile, then the theme will be default.
+    except:
+        themeColors = return_theme(0)
+    # If the user has never logged in or deleted their profile, the user not found page 
+    # will redirect them to the login page.
+    if (loggedInUserEntry == []):
+        return redirect(URL('index'))
+    return dict(session=session, 
+                editable=False, 
+                userID=userID, 
+                url_signer=url_signer, 
+                background_bot=themeColors[0], 
+                background_top=themeColors[1])
 
 # Returns whether the user can edit a profile
 @action.uses(session)
@@ -1086,7 +1109,6 @@ def groupSession(userID=None):
         loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
         premiumStatus = loggedInProfileEntry[0]["premiumStatus"]
     except:
-        print("error here")
         return redirect(URL('login'))
 
     #if (premiumStatus != "premium"):
@@ -1118,7 +1140,6 @@ def groupSession(userID=None):
     loggedInProfilePicture = loggedInProfileEntry[0]["profile_pic"]
     # Stating that the user has no profile pic. A no profile icon is given to the user 
     # in groupSession.html
-    print("loggedInProfilePicture = ", loggedInProfilePicture)
     if loggedInProfilePicture == "":
         loggedInProfilePicture = "no profile"
     loggedInUserID = loggedInProfileEntry[0]["userID"]
@@ -1126,18 +1147,16 @@ def groupSession(userID=None):
 
     # If the host doesn't have a group session people table, then create one and add the host user.
     if ((dbGroupSessionPeople == None) or (dbGroupSessionPeople == [])):
-        print ("in if statement")
         # If it is a visitor creating the table, then the host is not on the page and therefore
         # the user should go to a page telling them the host is not online. 
         if (session.get("userID") != userID):
-            return nonPremiumUser(session.get("userID")) #TEMP CHANGE TO SOMETHING ELSE
+            return hostIsNotInSession(session.get("userID"))
         db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName], 
                                     profilePictures=[loggedInProfilePicture],
                                     userIDs=[loggedInUserID], 
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
     else:
-        print ("in else")
         displayNames = dbGroupSessionPeople[0]["displayNames"]
         userIDs = dbGroupSessionPeople[0]["userIDs"]
         profilePictures = dbGroupSessionPeople[0]["profilePictures"]
@@ -1146,7 +1165,7 @@ def groupSession(userID=None):
         # Checking to see if the host is in the session,
         # if not, do not let the visitor in the session.
         if (ownerID not in userIDs) and (loggedInUserID != ownerID):
-            return nonPremiumUser(session.get("userID")) #TEMP CHANGE TO SOMETHING ELSE
+            return hostIsNotInSession(session.get("userID"))
         elif loggedInUserID not in userIDs:
             displayNames.append(loggedInUserDisplayName)
             userIDs.append(loggedInUserID)
@@ -1157,7 +1176,6 @@ def groupSession(userID=None):
                                 == dbGroupSessionEntry[0]["id"])
             dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
                                         userIDs=userIDs)
-        print("displayNames are ", displayNames)
 
     queues = db(db.queue.queueOfWho == userID).select().as_list()
     queueImage=""
@@ -1366,11 +1384,22 @@ def getPeopleInSession(groupSessionReferenceNumber=None):
     print("in getPeopleInSession ")
     dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
                             == groupSessionReferenceNumber).select().as_list()
+    displayNames = dbGroupSessionPeople[0]["displayNames"]
+    userIDs = dbGroupSessionPeople[0]["userIDs"]
+    profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+    print("dbGroupSessionPeople[0][groupSessionPeopleOfWho] = ", dbGroupSessionPeople[0]["groupSessionPeopleOfWho"])
+    ownerOfTableEntry = db(db.dbUser.id == 
+                        dbGroupSessionPeople[0]["groupSessionPeopleOfWho"]).select().as_list()
+    ownerID = ownerOfTableEntry[0]["userID"]
+    # Checking to see if the host is in the session,
+    # if not, do not let the visitor in the session.
+    if (ownerID not in userIDs):
+        return hostIsNotInSession(session.get("userID"))
     print(dbGroupSessionPeople[0]["displayNames"])
     print(dbGroupSessionPeople[0]["profilePictures"])
     return dict(session=session, 
-                displayNames = dbGroupSessionPeople[0]["displayNames"],
-                profilePictures = dbGroupSessionPeople[0]["profilePictures"])
+                displayNames=displayNames,
+                profilePictures=profilePictures)
 
 @action('removePeopleInSession/<groupSessionReferenceNumber>', method=["POST"])
 @action.uses(session)

@@ -20,12 +20,14 @@
                 <div class="tile is-child notification">
                     <div class="columns">
                         <figure class="image is-64x64" >
-                            <div v-if="displayPictures[i] == 'no_profile'">
+                            <div v-if="displayPictures[i] == 'no profile'">
                                 <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
                                 src=[[=URL('static', 'images/icon-crop.png')]] width="50">
                             </div>
-                            <img class="is-rounded profile_photo"  
+                            <div v-else>
+                                <img class="is-rounded profile_photo"  
                                 :src=displayPictures[i] width="50">
+                            </div>
                         </figure>
                         <div style="padding-left: 15px; width: 78%; ">
                             <span class="friendname">
