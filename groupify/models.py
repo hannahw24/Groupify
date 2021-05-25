@@ -25,12 +25,12 @@ db.define_table(
     Field('userID', notnull=True, unique=True),
     Field('display_name'),
     Field('chosen_theme'),
-    #Ash: email may be unnecessary. 
     Field('bio_status'),
     Field('active_stat'),
     Field('profile_pic'),
     Field('chosen_term'),
     Field('artist_term'),
+    Field('premiumStatus'),
 )
 
 db.define_table(
@@ -131,12 +131,6 @@ db.define_table(
     Field('playlistsOfWho', db.dbUser)
 )
 
-db.define_table(
-    'groupSessionPeople',
-    Field('displayNames', 'list:string'),
-    Field('profilePictures', 'list:string'),
-    Field('groupSessionPeopleOfWho', db.dbUser),
-)
 
 db.define_table(
     'groupSession',
@@ -150,9 +144,24 @@ db.define_table(
     Field('curPosition', 'string'),
     Field('trackLength', 'string'),
     Field('isPlaying', 'boolean'),
-    Field('secondsPassedSinceCall', 'string'),
+    Field('timeWhenCallWasMade', 'float'),
     Field('groupSessionOfWho', db.dbUser),
-    Field('groupSessionPeopleReference', db.groupSessionPeople)
+)
+
+db.define_table(
+    'groupSessionPeople',
+    Field('displayNames', 'list:string'),
+    Field('profilePictures', 'list:string'),
+    Field('userIDs', 'list:string'),
+    Field('groupSessionPeopleOfWho', db.dbUser),
+    Field('groupSessionReference', db.groupSession)
+)
+
+db.define_table(
+   'queue',
+   Field('queueListImage', 'list:string'),
+   Field('queueListURL', 'list:string'),
+   Field('queueOfWho'),
 )
 
 #“extra” is not a keyword; it’s a custom attribute now attached to the field object. You can do it with tables too but they must be preceded by an underscore to avoid naming conflicts with fields:
