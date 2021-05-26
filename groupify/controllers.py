@@ -1421,8 +1421,12 @@ def getPeopleInSession(groupSessionPeopleID=None, userID=None):
     if userID in dbGroupSessionPeople[0]["userIDs"]:
         updateIndex = dbGroupSessionPeople[0]["userIDs"].index(userID)
         timeLastActive[updateIndex] = time.time()
-        dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
-        dbGroupSessionPeople.update(timeLastActive=timeLastActive)
+        try:
+            dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
+            dbGroupSessionPeople.update(timeLastActive=timeLastActive)
+            db.commit()
+        except:
+            pass
     return dict(session=session, 
                 displayNames=displayNames,
                 profilePictures=profilePictures,
@@ -1445,26 +1449,22 @@ def removePeopleInSession(groupSessionPeopleID=None, userID=None):
         del displayNames[removalIndex]
         del profilePictures[removalIndex]
         del timeLastActive[removalIndex]
-        dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
-        dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
-                                    userIDs=userIDs, timeLastActive=timeLastActive)
+        try:
+            dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
+            dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
+                                        userIDs=userIDs, timeLastActive=timeLastActive)
+            db.commit()
+        except:
+            return dict(session=session)
     print("after, displayNames are ", displayNames)
     print("after, profilePictures are ", profilePictures)
     return dict(session=session)
     
-def getGroupSessionPeople(groupSessionPeopleID=None):
-    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
-    return dbGroupSessionPeople
-@action.uses(session)
 def checkActivePeopleInGroupSession(groupSessionPeopleID=None):
     monitorTheSessionCreated =  threading.Timer(17, checkActivePeopleInGroupSession, args=[groupSessionPeopleID,])
     monitorTheSessionCreated.start()
-    dbGroupSessionPeople = db.groupSessionPeople[groupSessionPeopleID]
-    print("First is ", dbGroupSessionPeople)
     dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
     print("Second is ", dbGroupSessionPeople)
-    dbGroupSessionPeople = getGroupSessionPeople(groupSessionPeopleID)
-    print("Third is ", dbGroupSessionPeople)
     # If there are no more users in the session: stop checking who is in the session
     if (dbGroupSessionPeople[0]["userIDs"] == []):
         dbGroupSessionPeople[0]["isBeingMonitored"] = False
@@ -1478,10 +1478,31 @@ def checkActivePeopleInGroupSession(groupSessionPeopleID=None):
         timeSinceLastUpdate = currentTime - timeOfLastUpdate
         if (timeSinceLastUpdate > 15):
             print("This user has not been active ", timeSinceLastUpdate)
+            displayNames = dbGroupSessionPeople[0]["displayNames"]
+            profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+            userIDs = dbGroupSessionPeople[0]["userIDs"]
+            timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
+            userID = userIDs[index]
+            print("the userID is ", userID)
+            if userID in dbGroupSessionPeople[0]["userIDs"]:
+                removalIndex = dbGroupSessionPeople[0]["userIDs"].index(userID)
+                del userIDs[removalIndex]
+                del displayNames[removalIndex]
+                del profilePictures[removalIndex]
+                del timeLastActive[removalIndex]
+                print(userIDs, displayNames, profilePictures, timeLastActive)
+                try:
+                    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
+                    dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
+                                                userIDs=userIDs, timeLastActive=timeLastActive)
+                    db.commit()
+                except:
+                    return dict(session=session)
+        else:
+            print("Is fine")
     print ("30 seconds have passed!")
     return 
 
-@action.uses(session)
 def checkActivePeopleInGroupSessionCaller(groupSessionPeopleID=None):
     monitorTheSessionCreated =  threading.Timer(17, checkActivePeopleInGroupSession, args=[groupSessionPeopleID,])
     monitorTheSessionCreated.start()
