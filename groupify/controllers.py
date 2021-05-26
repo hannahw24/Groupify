@@ -25,6 +25,7 @@ from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.url_signer import URLSigner
 from html.parser import HTMLParser
 from datetime import datetime
+import time
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -1143,7 +1144,9 @@ def groupSession(userID=None):
         loggedInProfilePicture = "no profile"
     loggedInUserID = loggedInProfileEntry[0]["userID"]
     loggedInUserDisplayName = loggedInProfileEntry[0]["display_name"]
-
+    
+    timeWhenCallWasMade =  time.time()
+    print("timeWhenCallWasMade = ", timeWhenCallWasMade)
     # If the host doesn't have a group session people table, then create one and add the host user.
     if ((dbGroupSessionPeople == None) or (dbGroupSessionPeople == [])):
         # If it is a visitor creating the table, then the host is not on the page and therefore
@@ -1153,6 +1156,7 @@ def groupSession(userID=None):
         GroupSessionPeopleID = db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName],
                                     profilePictures=[loggedInProfilePicture],
                                     userIDs=[loggedInUserID], 
+                                    timeLastActive=[timeWhenCallWasMade],
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
     else:
@@ -1160,6 +1164,7 @@ def groupSession(userID=None):
         displayNames = dbGroupSessionPeople[0]["displayNames"]
         userIDs = dbGroupSessionPeople[0]["userIDs"]
         profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+        timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
         ownerOfTableEntry = db(db.dbUser.userID == userID).select().as_list()
         ownerID = ownerOfTableEntry[0]["userID"]
         # Checking to see if the host is in the session,
@@ -1170,12 +1175,13 @@ def groupSession(userID=None):
             displayNames.append(loggedInUserDisplayName)
             userIDs.append(loggedInUserID)
             profilePictures.append(loggedInProfilePicture)
+            timeLastActive.append(timeWhenCallWasMade)
             # dbGroupSessionPeople is currently a list, the next line of code converts it
             # back to a database entry.
             dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
                                 == dbGroupSessionEntry[0]["id"])
             dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
-                                        userIDs=userIDs)
+                                        userIDs=userIDs, timeLastActive=timeLastActive)
 
     queues = db(db.queue.queueOfWho == userID).select().as_list()
     queueImage=""
@@ -1402,8 +1408,14 @@ def getPeopleInSession(groupSessionPeopleID=None, userID=None):
     if (ownerID not in userIDs):
         print("Host is not here")
         redirect = True
-    print(dbGroupSessionPeople[0]["displayNames"])
-    print(dbGroupSessionPeople[0]["profilePictures"])
+    timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
+    # Everytime the user asks for the people in the session, they are shown to be active, and
+    # have the time ince they are last active updated.
+    if userID in dbGroupSessionPeople[0]["userIDs"]:
+        updateIndex = dbGroupSessionPeople[0]["userIDs"].index(userID)
+        timeLastActive[updateIndex] = time.time()
+        dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
+        dbGroupSessionPeople.update(timeLastActive=timeLastActive)
     return dict(session=session, 
                 displayNames=displayNames,
                 profilePictures=profilePictures,
@@ -1417,6 +1429,7 @@ def removePeopleInSession(groupSessionPeopleID=None, userID=None):
     displayNames = dbGroupSessionPeople[0]["displayNames"]
     profilePictures = dbGroupSessionPeople[0]["profilePictures"]
     userIDs = dbGroupSessionPeople[0]["userIDs"]
+    timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
     print("before, displayNames are ", displayNames)
     print("before, profilePictures are ", profilePictures)
     if userID in dbGroupSessionPeople[0]["userIDs"]:
@@ -1424,9 +1437,10 @@ def removePeopleInSession(groupSessionPeopleID=None, userID=None):
         del userIDs[removalIndex]
         del displayNames[removalIndex]
         del profilePictures[removalIndex]
+        del timeLastActive[removalIndex]
         dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
         dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
-                                    userIDs=userIDs)
+                                    userIDs=userIDs, timeLastActive=timeLastActive)
     print("after, displayNames are ", displayNames)
     print("after, profilePictures are ", profilePictures)
     return dict(session=session)

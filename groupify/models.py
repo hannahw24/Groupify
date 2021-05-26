@@ -153,6 +153,7 @@ db.define_table(
     Field('displayNames', 'list:string'),
     Field('profilePictures', 'list:string'),
     Field('userIDs', 'list:string'),
+    Field('timeLastActive', 'list:string'),
     Field('groupSessionPeopleOfWho', db.dbUser),
     Field('groupSessionReference', db.groupSession)
 )
