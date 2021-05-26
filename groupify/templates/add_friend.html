@@ -45,21 +45,22 @@ v[[extend 'layout.html']]
                                     <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                                         <div class="columns is-mobile">
                                             <!-- user pfp -->
-                                            <div class="column is-1">
-                                                <figure class="image is-64x64" >
+                                            <div class="column is-2">
+                                                
                                                     [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
-                                                    <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
-                                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                                    <a href="[[=URL(profileURL)]]"><figure class="image is-64x64" ><img class="is-rounded profile_photo" 
+                                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50"></a>
                                                     [[else:]]
-                                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]] style="width:64px;height:64px;">
+                                                    <a href="[[=URL(profileURL)]]"><img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]
+                                                        style="width:64px;height:64px;"></a>
                                                     [[pass]]
                                                 </figure>
                                             </div>
 
                                             <!-- user name -->
-                                            <div class="column is-four-fifths">
+                                            <div class="column is-9">
                                                 <div style="padding-left: 15px; width: 78%; ">
-                                                    <a  class="friendname"  style="color:[[=text_color]]; font-size:x-large;" href=[[=URL(profileURL)]]>
+                                                    <a  class="friendname"  style="color:[[=text_color]]; font-size:x-large;text-decoration:none" href="[[=URL(profileURL)]]">
                                                         <strong>[[=(row["display_name"])]]</strong></a>
                                                 </div>
                                             </div>
