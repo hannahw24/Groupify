@@ -1150,12 +1150,13 @@ def groupSession(userID=None):
         # the user should go to a page telling them the host is not online. 
         if (session.get("userID") != userID):
             return hostIsNotInSession(session.get("userID"))
-        db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName], 
+        GroupSessionPeopleID = db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName],
                                     profilePictures=[loggedInProfilePicture],
                                     userIDs=[loggedInUserID], 
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
     else:
+        GroupSessionPeopleID = dbGroupSessionPeople[0]["id"]
         displayNames = dbGroupSessionPeople[0]["displayNames"]
         userIDs = dbGroupSessionPeople[0]["userIDs"]
         profilePictures = dbGroupSessionPeople[0]["profilePictures"]
@@ -1184,10 +1185,6 @@ def groupSession(userID=None):
         queueURL = queues[0]["queueListURL"]  
 
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
-    profile_pic = ""
-    if (loggedInProfileEntry != None) and (loggedInProfileEntry != []):
-       # Setting the top tracks and profile pic loggedInProfileEntry
-       profile_pic = loggedInProfileEntry[0]["profile_pic"]
     if userID is not None:
         try:
             user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
@@ -1198,7 +1195,6 @@ def groupSession(userID=None):
                     editable=False,
                     background_bot=theme_colors[0],
                     background_top=theme_colors[1], 
-                    profile_pic=profile_pic, 
                     profileURL = profileURL, 
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
@@ -1207,8 +1203,10 @@ def groupSession(userID=None):
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
-                    getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
-                    removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
+                    getPeopleInSession=URL("getPeopleInSession", 
+                                            GroupSessionPeopleID, loggedInUserID),
+                    removePeopleInSession=URL("removePeopleInSession", 
+                                           GroupSessionPeopleID, loggedInUserID),                    
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
                     refreshGroupSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
@@ -1219,7 +1217,6 @@ def groupSession(userID=None):
                     editable=False, 
                     background_bot=None, 
                     background_top=None, 
-                    profile_pic=profile_pic, 
                     profileURL = profileURL, 
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
@@ -1228,8 +1225,10 @@ def groupSession(userID=None):
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
-                    getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
-                    removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
+                    getPeopleInSession=URL("getPeopleInSession", 
+                                            GroupSessionPeopleID, loggedInUserID),
+                    removePeopleInSession=URL("removePeopleInSession", 
+                                            GroupSessionPeopleID, loggedInUserID),
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
                     refreshGroupSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
@@ -1386,16 +1385,14 @@ def synchronizeVisitor(userID=None, deviceID=None):
                 isPlaying=isPlaying)
 
 # Retrieves the names and profile picture links of the people in the group session.
-@action('getPeopleInSession/<groupSessionReferenceNumber>', method=["GET"])
+@action('getPeopleInSession/<groupSessionPeopleID>/<userID>', method=["GET"])
 @action.uses(session)
-def getPeopleInSession(groupSessionReferenceNumber=None):
+def getPeopleInSession(groupSessionPeopleID=None, userID=None):
     print("in getPeopleInSession ")
-    dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
-                            == groupSessionReferenceNumber).select().as_list()
+    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
     displayNames = dbGroupSessionPeople[0]["displayNames"]
     userIDs = dbGroupSessionPeople[0]["userIDs"]
     profilePictures = dbGroupSessionPeople[0]["profilePictures"]
-    print("dbGroupSessionPeople[0][groupSessionPeopleOfWho] = ", dbGroupSessionPeople[0]["groupSessionPeopleOfWho"])
     ownerOfTableEntry = db(db.dbUser.id == 
                         dbGroupSessionPeople[0]["groupSessionPeopleOfWho"]).select().as_list()
     ownerID = ownerOfTableEntry[0]["userID"]
@@ -1412,25 +1409,22 @@ def getPeopleInSession(groupSessionReferenceNumber=None):
                 profilePictures=profilePictures,
                 redirect=redirect)
 
-@action('removePeopleInSession/<groupSessionReferenceNumber>', method=["POST"])
+@action('removePeopleInSession/<groupSessionPeopleID>/<userID>', method=["POST"])
 @action.uses(session)
-def removePeopleInSession(groupSessionReferenceNumber=None):
+def removePeopleInSession(groupSessionPeopleID=None, userID=None):
     print("in removePeopleInSession ")
-    dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
-                            == groupSessionReferenceNumber).select().as_list()
-    loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
+    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
     displayNames = dbGroupSessionPeople[0]["displayNames"]
     profilePictures = dbGroupSessionPeople[0]["profilePictures"]
     userIDs = dbGroupSessionPeople[0]["userIDs"]
     print("before, displayNames are ", displayNames)
     print("before, profilePictures are ", profilePictures)
-    if loggedInProfileEntry[0]["userID"] in dbGroupSessionPeople[0]["userIDs"]:
-        removalIndex = dbGroupSessionPeople[0]["userIDs"].index(loggedInProfileEntry[0]["userID"])
+    if userID in dbGroupSessionPeople[0]["userIDs"]:
+        removalIndex = dbGroupSessionPeople[0]["userIDs"].index(userID)
         del userIDs[removalIndex]
         del displayNames[removalIndex]
         del profilePictures[removalIndex]
-        dbGroupSessionPeople = db(db.groupSessionPeople.groupSessionReference 
-                            == groupSessionReferenceNumber)
+        dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
         dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
                                     userIDs=userIDs)
     print("after, displayNames are ", displayNames)
