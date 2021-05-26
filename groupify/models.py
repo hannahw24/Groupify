@@ -154,6 +154,7 @@ db.define_table(
     Field('profilePictures', 'list:string'),
     Field('userIDs', 'list:string'),
     Field('timeLastActive', 'list:string'),
+    Field('isBeingMonitored', 'boolean'),
     Field('groupSessionPeopleOfWho', db.dbUser),
     Field('groupSessionReference', db.groupSession)
 )

@@ -95,19 +95,20 @@ let init = (app) => {
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
         app.data.currMinutes = Math.floor(app.data.playingTrackPos / 60);
-        app.data.currSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
-        if (app.data.currSeconds < 10) {
-          app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+        varTempCurrSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
+        if (varTempCurrSeconds < 10) {
+          varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
         }
-
+        app.data.currSeconds = varTempCurrSeconds;
         app.data.playingTrackLength = result.data.trackLength;
         app.data.playingTrackLength = parseInt(app.data.playingTrackLength);
         app.data.playingTrackLength = app.data.playingTrackLength/1000;
         app.data.lengthMinutes = Math.floor(app.data.playingTrackLength / 60);
-        app.data.lengthSeconds = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
-        if (app.data.lengthSeconds < 10) {
-          app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
+        varTempLengthSec = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
+        if (varTempLengthSec < 10) {
+          varTempLengthSec = "0" + (varTempLengthSec).toString();
         }
+        app.data.lengthSeconds = varTempLengthSec;
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
         }).then(() => {
         });
@@ -222,18 +223,20 @@ let init = (app) => {
         app.synchronizeVisitor();
       }
 
-      app.data.currSeconds = parseInt(app.data.currSeconds);
+      //currSeconds may be a string if the number is under 10 (a '0' is added)
+      varTempCurrSeconds = parseInt(app.data.currSeconds);
       // increments the position of the song by 1 second.
-      app.data.currSeconds++;
+      varTempCurrSeconds++;
       app.data.playingTrackPos++;
       // Above code might lead to 61 for a flash second
-      if (app.data.currSeconds >= 60) {
+      if (varTempCurrSeconds >= 60) {
         app.data.currMinutes++;
-        app.data.currSeconds -= 60;
+        varTempCurrSeconds -= 60;
       }
-      if (app.data.currSeconds < 10) {
-        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+      if (varTempCurrSeconds < 10) {
+        varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
       }
+      app.data.currSeconds = varTempCurrSeconds;
       app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;      
   };
 

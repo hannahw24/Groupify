@@ -26,6 +26,7 @@ from py4web.utils.url_signer import URLSigner
 from html.parser import HTMLParser
 from datetime import datetime
 import time
+import threading
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -1153,14 +1154,20 @@ def groupSession(userID=None):
         # the user should go to a page telling them the host is not online. 
         if (session.get("userID") != userID):
             return hostIsNotInSession(session.get("userID"))
-        GroupSessionPeopleID = db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName],
+        groupSessionPeopleID = db.groupSessionPeople.insert(displayNames=[loggedInUserDisplayName],
                                     profilePictures=[loggedInProfilePicture],
                                     userIDs=[loggedInUserID], 
                                     timeLastActive=[timeWhenCallWasMade],
+                                    isBeingMonitored=True,
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
+        # after 30 seconds, The session will be checked for  active users.
+        # https://docs.python.org/3/library/sched.html
+        checkActivePeopleInGroupSessionCaller(groupSessionPeopleID)
+        print("Passed this")
+    
     else:
-        GroupSessionPeopleID = dbGroupSessionPeople[0]["id"]
+        groupSessionPeopleID = dbGroupSessionPeople[0]["id"]
         displayNames = dbGroupSessionPeople[0]["displayNames"]
         userIDs = dbGroupSessionPeople[0]["userIDs"]
         profilePictures = dbGroupSessionPeople[0]["profilePictures"]
@@ -1210,9 +1217,9 @@ def groupSession(userID=None):
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", 
-                                            GroupSessionPeopleID, loggedInUserID),
+                                            groupSessionPeopleID, loggedInUserID),
                     removePeopleInSession=URL("removePeopleInSession", 
-                                           GroupSessionPeopleID, loggedInUserID),                    
+                                           groupSessionPeopleID, loggedInUserID),                    
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
                     refreshGroupSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
@@ -1232,9 +1239,9 @@ def groupSession(userID=None):
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
                     pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
                     getPeopleInSession=URL("getPeopleInSession", 
-                                            GroupSessionPeopleID, loggedInUserID),
+                                            groupSessionPeopleID, loggedInUserID),
                     removePeopleInSession=URL("removePeopleInSession", 
-                                            GroupSessionPeopleID, loggedInUserID),
+                                            groupSessionPeopleID, loggedInUserID),
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
                     refreshGroupSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
@@ -1444,6 +1451,40 @@ def removePeopleInSession(groupSessionPeopleID=None, userID=None):
     print("after, displayNames are ", displayNames)
     print("after, profilePictures are ", profilePictures)
     return dict(session=session)
+    
+def getGroupSessionPeople(groupSessionPeopleID=None):
+    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
+    return dbGroupSessionPeople
+@action.uses(session)
+def checkActivePeopleInGroupSession(groupSessionPeopleID=None):
+    monitorTheSessionCreated =  threading.Timer(17, checkActivePeopleInGroupSession, args=[groupSessionPeopleID,])
+    monitorTheSessionCreated.start()
+    dbGroupSessionPeople = db.groupSessionPeople[groupSessionPeopleID]
+    print("First is ", dbGroupSessionPeople)
+    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
+    print("Second is ", dbGroupSessionPeople)
+    dbGroupSessionPeople = getGroupSessionPeople(groupSessionPeopleID)
+    print("Third is ", dbGroupSessionPeople)
+    # If there are no more users in the session: stop checking who is in the session
+    if (dbGroupSessionPeople[0]["userIDs"] == []):
+        dbGroupSessionPeople[0]["isBeingMonitored"] = False
+        monitorTheSessionCreated.cancel()
+        return
+    # Looping through all the users in the group session and seeing if they have not been active.
+    for index in range(len(dbGroupSessionPeople[0]["userIDs"])):
+        print(dbGroupSessionPeople[0]["displayNames"][index], " has time ", dbGroupSessionPeople[0]["timeLastActive"][index])
+        currentTime = time.time()
+        timeOfLastUpdate = float(dbGroupSessionPeople[0]["timeLastActive"][index])
+        timeSinceLastUpdate = currentTime - timeOfLastUpdate
+        if (timeSinceLastUpdate > 15):
+            print("This user has not been active ", timeSinceLastUpdate)
+    print ("30 seconds have passed!")
+    return 
+
+@action.uses(session)
+def checkActivePeopleInGroupSessionCaller(groupSessionPeopleID=None):
+    monitorTheSessionCreated =  threading.Timer(17, checkActivePeopleInGroupSession, args=[groupSessionPeopleID,])
+    monitorTheSessionCreated.start()
 
 #Search element for group session
 @action('group_search/<userID>', method=["GET", "POST"])
