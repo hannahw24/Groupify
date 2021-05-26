@@ -670,27 +670,27 @@ def nonPremiumUser(userID):
 
 # When a user tries to see a profile that is not in our database, return this.
 @action('hostIsNotInSession', method='GET')
-@action.uses('HostIsNotInSession.html', session)
+@action.uses('hostIsNotInSession.html', session)
 def hostIsNotInSession(userID):
-    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     # Sets the nonPremiumUser page's colors to the user's chosen theme.
     try:
-        userEntry = db.dbUser[getIDFromUserTable(session.get("userID"))]
-        themeColors = return_theme(loggedInUserEntry.chosen_theme)
+        user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
+        theme_colors = return_theme(user_from_table.chosen_theme)
     # If the user has no chosen theme, because they have never logged in or deleted
     # their profile, then the theme will be default.
     except:
-        themeColors = return_theme(0)
+        theme_colors = return_theme(0)
     # If the user has never logged in or deleted their profile, the user not found page 
     # will redirect them to the login page.
+    loggedInUserEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
     if (loggedInUserEntry == []):
         return redirect(URL('index'))
-    return dict(session=session, 
+    return dict(session=session,
                 editable=False, 
                 userID=userID, 
                 url_signer=url_signer, 
-                background_bot=themeColors[0], 
-                background_top=themeColors[1])
+                background_bot=theme_colors[0], 
+                background_top=theme_colors[1])
 
 # Returns whether the user can edit a profile
 @action.uses(session)
@@ -1210,7 +1210,7 @@ def groupSession(userID=None):
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
                     removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
-                    hostIsNotInSession=URL("groupSession", userID),
+                    refreshGroupSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
@@ -1231,7 +1231,7 @@ def groupSession(userID=None):
                     getPeopleInSession=URL("getPeopleInSession", dbGroupSessionEntry[0]["id"]),
                     removePeopleInSession=URL("removePeopleInSession", dbGroupSessionEntry[0]["id"]),
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
-                    hostIsNotInSession=URL("groupSession", userID),
+                    refreshGroupSession=URL("groupSession", userID),
                     getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)

@@ -61,7 +61,7 @@ let init = (app) => {
         app.data.displayPictures = result.data.profilePictures;
         console.log(result.data.redirect)
         if (result.data.redirect != false) {
-          window.location = hostIsNotInSessionURL;
+          window.location = refreshGroupSession;
         }
         }).catch(() => {
           console.log("Error getting names and pictures");
@@ -423,6 +423,7 @@ let init = (app) => {
       synchronizeVisitor: app.synchronizeVisitor,
       playOrPause: app.playOrPause,
       synchronizeVisitorHandler: app.synchronizeVisitorHandler,
+      removePeopleInSession: app.removePeopleInSession,
     };
 
     // This creates the Vue instance.
@@ -464,9 +465,9 @@ let init = (app) => {
 
     // When a user leaves the groupSession, their profile will be 
     // removed from the display. 
-    window.addEventListener('beforeunload', function(event) {
+    window.onbeforeunload = function() {
       app.removePeopleInSession();
-    });
+    };
 
 };
 
