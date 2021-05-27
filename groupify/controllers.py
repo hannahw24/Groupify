@@ -421,6 +421,7 @@ def getUserProfile(userID=None):
                 friend_tile=theme_colors[2],
                 tile_color=theme_colors[3],
                 text_color=theme_colors[4],
+	            button_color=theme_colors[5],
 
                 playlistNames=playlistNames,
                 playlistImages=playlistImages,
@@ -458,6 +459,7 @@ def artists_page(userID):
     friend_tile=theme_colors[2],	
     tile_color=theme_colors[3],	
     text_color=theme_colors[4],	
+    button_color=theme_colors[5],	
     user=getUserID(),	
     display_name=display_name)
 
@@ -500,7 +502,8 @@ def playlists_page(userID):
     background_top=theme_colors[1],	
     friend_tile=theme_colors[2],	
     tile_color=theme_colors[3],	
-    text_color=theme_colors[4],	
+    text_color=theme_colors[4],
+    button_color=theme_colors[5],	
     user=getUserID(),	
     display_name=display_name)
 
@@ -1157,13 +1160,6 @@ def groupSession(userID=None):
             dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
                                         userIDs=userIDs, timeLastActive=timeLastActive)
 
-    queues = db(db.queue.queueOfWho == userID).select().as_list()
-    queueImage=""
-    queueURL=""
-    if queues != []:
-        queueImage = queues[0]["queueListImage"]
-        queueURL = queues[0]["queueListURL"]  
-
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
     if userID is not None:
         try:
@@ -1175,6 +1171,7 @@ def groupSession(userID=None):
                     editable=False,
                     background_bot=theme_colors[0],
                     background_top=theme_colors[1], 
+                    button_color=theme_colors[5],
                     profileURL = profileURL, 
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
@@ -1187,14 +1184,13 @@ def groupSession(userID=None):
                     removePeopleInSession=URL("removePeopleInSession", 
                                            groupSessionPeopleID, loggedInUserID),                    
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
-                    refreshGroupSession=URL("groupSession", userID),
-                    queueImage=queueImage,
-                    queueURL=queueURL)
+                    refreshGroupSession=URL("groupSession", userID))
     else:
         return dict(session=session, 
                     editable=False, 
                     background_bot=None, 
-                    background_top=None, 
+                    background_top=None,
+                    button_color=None,
                     profileURL = profileURL, 
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
@@ -1207,9 +1203,7 @@ def groupSession(userID=None):
                     removePeopleInSession=URL("removePeopleInSession", 
                                             groupSessionPeopleID, loggedInUserID),
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
-                    refreshGroupSession=URL("groupSession", userID),
-                    queueImage=queueImage,
-                    queueURL=queueURL)
+                    refreshGroupSession=URL("groupSession", userID))
 
 # Function that hosts run in groupSession
 # Finds what song the host is listening to by making a Spotify API call
@@ -1595,6 +1589,7 @@ def getSettings(userID=None):
                     url_signer=url_signer,
                     background_bot=theme_colors[0],
                     background_top=theme_colors[1],
+                    button_color=theme_colors[5],
                     profilePic=profilePic, 
                     profileURL = profileURL)
     else:
@@ -1604,6 +1599,7 @@ def getSettings(userID=None):
                     url_signer=url_signer,
                     background_bot=None, 
                     background_top=None,
+                    button_color=None,
                     profilePic=profilePic, 
                     profileURL=profileURL)
 
@@ -1647,6 +1643,7 @@ def addFriend():
             friend_tile=theme_colors[2],
             tile_color=theme_colors[3],
             text_color=theme_colors[4],
+            button_color=theme_colors[5],
             allusers = allusers,
             friendsList=friendsList,
             friend_ids=friend_ids,
@@ -1668,6 +1665,7 @@ def addFriend():
                 friend_tile=theme_colors[2],
                 tile_color=theme_colors[3],
                 text_color=theme_colors[4],
+	            button_color=theme_colors[5],
                 allusers = allusers,
                 friendsList=friendsList,
                 friend_ids=friend_ids,
@@ -1684,6 +1682,7 @@ def addFriend():
                 friend_tile=theme_colors[2],
                 tile_color=theme_colors[3],
                 text_color=theme_colors[4],
+	            button_color=theme_colors[5],
                 allusers = allusers,
                 friendsList=friendsList,
                 friend_ids=friend_ids,
@@ -1700,6 +1699,7 @@ def addFriend():
                 friend_tile=theme_colors[2],
                 tile_color=theme_colors[3],
                 text_color=theme_colors[4],
+	            button_color=theme_colors[5],
                 allusers = allusers,
                 friendsList=friendsList,
                 friend_ids=friend_ids,
@@ -1955,35 +1955,36 @@ def update_db_theme(userID=None, theme_id=None):
     redirect(URL('user/'+userID))
     dict(session=session)
 
-# returns the 4 color values for db.user's selected mode
+# returns the 6 color values for db.user's selected mode
 def return_theme(chosen_theme=None):
     # assert chosen_theme is not None
 
     # will return an array of strings representing the color hex 
     # values of each theme in a format reflecting the following 
-    # [background_bot, background_top, friend_tile, tile_color, text_color]
+    # [background_bot, background_top, friend_tile, tile_color, text_color, button_color]
+    # all are hex values, except button, which is a color defined in the Bulma CSS
 
     # countryTheme brown, yellow, soft brown, soft yellow, white
     if chosen_theme == "2": 
-        return ['#420d09', '#f8e473', '#A07E54', '#FFFDD6', '#FFFFFF']
+        return ['#420d09', '#f8e473', '#A07E54', '#FFFDD6', '#FFFFFF', 'is-warning']
     # rapTheme black, red, soft red, metal gray, white
     if chosen_theme == "3": 
-        return ['#191414', '#800000', '#993333', '#919191', '#FFFFFF']
+        return ['#191414', '#800000', '#993333', '#919191', '#FFFFFF', 'is-dark']
     # popTheme pink, blue, pink, white, black
     if chosen_theme == "4": 
-        return ['#ffaff6', '#72d3fe', '#ffaff6', '#FFFFFF', '#221B1B']
+        return ['#ffaff6', '#72d3fe', '#ffaff6', '#FFFFFF', '#221B1B', 'is-link']
     # rnbTheme dark purple, light purple, soft purple, soft gray, white
     if chosen_theme == "5": 
-        return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#FFFFFF']
+        return ['#12006e', '#942ec8', '#8961d8', '#d9dddc', '#FFFFFF', 'is-white']
     # lofiTheme blue, mint, soft gray, soft purple, black
     if chosen_theme == "6": 
-        return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B']
+        return ['#89cfef', '#d0f0c0', '#F5F5F5', '#E5DAFB', '#221B1B', 'is-info']
     # metalTheme black, gray, black, gray, white
     if chosen_theme =="7":
-        return ['#191414', '#B3B3B3', '#191414', '#B3B3B3', "#FFFFFF"]
+        return ['#191414', '#B3B3B3', '#191414', '#B3B3B3', "#FFFFFF", 'is-black']
     # defaultTheme black, green, green, soft gray, black
     else: 
-        return ['#191414', '#4FE383', '#4FE383', '#f0f0f0', '#221B1B']
+        return ['#191414', '#4FE383', '#4FE383', '#f0f0f0', '#221B1B', 'is-primary']
 
 # Taken from the spotipy examples page referenced above.
 @action('sign_out')

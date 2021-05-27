@@ -5,7 +5,7 @@
     <section>
         <div class="addfriend_panel " style="background-color: [[=tile_color]];">
             <!-- get back to profile -->
-            <a class="button is-primary" href="[[=URL(profileURL)]]">
+            <a class="button [[=button_color]]" href="[[=URL(profileURL)]]">
                 <i class="fa fa-backward" aria-hidden="true"></i> &nbsp; Back
             </a>
             <div>
@@ -55,45 +55,54 @@
                 <!-- search results -->
                 <!-- TODO toggle display based off of search results as opposed to automatic updating -->
                 <!-- TODO based off of username or display name -->
-                <div class="add_friend_results">
-                    <ul id="listItems">
-                        <div v-for="(n, i) in artistNames">
-                            <li>
-                                <div class="tile is-parent">
-                                    <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
-                                        <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; font-size:x-large; text-decoration:none; margin-left:15px"><strong>{{artistNames[i]}}</strong></a>
-                                        <strong class="is-pulled-right" style="color:[[=text_color]]; font-size:x-large; margin-right:15px">{{i+1}}</strong>
-                                        <section>
-                                             <div class="columns">
-                                                <div class="column">
-                                                    <!-- Album art image with link to track -->
-                                                    <a :href="artistURLs[i]" target="_blank"><img :src="artistImages[i]" style="height:175px"></a>
-                                                </div>
-                                                <div class="column is-9">
-                                                <!-- Song title with link to track -->
-                                                    <div>
-                                                        <!-- Artist Genres with link to their Spotify page -->
-                                                        <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
-                                                            <span v-if="genres != null">
-                                                                <strong style="font-size:large">Genres</strong>
-                                                                <br>
-                                                                <span v-if="genres[i] != ''">{{genres[i]}}</span>
-                                                            </span>
-                                                        </a>
-                                                        <br>
-                                                        <!-- Artist followers with link to their Spotify page -->
-                                                        <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; text-decoration:none;">
-                                                            <strong v-if="followers[i] != undefined" style="font-size:large">{{followers[i]}} Followers</strong>
-                                                        </a>
+                <div v-if="artistNames.length > 0">
+                    <div class="add_friend_results">
+                        <ul id="listItems">
+                            <div v-for="(n, i) in artistNames">
+                                <li>
+                                    <div class="tile is-parent">
+                                        <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
+                                            <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; font-size:x-large; text-decoration:none; margin-left:15px"><strong>{{artistNames[i]}}</strong></a>
+                                            <strong class="is-pulled-right" style="color:[[=text_color]]; font-size:x-large; margin-right:15px">{{i+1}}</strong>
+                                            <section>
+                                                <div class="columns">
+                                                    <div class="column">
+                                                        <!-- Album art image with link to track -->
+                                                        <a :href="artistURLs[i]" target="_blank"><img :src="artistImages[i]" style="height:175px"></a>
+                                                    </div>
+                                                    <div class="column is-9">
+                                                    <!-- Song title with link to track -->
+                                                        <div>
+                                                            <!-- Artist Genres with link to their Spotify page -->
+                                                            <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                                <span v-if="genres != null">
+                                                                    <strong style="font-size:large">Genres</strong>
+                                                                    <br>
+                                                                    <span v-if="genres[i] != ''">{{genres[i]}}</span>
+                                                                </span>
+                                                            </a>
+                                                            <br>
+                                                            <!-- Artist followers with link to their Spotify page -->
+                                                            <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; text-decoration:none;">
+                                                                <strong v-if="followers[i] != undefined" style="font-size:large">{{followers[i]}} Followers</strong>
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </section>
+                                            </section>
+                                        </div>
                                     </div>
-                                </div>
-                            </li>
+                                </li>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="level">
+                        <div class="level-item">
+                            <strong style="font-size:x-large">No artists for this term.</strong>
                         </div>
-                    </ul>
+                    </div>
                 </div>
             </div>
         </div>

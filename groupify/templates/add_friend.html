@@ -1,13 +1,13 @@
 v[[extend 'layout.html']]
 
-<script src="js/addfriendsearchbar.js"></script>
+<script src="js/addfriend_searchbar.js"></script>
 
 <section>
 
     
     <div class="addfriend_panel " style="background-color: [[=tile_color]];">
         <!-- get back to profile -->
-        <a class="button is-primary" href="[[=URL(userPage)]]">
+        <a class="button [[=button_color]]" href="[[=URL(userPage)]]">
             <i class="fa fa-backward" aria-hidden="true"></i> &nbsp; Back
         </a>
         <div>
@@ -24,10 +24,10 @@ v[[extend 'layout.html']]
                         <i class="fas fa-search"></i>
                     </span>
                     <!-- Calls function when something is entered -->
-                    <form>
-                        <input id="barInput_addfriend" class="input" type="text" name="search" placeholder="Search User">
-                    </form>
-                    <input type="submit" class="button" value="Submit" onclick="addfriendsearchBar()"/>
+                    <input id="barInput" class="input" type="text" name="search" placeholder="Search User" onclick="checkKeyup()">
+                    <section><br></section>
+                    <button class="button [[=button_color]]" onclick="searchBar()">Submit</button>
+                    <section><br></section>
                 </div>
             </div>
 
@@ -35,7 +35,7 @@ v[[extend 'layout.html']]
             <!-- TODO toggle display based off of search results as opposed to automatic updating -->
             <!-- TODO based off of username or display name -->
             <div class="add_friend_results">
-                <ul id="listItems_addfriend">
+                <ul id="listItems">
                     [[for row in allusers:]]
                     [[ profileURL = "user/" + row["userID"] ]]
                         [[if row["userID"] != session.get("userID"):]]
@@ -45,42 +45,43 @@ v[[extend 'layout.html']]
                                     <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                                         <div class="columns is-mobile">
                                             <!-- user pfp -->
-                                            <div class="column is-1">
-                                                <figure class="image is-64x64" >
-                                                    [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
-                                                    <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
-                                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
-                                                    [[else:]]
-                                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]] style="width:64px;height:64px;">
-                                                    [[pass]]
-                                                </figure>
-                                            </div>
+                                            <div class="column is-2">
+                                                
+                                                [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
+                                                <a href="[[=URL(profileURL)]]"><figure class="image is-64x64" ><img class="is-rounded profile_photo" 
+                                                        src=[[=URL('static', 'images/icon-crop.png')]] width="50"></a>
+                                                [[else:]]
+                                                <a href="[[=URL(profileURL)]]"><img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]
+                                                    style="width:64px;height:64px;"></a>
+                                                [[pass]]
+                                            </figure>
+                                        </div>
 
-                                            <!-- user name -->
-                                            <div class="column is-four-fifths">
-                                                <div style="padding-left: 15px; width: 78%; ">
-                                                    <a  class="friendname"  style="color:[[=text_color]]; font-size:x-large;" href=[[=URL(profileURL)]]>
-                                                        <strong>[[=(row["display_name"])]]</strong></a>
-                                                </div>
+                                        <!-- user name -->
+                                        <div class="column is-9">
+                                            <div style="padding-left: 15px; width: 78%; ">
+                                                <a  class="friendname"  style="color:[[=text_color]]; font-size:x-large;text-decoration:none" href="[[=URL(profileURL)]]">
+                                                    <strong>[[=(row["display_name"])]]</strong></a>
                                             </div>
-                                            
-                                            <!-- add friend button -->
-                                            <!-- if already friend, display unfriend button -->
-                                            <!-- if not friend, display add friend button -->
-                                            [[if (row["userID"] in friend_ids): ]]
-                                                <div class="column is-2 is-justify-content-right">
-                                                    <!-- remove friend button  -->
-                                                    <!-- <span><i class="fa fa-user-plus"></i></span> -->
-                                                    <form action="[[=URL('unfollowProfile', row["userID"])]]" method="GET">
-                                                        <div class="field">
-                                                            <input  class="input" type="text" name="userID" value=[[=(row["userID"])]] style="display: none;" />
-                                                            <button type="submit" class="button is-danger" value="Submit"> 
-                                                                <i class="fas fa-user-minus"></i>
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            [[else:]]
+                                        </div>
+                                        
+                                        <!-- add friend button -->
+                                        <!-- if already friend, display unfriend button -->
+                                        <!-- if not friend, display add friend button -->
+                                        [[if (row["userID"] in friend_ids): ]]
+                                            <div class="column is-2 is-justify-content-right">
+                                                <!-- remove friend button  -->
+                                                <!-- <span><i class="fa fa-user-plus"></i></span> -->
+                                                <form action="[[=URL('unfollowProfile', row["userID"])]]" method="GET">
+                                                    <div class="field">
+                                                        <input  class="input" type="text" name="userID" value=[[=(row["userID"])]] style="display: none;" />
+                                                        <button type="submit" class="button is-danger" value="Submit"> 
+                                                            <i class="fas fa-user-minus"></i>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        [[else:]]
                                                 <div class="column is-2 is-justify-content-right">
                                                     <!-- remove friend button  -->
                                                     <!-- <span><i class="fa fa-user-plus"></i></span> -->
