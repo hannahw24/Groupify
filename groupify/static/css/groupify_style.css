@@ -1,6 +1,5 @@
 /* ********************** ACROSS ALL PAGES ********************** */
 /* page padding */
-
 .main {
     margin-top: 160px; /* Same as the width of the sidenav */
 }
@@ -14,12 +13,14 @@
     z-index: 1; /* Stay on top */
 }
 
+/* Heading Style */
 p.labels{
     text-decoration: none;
     font-size: 25px;
     color: #818181;
 }
 
+/* profile photo drop shadow */
 .profile_photo {
     border-radius:50%;
     box-shadow: 7px 7px 15px 1px #55555569;
@@ -56,6 +57,7 @@ body{
     border-bottom-right-radius: 6px;
 }
 
+/* add friend button animation */
 .add_friend_button {
     border-style: solid; 
     border-radius: 7px; 
@@ -110,7 +112,6 @@ body{
     transition: 0.3s;
 }
 
-
 .group_button{
     font-size:xx-large;
     position: fixed;
@@ -119,7 +120,6 @@ body{
 }
 .group_button:hover{ opacity: 0.75;}
 
-
 /* ********************** EDIT ALBUMS PAGE ********************** */
 
 /* Based on: https://www.w3schools.com/howto/howto_css_image_overlay_title.asp */
@@ -127,23 +127,7 @@ body{
 /* Container needed to position the overlay. Adjust the width as needed */
 .selected_box {
     position: relative;
-    
   }
-  
-  /* The overlay effect - lays on top of the container and over the image */
-  /*.overlay {
-    position: absolute;
-    bottom: 5px;
-    background: rgb(0, 0, 0);
-    background: rgba(0, 0, 0, 0.5); /* Black see-through */
-    /*color: #f1f1f1;
-    width: 100%;
-    transition: .5s ease;
-    opacity:0;
-    font-size: 20px;
-    color: white;
-    text-align: center;
-  }*/
   
   .overlay {
     position: absolute;
@@ -162,12 +146,6 @@ body{
     top: -1px;
     left: -1px;
     color: #f1f1f1;
-    /*width: 100%;
-    transition: .5s ease;
-    opacity:0;
-    font-size: 20px;
-    color: white;
-    text-align: justify;*/
   }
   
   /* When you mouse over the container, fade in the overlay title */
@@ -176,8 +154,6 @@ body{
   .selected_box .overlay_button { opacity: 1; }
   
   .selected_box .overlay { opacity: 0; pointer-events: none; }
-  
-  /*.selected_box img { filter: brightness(50%); }*/
   
   /* The snackbar - position it at the bottom and in the middle of the screen */
   #snackbar {

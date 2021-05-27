@@ -34,7 +34,7 @@
                     <div class="column is-2">
                     <li>
                         <div class="tile is-parent">
-                            <div class="tile is-child notification">
+                            <div class="tile is-child notification" >
                                 <center>
                                     <figure class="image is-128x128" >
                                         <div v-if="displayPictures[i] == 'no profile'">
@@ -106,7 +106,19 @@
                 <img :src="playingTrackImage">
             </figure> 
         </div>
-        <br><br>
+        <br>
+        
+        <!-- Current Song playing title -->
+        <strong><p>{{playingTrackName}}</p></strong>
+        <span>{{playingTrackArtist}}</span>
+        <nav class="level">
+            <div v-if="displayError != ''" class="level-item has-text-danger has-text-weight-bold">
+                <span class="is-danger">{{displayError}}</span>
+            </div>
+        </nav>
+        
+        <!-- progress bar -->
+        <progress class="progress" :value="songProgressBar" max="100" style="margin-bottom: 2px;"></progress>
         <!-- progress bar times -->
         <nav class="level" style="margin-bottom: 1px;">
             <!-- Left side -->
@@ -122,8 +134,7 @@
                 </div>
             </div>
         </nav>
-        
-        <progress class="progress" :value="songProgressBar" max="100" style="margin-bottom: 2px;"></progress>
+        <!-- play/pause button -->
         <nav class="level" style="margin-bottom: 1px;">
             <div class="level-item">
                 <div v-if="isPlaying == false" >
@@ -141,20 +152,6 @@
                 </div>
             </div>
         </nav>
-        <nav class="level" style="margin-bottom: 1px;">
-          <!-- Left side -->
-          <div class="level-left" style="width:100%;">
-            <div class="level-item" style="width:100%;justify-content: flex-start;">
-              <strong>{{playingTrackName}} </strong>
-            </div>
-          </div>
-          <br>
-        </nav>
-        <span>{{playingTrackArtist}}</span>
-        <div v-if="displayError != ''" class="level-item has-text-danger has-text-weight-bold">
-            <span class="is-danger">{{displayError}}</span>
-        </div>
-        <br><br>
         <div v-if="isHost == false" class="level-item">
             <span v-if="isSynchronizing == false">
                 <button @click="synchronizeVisitorHandler()" class="button is-black" key="synchEnabled" style="width:100px;">

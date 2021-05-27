@@ -180,8 +180,8 @@
                 <div class="level-item">
                 <div id="editButton">
                         <a href="[[=URL('user', userID, 'edit', signer=url_signer)]]">
-                        <button @click="controlEditButton()" class="button is-link">
-                            Edit Banner
+                        <button @click="controlEditButton()" class="button" style="background-color: [[=friend_tile]];">
+                            <p style="color: [[=text_color]];">Edit Banner</p>
                         </button>
                         </a>
                 </div>
@@ -445,11 +445,11 @@
         </section>
     </div>
 
-    <div class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
-        <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', user)]]">
+    <a class="group_bar panel_spec" style="background-Color:[[=tile_color]]" href="[[=URL('groupSession', user)]]">
+        <span class="group_button" style="color:[[=friend_tile]]">
             <i class="fa fa-forward" aria-hidden="true"></i>
-        </a>    
-    </div>
+        </span>    
+    </a>
 </div>
 </div>
 
