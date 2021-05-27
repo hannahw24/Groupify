@@ -13,11 +13,18 @@
     font-family: Helvetica, Arial;
     font-size: 3vmin;
   }
-  
+
   .hidden {
     display: none;
   }
   
+  /* Queue Panel */
+  .nowPlayingBox {
+    background-color: white;
+    display: block;
+    /* padding: 1.25rem; */
+  }
+
   /** Buttons **/
   .btn {
     background-color: transparent;

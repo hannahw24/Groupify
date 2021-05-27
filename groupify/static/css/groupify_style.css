@@ -56,26 +56,6 @@ body{
     border-bottom-right-radius: 6px;
 }
 
-/* for animated search bar */
-/* input[type=text] {
-    width: 130px;
-    box-sizing: border-box;
-    border-radius: 4px;
-    font-size: 16px;
-    
-    background-image: url('searchicon.png');
-    background-position: 10px 10px; 
-    background-repeat: no-repeat;
-    padding: 12px 20px 12px 40px;
-    -webkit-transition: width 0.4s ease-in-out;
-    transition: width 0.4s ease-in-out;
-  }
-  
-  input[type=text]:focus {
-    width: 100%;
-    background-color: white;
-  } */
-
 .add_friend_button {
     border-style: solid; 
     border-radius: 7px; 
@@ -147,14 +127,27 @@ body{
 /* Container needed to position the overlay. Adjust the width as needed */
 .selected_box {
     position: relative;
+    
   }
   
   /* The overlay effect - lays on top of the container and over the image */
-  .overlay {
+  /*.overlay {
     position: absolute;
     bottom: 5px;
     background: rgb(0, 0, 0);
     background: rgba(0, 0, 0, 0.5); /* Black see-through */
+    /*color: #f1f1f1;
+    width: 100%;
+    transition: .5s ease;
+    opacity:0;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+  }*/
+  
+  .overlay {
+    position: absolute;
+    bottom: 5px;
     color: #f1f1f1;
     width: 100%;
     transition: .5s ease;
@@ -168,14 +161,13 @@ body{
     position: absolute;
     top: -1px;
     left: -1px;
-    background: rgba(0, 0, 0, 0); /* Black see-through */
     color: #f1f1f1;
-    width: 100%;
+    /*width: 100%;
     transition: .5s ease;
     opacity:0;
     font-size: 20px;
     color: white;
-    text-align: justify;
+    text-align: justify;*/
   }
   
   /* When you mouse over the container, fade in the overlay title */
@@ -183,7 +175,9 @@ body{
   
   .selected_box .overlay_button { opacity: 1; }
   
-  .selected_box .overlay { opacity: 1; }
+  .selected_box .overlay { opacity: 0; pointer-events: none; }
+  
+  /*.selected_box img { filter: brightness(50%); }*/
   
   /* The snackbar - position it at the bottom and in the middle of the screen */
   #snackbar {
@@ -432,12 +426,12 @@ p.friend_text{
     width: 70%;
     top: 10%;
     left: 0;
+    padding: 2%;
 }
 
-.group_pfp {
-    margin-left: auto;
-    margin-right: auto;
-    top: 40%;
+.display_friends {
+    height: 70%;
+    width: 100%;
 }
 
 /* ********************** SETTINGS PAGE ********************** */
@@ -492,4 +486,43 @@ p.friend_text{
     overflow-y: scroll;
     height: 700px;
     
+}
+
+/* ********************** OVERFLOW (FOR PLAYLISTS) ********************** */
+
+/* Based on: https://css-tricks.com/line-clampin/ */
+
+/*html {
+  line-height: 1.4rem;
+}*/
+.overflow {
+  position: relative;
+  max-height: 50px;
+  overflow: hidden;
+  word-break: break-word;
+  padding-right: 1rem; /* space for ellipsis */
+}
+.overflow::before {
+  position: absolute;
+  content: "...";
+/*   inset-block-end: 0;
+  inset-inline-end: 0; */
+  bottom: 0;
+  right: 0;
+}
+.overflow::after {
+  content: "";
+  position: absolute;
+/*   inset-inline-end: 0; */
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  /*background: white;*/
+}
+
+.desc_overflow {
+  position: relative;
+  max-height: 50px;
+  overflow: hidden;
+  word-break: break-word;
 }

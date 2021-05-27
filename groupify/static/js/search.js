@@ -1,4 +1,3 @@
-  
 // This will be the object that will contain the Vue attributes
 // and be used to initialize it.
 let app = {};
@@ -11,7 +10,7 @@ let init = (app) => {
     app.data = {
         isEditing: 0,
         bio: "",
-        reorder: false,
+        //reorder: false,
         page: -1, // Index of album being edited, -1 means none selected
         edited: false, // Albums edited or not edited
         pending: false, // Save pending
@@ -69,10 +68,10 @@ let init = (app) => {
         app.vue.page = temp;  
     };
     
-    app.setReorder = (val) => {
+    /*app.setReorder = (val) => {
         app.vue.goto(-1);
         app.vue.reorder = val;
-    }
+    }*/
     
     // Adds an album to the banner
     app.add_album = (cover, url, i) =>{
@@ -133,9 +132,10 @@ let init = (app) => {
     
     // Go to specific page (album index)
     app.goto = (pg) => {
-        if (app.vue.reorder){
+        /*if (app.vue.reorder){
             return;
-        }
+        }*/
+        //updateCursor()
         app.vue.page = pg;
         console.log(app.vue.page);
     };
@@ -170,10 +170,12 @@ let init = (app) => {
         }  
     };
     
-    app.rearrange = (covers, urls) => {
+    app.rearrange = (covers, urls, edit) => {
         app.vue.coverList = covers;
         app.vue.urlList = urls;
-        app.vue.edited = true;
+        if (app.vue.edited === false){
+            app.vue.edited = edit;
+        }
     };
     
     // We form the dictionary of all methods, so we can assign them
@@ -188,8 +190,10 @@ let init = (app) => {
         compare: app.compare,
         barAlert: app.barAlert,
         confirmExit: app.confirmExit,
-        setReorder: app.setReorder,
+        //setReorder: app.setReorder,
         rearrange: app.rearrange,
+        
+        // drag and drop methods (outside app)
         drag: drag,
         drop: drop,
         allowDrop: allowDrop,
@@ -224,41 +228,85 @@ let init = (app) => {
 // putting all the code i
 init(app);
 
-let tempIdx = -1;
+// page and lists editable outside app
 let tempPage = app.data.page;
 let tempCovers = app.data.coverList;
 let tempUrls = app.data.urlList;
-let dest = 0;
+let src = 0; // initial index of album being moved
+let dest = 0; // index album is being moved to
+let allowed = false;
+
+// drag and drop functions partially based on: https://www.w3schools.com/html/html5_draganddrop.asp
+
+/*window.onload = function updateCursor() {
+    if (!allowed) {
+        for(i = 0; i < 12; i++) {
+            document.getElementById(i).style.cursor = "move";
+        }
+    }
+}*/
 
 function allowDrop(ev) {
-    ev.preventDefault();
-    dest = ev.target.id;
+    ev.preventDefault(); // prevent default behavior
+    dest = ev.target.id; // id is the index of the album
+    //console.log("SRC: " + src);
+    
+    // cursor change, work in progress
+    
+    /*if(!allowed && src === -1) {
+        for(i = 0; i < 12; i++) {
+            document.getElementById(i).style.cursor = "no-drop";
+        }
+    }
+    else {
+        document.body.style.cursor = "auto";
+    }*/
 }
 
 function drag(ev) {
+    // save state of albums and page
+    allowed = true;
     tempCovers = app.data.coverList;
     tempUrls = app.data.urlList;
     tempPage = app.data.page;
-    ev.dataTransfer.setData("text", ev.target.id);
-    tempIdx = ev.target.id;
+    console.log("PAGE: " + tempPage);
+    // save index
+    src = ev.target.id;
+    // store data from id
+    //ev.dataTransfer.setData("text", ev.target.id);
 }
 
 function drop(ev) {
-    event.preventDefault();
-    console.log("INDEXES: " + tempIdx + ", " + dest);
-    if (tempIdx > tempPage && dest <= tempPage) {
-        app.goto(tempPage+1);
+    event.preventDefault(); // prevent default behavior
+    console.log("INDEXES: " + src + ", " + dest);
+    if(!allowed) {
+        src = 0;
+        dest = 0;
+        allowed = false;
+        document.body.style.cursor = "auto";
+        return;
     }
-    else if (tempIdx < tempPage && dest >= tempPage) {
-        app.goto(tempPage-1);
+    // update page based on where selected album moves
+    if (src > tempPage && dest <= tempPage) {
+        app.goto(parseInt(tempPage)+1);
     }
-    else if (tempIdx == tempPage) {
+    else if (src < tempPage && dest >= tempPage) {
+        app.goto(parseInt(tempPage)-1);
+    }
+    else if (src == tempPage) {
         app.goto(dest);
     }
-    tempCovers.splice(dest, 0, tempCovers.splice(tempIdx, 1)[0]);
-    tempUrls.splice(dest, 0, tempUrls.splice(tempIdx, 1)[0]);
+    // reorder albums
+    tempCovers.splice(dest, 0, tempCovers.splice(src, 1)[0]);
+    tempUrls.splice(dest, 0, tempUrls.splice(src, 1)[0]);
     console.log(tempCovers);
-    app.rearrange(tempCovers, tempUrls);
+    // send new order to app
+    edit = (src != dest);
+    app.rearrange(tempCovers, tempUrls, edit);
+    allowed = false;
+    src = 0;
+    dest = 0;
+    document.body.style.cursor = "auto";
   //var data = ev.dataTransfer.getData("text");
   //ev.target.appendChild(document.getElementById(data));
 }
