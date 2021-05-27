@@ -1,5 +1,6 @@
 [[extend 'layout.html']]
- 
+
+<!--Pop up to warn user that profile is about to be deleted from our database-->
 <section>
     <div class="modal" id="delete_modal">
         <div class="modal-background" onclick="show_modal()"></div>
@@ -32,7 +33,7 @@
       &nbsp; Back
     </a>
     
-
+        <!--Display profile pic with Profile settings-->
         <figure class="image is-128x128 profile_photo settings_pfp">
             [[if (profile_pic != ""):]]
             <img class="is-rounded" src="[[=(profile_pic)]]">
@@ -52,6 +53,7 @@
    </div>
 </section>
 
+<!--Scripts for pop-up and clipboard text copy-->
 <script>
     function show_modal(){
         console.log("click");
