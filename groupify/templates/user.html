@@ -20,6 +20,7 @@
                 </div>
             </div>
         </div>
+        <!--Profile pic with active status-->
         <ul id="listItems">
             <li>
                 <div class="tile is-parent">
@@ -64,9 +65,11 @@
                     </div>
                 </div>
             </li>
+            <!--Display all friends with their profile pic, display name, and active status-->
             [[for row in friendsList:]]
             [[ profileURL = "user/" + row["userID"] ]]
                 <li>
+                <!--Add friend button-->
                     <div class="tile is-parent">
                         <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                             <div class="columns">
@@ -175,6 +178,7 @@
             </div>
         </div>
         </div>
+        <!--Button to either edit banner, follow friend, or unfollow friend-->
         <section>
             [[if (editable==True):]]
                 <div class="level-item">
@@ -246,10 +250,7 @@
                                     </nav>
                                     [[else:]]
                                     <div >
-                                        <!-- <div v-if="true" class="control is-small">
-                                            <textarea spellcheck="false" class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
-                                            </textarea>
-                                        </div> -->
+                                        <!--On someone else's profile; can't edit their bio-->
                                         <p style="color:#221B1B;"> [[=bio_status]] </p>
                                     </div>
                                     [[pass]]
@@ -258,6 +259,7 @@
                         
                     </article>
                 <div class="tile is-ancestor" >
+                    <!--Top Songs-->
                     <div class="tile is-parent" >
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]"> 
                             <!-- Panel title -->
@@ -313,6 +315,7 @@
                                 </div>
                         </div>
                     </div>
+                    <!--Top Artists-->
                     <div class="tile is-vertical is-parent">
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             <strong>Top Artists</strong>
@@ -376,14 +379,10 @@
                             <a href="[[=URL('artists', userID, signer=url_signer)]]" style="color:#000000"><strong>See All</strong></a>  
                                                       
                         </div>
-                        <!--  
-                        <div class="tile is-child box" style="background-Color:[[=tile_color]]">
-                            Song of the day
-                        </div>
-                         -->
                     </div>
                 </div>
             </div>
+            <!--Public Playlists-->
             <div class="tile is-parent">
                 <article class="tile is-child box" style="background-Color:[[=tile_color]]">
                     <strong>Public Playlists</strong> <br> <br>
@@ -394,7 +393,7 @@
                             <div class="columns">
                                 <div class="column">
                                     <!-- Album art image with link to track -->
-                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]] style="width:64px;height:64px;"></a>
+                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]] style="width:72px;height:64px;"></a>
                                 </div>
                                 <div class="column is-9">
                                     [[if len(playlistNames[i]) > 50:]]
@@ -444,7 +443,7 @@
         </div>
         </section>
     </div>
-
+    <!--Button to go to group session-->
     <div class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
         <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', user)]]">
             <i class="fa fa-forward" aria-hidden="true"></i>

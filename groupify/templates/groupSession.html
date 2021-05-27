@@ -10,11 +10,13 @@
             &nbsp; Back
         </a>
 
+        <!--Share session-->
         <p style="color:#221B1B;" class="labels">Share Your Session</p>
         <input type="text" value="[[=(profileURL)]]" id="sessionLink" readonly style="width: 50%;">
         <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
         <p class="smallgreentext"> Send your friends this link to share your group session!</p>
 
+        <!--Display names in session and profile pic-->
         <div v-for="(n, i) in displayNames.length">
             <div class="tile is-parent" style="width:25%;">
                 <div class="tile is-child notification">
@@ -38,45 +40,43 @@
             </div>
         </div>
 
-        <div>
+        <!--Queue list for when queue is implemented; Add python brackets so for&if works-->
+        <!-- <div>
             <div class="title"><bold>Queue</bold></div>
-            <!-- <div v-for="(n, i) in 10"> -->
-            [[for i in range(0, len(queueImage)):]]
+            for i in range(0, len(queueImage)): 
             <section>
-                <!-- when result is clicked, add album to list at selected index -->
-              
                     <div class="columns">
-                        [[if queueImage[i] != None:]]
+                        if queueImage[i] != None:
                         <div class="column">
-                            <!-- Album art image with link to track -->
-                            <!-- <img width="64" height="64" :src="queueListImage[i]"> -->
-                            <img width="64" height="64" src="[[=(queueImage[i])]]">
+                            Album art image with link to track
+                            <img width="64" height="64" src="=(queueImage[i])"">
                         </div>
-                        [[pass]]
-                        [[if queueURL[i] != None:]]
+                        pass
+                        if queueURL[i] != None:
                         <div class="column is-9">
                             <div>
-                                <!-- Song title with link to track -->
-                                <!-- <span target="_blank" style="color:#000000"><strong>{{queueListURL[i]}}</strong></span> -->
-                                <a href="[[=(queueURL[i])]]">Song Link</a>
+                                Song title with link to track
+                                <a href="=(queueURL[i])">Song Link</a>
                             </div>
                         </div>
                         [[pass]]
                     </div>
                
               </section>
-              [[pass]]
-            <!-- </div> -->
-        </div>
+              pass
+        </div> -->
         
     </div>
     <div class="queue_panel panel_spec" style="background-color: white;"> 
+        <!--Display current song image-->
         <div class="box">
             <figure class="image">
                 <img :src="playingTrackImage">
             </figure> 
         </div>
+        <!--Progress bar for current song-->
         <progress class="progress" :value="songProgressBar" max="100" style="margin-bottom: 2px;"></progress>
+        <!--Play/pause button-->
         <nav class="level" style="margin-bottom: 1px;">
             <div class="level-item">
                 <div v-if="isPlaying == false" >
@@ -94,6 +94,7 @@
                 </div>
             </div>
         </nav>
+        <!--Track song progress with name and timestamp-->
         <nav class="level" style="margin-bottom: 1px;">
           <!-- Left side -->
           <div class="level-left" style="width:80%;">
@@ -113,6 +114,7 @@
             <span class="is-danger">{{displayError}}</span>
         </div>
         <br><br>
+        <!--Synchronize button to sync up with host-->
         <div v-if="isHost == false" class="level-item">
             <span v-if="isSynchronizing == false">
                 <button @click="synchronizeVisitorHandler()" class="button is-black" key="synchEnabled" style="width:100px;">
@@ -126,30 +128,31 @@
             </div>
             <br><br><br>
         </div>
-        <div class="columns is-mobile is-centered">
+        <!--Song search box for queue implementation-->
+        <!-- <div class="columns is-mobile is-centered">
           <div class="column is-11">
-              <!-- user types search here -->
+              user types search here 
               <input id="songSearch" class="input" type="text" v-on:keyup="search_spotify_songs()" placeholder="Find a song">
-              <!-- if there is at least one result -->
+              if there is at least one result 
               <div v-if="totalResults > 0">
-                  <!-- show tile for each result -->
+                  show tile for each result
                   <div class="tile is-child box"> 
                       <div v-for="(t, index) in trackLinks">
                           <section>
-                              <!-- when result is clicked, add album to list at selected index -->
+                              when result is clicked, add album to list at selected index
                               <a @click="add_song(imgList[index], trackLinks[index])">
                                   <div class="columns">
                                       <div class="column">
-                                          <!-- Album art image with link to track -->
+                                          Album art image with link to track
                                           <img width="64" height="64" :src="imgList[index]">
                                       </div>
                                       <div class="column is-9">
                                           <div>
-                                              <!-- Song title with link to track -->
+                                              Song title with link to track
                                               <span target="_blank" style="color:#000000"><strong>{{topTracks[index]}}</strong></span>
                                           </div>
                                           <div>
-                                              <!-- Artist name with link to their Spotify page -->
+                                              Artist name with link to their Spotify page
                                               <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
                                           </div>
                                       </div>
@@ -160,7 +163,7 @@
                       </div>
                   </div>
               </div>
-          </div>
+          </div> -->
   </div>
   <!-- defines the box tha confirms save/shows error -->
   <div id="snackbar">{{message}}</div>
@@ -168,6 +171,7 @@
 
 
 
+<!--Copy link in input box to clipboard-->
 <script>
 function getGroupLink() {
   var link = document.getElementById("sessionLink");
