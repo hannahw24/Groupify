@@ -26,7 +26,6 @@ from py4web.utils.url_signer import URLSigner
 from html.parser import HTMLParser
 from datetime import datetime
 import time
-import json
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -40,7 +39,6 @@ os.environ["SPOTIPY_CLIENT_SECRET"] = "d9ff6b1b8e0d4dd3a421f0c1e4f70e67"
 os.environ["SPOTIPY_REDIRECT_URI"] = "http://127.0.0.1:8000/groupify/callback"
 
 # The cache folder is located in the /py4web folder. 
-# Keep this in mind when we move on from local hosting.
 caches_folder = './.spotify_caches/'
 if not os.path.exists(caches_folder):
     os.makedirs(caches_folder)
@@ -48,7 +46,7 @@ if not os.path.exists(caches_folder):
 def session_cache_path():
     return caches_folder + session.get('uuid')
 
-# Ash: Permissions needed to be accepted by the user at login. There are more but these are the ones
+# Permissions needed to be accepted by the user at login. There are more but these are the ones
 # we use right now, so they are the only ones we ask.
 scopes = "user-library-read user-read-private user-follow-read \
 user-follow-modify user-top-read streaming user-read-email streaming \
@@ -90,7 +88,8 @@ def getIndex(userID=None):
 # shown in the above git repository. It is an example of multi-person login
 # with spotipy.
 # See License of code at https://github.com/plamere/spotipy/blob/master/LICENSE.md 
-# Step 0: Visitor is unknown, give random ID, then make them sign in
+
+# Step 1: Visitor is unknown, give random ID, then make them sign in
 # with Spotify
 @action('login', method='GET')
 @action.uses('index.html', session)
@@ -98,31 +97,29 @@ def userLogin():
     if not session.get('uuid'):
         session['uuid'] = str(uuid.uuid4())
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    # Magic code; takes in our client_id, secret_id, and redirect_uri and
+    # Magic code handled by Spotipy; takes in our client_id, secret_id, and redirect_uri and
     # and once the user accepts the requested permissions it retrieves a token for us.
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope=scopes,
                                                 cache_handler=cache_handler,
                                                 show_dialog=True)
     auth_url = auth_manager.get_authorize_url()
-    # In this case the auth_url is [localhost]/callback
+    # In this case the auth_url is our website url, be that localhost or pythonanywhere.
     return redirect(auth_url)
 
-# Step 1: When you login, Spotify goes back to this
+# Step 2: When you login, Spotify goes back to this
 @action('callback')
 @action.uses(session)
 def getCallback():
-    # Clear the session in case a user has logged out. If we don't do this and a user tries to login with another
-    # account then they will be logged in to their first account no matter what.
+    # Clear the session in case a user has logged out. If we don't do this and a user tries to 
+    # login with another account then they will be logged in to their first account no matter what.
     session.clear()
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope=scopes,
                                                 cache_handler=cache_handler, 
                                                 show_dialog=True)
-    # How to get a parameter from a url.
-    # https://stackoverflow.com/questions/5074803/retrieving-parameters-from-a-url 
     code = request.GET.get('code')
     error = request.GET.get('error')
-    # Ash: If the user cancels their login then this handles the error by taking them back to the login page.
+    # If the user cancels their login then this handles the error by taking them back to the login page.
     if error is not None:
         print(error)
         return redirect(URL('index'))
@@ -130,7 +127,7 @@ def getCallback():
     # Redirect to the function that stores user information in database tables.
     return redirect("getUserInfo")
 
-# Step 2: After callback, the user goes to this function and has their info made/updated
+# Step 3: After callback, the user goes to this function and has their info made/updated
 # Places a User's info in the database and then sends them to their profile.
 @action('getUserInfo')
 @action.uses(db, session)
@@ -143,19 +140,18 @@ def getUserInfo():
 
     # Necessary to make a call to the API.
     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    # url to user, id, images (profile pic), and premium status
+    # current_user() returns information about the user.
     results = spotify.current_user()
-    print (results)
-    display_name = results["display_name"]
-    display_name = display_name.capitalize()
+    displayName = results["display_name"]
+    displayName = displayName.capitalize()
     userID = results["id"]
     premiumStatus = results["product"]
 
     # Sets the profile pic of the user, if no profile pic found on spotify, set it to nothing
     if (len(results["images"]) != 0):
-        profile_pic = results["images"][0]["url"]
+        profilePic = results["images"][0]["url"]
     else:
-        profile_pic = ""
+        profilePic = ""
 
     # Assigns the userID to the session. This is used to verify who can edit
     # profiles. 
@@ -173,24 +169,24 @@ def getUserInfo():
 
     # Not sure if returns as None or an empty list if user is new.
     if (dbUserEntry == None) or dbUserEntry == []:
-        db.dbUser.insert(userID=userID, display_name=display_name, 
-                        profile_pic=profile_pic, premiumStatus=premiumStatus)
+        db.dbUser.insert(userID=userID, display_name=displayName, 
+                        profile_pic=profilePic, premiumStatus=premiumStatus)
         insertedID = getIDFromUserTable(userID)
     # If it is in the database, update its top tracks
     else:
         # Update all info
-        db(db.dbUser.userID == userID).update(display_name=display_name)
-        db(db.dbUser.userID == userID).update(profile_pic=profile_pic)
+        db(db.dbUser.userID == userID).update(display_name=displayName)
+        db(db.dbUser.userID == userID).update(profile_pic=profilePic)
         db(db.dbUser.userID == userID).update(premiumStatus=premiumStatus)
     # Updates the information in friends database so the friends NAV bar is up to date. 
     if (friendsEntries != None) and (friendsEntries != []):
         # If user profile or name has changed, update it.
-        if (friendsEntries[0]["profile_pic"] != profile_pic) or \
-            (friendsEntries[0]["display_name"] != display_name):
+        if (friendsEntries[0]["profile_pic"] != profilePic) or \
+            (friendsEntries[0]["display_name"] != displayName):
             for row in friendsEntries:
                 dbRow = db(db.dbFriends.id == row["id"])
-                dbRow.update(profile_pic=profile_pic)
-                dbRow.update(display_name=display_name)
+                dbRow.update(profile_pic=profilePic)
+                dbRow.update(display_name=displayName)
                 
     # These are function calls that store/update the user's tops songs
     # over three time periods

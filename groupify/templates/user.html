@@ -28,9 +28,9 @@
                             <figure class="image is-64x64" >
                                 [[if (loggedInPicture == None) or (loggedInPicture == ""):]]
                                 <img class="is-rounded profile_photo" href=[[=URL('user', session.get("userID"))]] 
-                                        src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                        src=[[=URL('static', 'images/icon-crop.png')]] style="width:64px;height:64px;">
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]>
+                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]] style="width:64px;height:64px;">
                                 [[pass]]
                             </figure>
                             <div style="padding-left: 15px; width: 78%; ">
@@ -73,15 +73,15 @@
                                 <figure class="image is-64x64" >
                                     [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
                                     <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
-                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                            src=[[=URL('static', 'images/icon-crop.png')]] style="width:64px;height:64px;">
                                     [[else:]]
-                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]>
+                                    <img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]] style="width:64px;height:64px;">
                                     [[pass]]
                                 </figure>
                                 <div style="padding-left: 15px; width: 78%; ">
                                     <a  class="friendname"  style="color:[[=text_color]]" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
-                                    <p class="friend_text" style="color:[[=text_color]]; height:45px; ">
+                                    <p class="friend_text" style="color:[[=text_color]]; height:45px;">
                                         [[=(row["active_stat"])]] </p>
                                 </div>
                             </div>
@@ -213,9 +213,9 @@
                         <div class="tile">
                             <figure class="image is-128x128 index_pfp">
                                 [[if (profile_pic != ""):]]
-                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
+                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]" style="width:128px;height:102px;">
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
+                                <img class="is-rousnded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
                                 [[pass]]
                             </figure>
                                 <!-- <p>Bio and Status</p> -->
@@ -394,7 +394,7 @@
                             <div class="columns">
                                 <div class="column">
                                     <!-- Album art image with link to track -->
-                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]]></a>
+                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]] style="width:64px;height:64px;"></a>
                                 </div>
                                 <div class="column is-9">
                                     [[if len(playlistNames[i]) > 50:]]
