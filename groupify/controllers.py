@@ -26,7 +26,7 @@ from py4web.utils.url_signer import URLSigner
 from html.parser import HTMLParser
 from datetime import datetime
 import time
-import threading
+import json
 ############ Notice, new utilities! ############
 import spotipy
 import spotipy.util as util
@@ -1033,17 +1033,7 @@ def getTopArtistsFunction(term):
     # Returned to the user profile
     return BigList
 
-# Gives the amount of time between API calls. 
-# Hidden in controllers.py so users cannot edit the value in their 
-# javascript files.
-@action('getAPICallTime', method=["GET"])
-@action.uses(session)
-def getAPICallTime():
-    getAPICallTime = 4
-    return dict(getAPICallTime=getAPICallTime)
-
 # Returns the deviceID where the user is running Spotify. 
-@action('getDevice', method=["GET"])
 @action.uses(session)
 def getDevice():
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
@@ -1058,49 +1048,42 @@ def getDevice():
         deviceID = ""
     return dict(deviceID=deviceID)
 
+# Returns if the person who called this function is the host of the groupSession page.
 @action('isGroupSessionHost/<userID>', method=["GET"])
 @action.uses(session)
 def isGroupSessionHost(userID=None):
     isHost = False
     if (session.get("userID") == userID):
         isHost = True
-        print ("This person is the host")
     return dict(isHost=isHost)
 
-@action('pauseOrPlayTrack/<userID>/<deviceID>', method=["GET"])
+# Pauses the song played by the spotify instance given in the deviceID. 
+@action('pauseOrPlayTrack/<deviceID>', method=["GET"])
 @action.uses(session)
-def pauseOrPlayTrack(userID=None, deviceID=None):
+def pauseOrPlayTrack(deviceID=None):
+    # Given by groupSession.js, content decides whether to pause or play.
     isPlaying = request.params.get('content')
-    print("isPlaying = ", isPlaying)
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         return redirect(URL('login'))
     spotify = spotipy.Spotify(auth_manager=auth_manager)
+    # Universal pausing for both hosts and visitors. 
     if (isPlaying == "false"):
         spotify.pause_playback(deviceID)
-    # If host, resume with function that checks what song you are playing.
+    # This else statments is only called by hosts, visitors synchronize when hitting play
+    # rather than resuming a song. 
     # Playing a track is MUCH more expensive than pausing a track
     else:
-        #dbGroupSessionEntry = (db(db.groupSession.userID == userID).select().as_list())
-        #timeWhenCallWasMade=dbGroupSessionEntry[0]["timeWhenCallWasMade"]
-        #trackURI=dbGroupSessionEntry[0]["trackURI"]
-        #trackNumber=dbGroupSessionEntry[0]["trackNumber"]
-        #trackNumber = {"position": trackNumber}
-        #curPosition=dbGroupSessionEntry[0]["curPosition"]
-        #if ((trackURI != "") and (deviceID != "")):
-            #spotify.start_playback(deviceID, trackURI, None, trackNumber, curPosition)
         if (deviceID != ""):
             spotify.start_playback(deviceID)
-        #return getCurrentPlaying(userID)
-    # If visitor, resume with function that checks what song the host is playing.
-    #else:
-        #print("is visitor")
-        #synchronizeVisitor(userID, deviceID)
     return
 
+# Master function of the groupSession page. 
+# Creates/updates the groupSession & groupSessionPeople tables.
+# Returns all the XML data needed by the groupSession.js page to synchronize music.
 @action('groupSession/<userID>')
-@action.uses(db, auth, 'groupSession.html', session)
+@action.uses(db, 'groupSession.html', session)
 def groupSession(userID=None):
     # Makes user log in if they go to a group session link and have not logged in yet
     if (session.get("userID") == None):
@@ -1108,24 +1091,16 @@ def groupSession(userID=None):
     try:
         # Getting the user table entry of the person calling this function. 
         loggedInProfileEntry = db(db.dbUser.userID == session.get("userID")).select().as_list()
-        premiumStatus = loggedInProfileEntry[0]["premiumStatus"]
     except:
         return redirect(URL('login'))
 
-    #if (premiumStatus != "premium"):
-        #return nonPremiumUser(session.get("userID"))
+    # Non premium users will not be allowed inside the groupSession. 
+    premiumStatus = loggedInProfileEntry[0]["premiumStatus"]
+    if (premiumStatus != "premium"):
+        return nonPremiumUser(session.get("userID"))
 
-    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=session_cache_path())
-    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
-    if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return redirect(URL('login'))
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
     # Try to get the deviceID of the instance of Spotify the user is listening on.
-    try:
-        results = spotify.devices()
-        deviceID = results["devices"][0]["id"]
-    except:
-        deviceID = ""
+    deviceID = (getDevice()).get("deviceID")
 
     dbGroupSessionEntry = db(db.groupSession.userID == userID).select().as_list()
     # Creating the table for groupSession if it does not exist
@@ -1161,11 +1136,7 @@ def groupSession(userID=None):
                                     isBeingMonitored=True,
                                     groupSessionPeopleOfWho=loggedInProfileEntry[0]["id"],
                                     groupSessionReference=dbGroupSessionEntry[0]["id"])
-        # after 30 seconds, The session will be checked for  active users.
-        # https://docs.python.org/3/library/sched.html
-        checkActivePeopleInGroupSessionCaller(groupSessionPeopleID)
-        print("Passed this")
-    
+    # If it does have a table, update it's variables.
     else:
         groupSessionPeopleID = dbGroupSessionPeople[0]["id"]
         displayNames = dbGroupSessionPeople[0]["displayNames"]
@@ -1212,17 +1183,15 @@ def groupSession(userID=None):
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
                     search_url = URL('group_search', userID), 
-                    getAPICallTime = URL('getAPICallTime'),
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
-                    pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
+                    pauseOrPlayTrack=URL("pauseOrPlayTrack", deviceID),
                     getPeopleInSession=URL("getPeopleInSession", 
                                             groupSessionPeopleID, loggedInUserID),
                     removePeopleInSession=URL("removePeopleInSession", 
                                            groupSessionPeopleID, loggedInUserID),                    
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
                     refreshGroupSession=URL("groupSession", userID),
-                    getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
     else:
@@ -1234,17 +1203,15 @@ def groupSession(userID=None):
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
                     search_url = URL('group_search', userID), 
-                    getAPICallTime = URL('getAPICallTime'),
                     isGroupSessionHost=URL("isGroupSessionHost", userID), 
                     synchronizeVisitor=URL("synchronizeVisitor", userID, deviceID),
-                    pauseOrPlayTrack=URL("pauseOrPlayTrack", userID, deviceID),
+                    pauseOrPlayTrack=URL("pauseOrPlayTrack", deviceID),
                     getPeopleInSession=URL("getPeopleInSession", 
                                             groupSessionPeopleID, loggedInUserID),
                     removePeopleInSession=URL("removePeopleInSession", 
                                             groupSessionPeopleID, loggedInUserID),
                     shouldSynchronizeVisitor=URL("shouldSynchronizeVisitor", userID),
                     refreshGroupSession=URL("groupSession", userID),
-                    getDevice=URL('getDevice'),
                     queueImage=queueImage,
                     queueURL=queueURL)
 
@@ -1252,7 +1219,7 @@ def groupSession(userID=None):
 # Finds what song the host is listening to by making a Spotify API call
 # Then updates the song information in the host's groupSession table in the database.
 @action('currentPlaying/<userID>', method=["GET"])
-@action.uses(session)
+@action.uses(db, session)
 def getCurrentPlaying(userID=None):
     if (session.get("userID") != userID):
         return
@@ -1398,14 +1365,15 @@ def synchronizeVisitor(userID=None, deviceID=None):
                 isPlaying=isPlaying)
 
 # Retrieves the names and profile picture links of the people in the group session.
+# Also updates the last active time of the user who called it. 
 @action('getPeopleInSession/<groupSessionPeopleID>/<userID>', method=["GET"])
 @action.uses(session)
 def getPeopleInSession(groupSessionPeopleID=None, userID=None):
-    print("in getPeopleInSession ")
     dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
     displayNames = dbGroupSessionPeople[0]["displayNames"]
     userIDs = dbGroupSessionPeople[0]["userIDs"]
     profilePictures = dbGroupSessionPeople[0]["profilePictures"]
+    # Gets the user table of the host.
     ownerOfTableEntry = db(db.dbUser.id == 
                         dbGroupSessionPeople[0]["groupSessionPeopleOfWho"]).select().as_list()
     ownerID = ownerOfTableEntry[0]["userID"]
@@ -1413,7 +1381,6 @@ def getPeopleInSession(groupSessionPeopleID=None, userID=None):
     # if not, do not let the visitor in the session.
     redirect = False
     if (ownerID not in userIDs):
-        print("Host is not here")
         redirect = True
     timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
     # Everytime the user asks for the people in the session, they are shown to be active, and
@@ -1424,25 +1391,28 @@ def getPeopleInSession(groupSessionPeopleID=None, userID=None):
         try:
             dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
             dbGroupSessionPeople.update(timeLastActive=timeLastActive)
-            db.commit()
+        # Warning: database locked can occur if two users the database table at the same time.
+        # The only way to resolve this is to relaunch the application.
         except:
+            print("getPeopleInSession failed to update")
             pass
+    # Checks who is still active in the group session. 
+    checkActivePeopleInGroupSession(groupSessionPeopleID)
     return dict(session=session, 
                 displayNames=displayNames,
                 profilePictures=profilePictures,
                 redirect=redirect)
 
+# This function serves to remove people from the table entry associated with groupSessionPeople
 @action('removePeopleInSession/<groupSessionPeopleID>/<userID>', method=["POST"])
 @action.uses(session)
 def removePeopleInSession(groupSessionPeopleID=None, userID=None):
-    print("in removePeopleInSession ")
     dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
     displayNames = dbGroupSessionPeople[0]["displayNames"]
     profilePictures = dbGroupSessionPeople[0]["profilePictures"]
     userIDs = dbGroupSessionPeople[0]["userIDs"]
     timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
-    print("before, displayNames are ", displayNames)
-    print("before, profilePictures are ", profilePictures)
+    # Deletes every instance of the to-be-deleted user's information from the table. 
     if userID in dbGroupSessionPeople[0]["userIDs"]:
         removalIndex = dbGroupSessionPeople[0]["userIDs"].index(userID)
         del userIDs[removalIndex]
@@ -1453,59 +1423,32 @@ def removePeopleInSession(groupSessionPeopleID=None, userID=None):
             dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
             dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
                                         userIDs=userIDs, timeLastActive=timeLastActive)
-            db.commit()
+        # Warning: database locked can occur if two users the database table at the same time.
+        # The only way to resolve this is to relaunch the application.
         except:
+            print("removePeopleInSession failed to update")
             return dict(session=session)
-    print("after, displayNames are ", displayNames)
-    print("after, profilePictures are ", profilePictures)
     return dict(session=session)
-    
+
+# Parses through each user in the groupSessionPeople Entry and looks at their active times.
+# If their times have occured after a set amount of time, they are removed from the table.
+# Warning: This code is run by everyone in the groupSession. Not only does this have poor 
+# performance implications, it also has potential synchronization issues.
 def checkActivePeopleInGroupSession(groupSessionPeopleID=None):
-    monitorTheSessionCreated =  threading.Timer(17, checkActivePeopleInGroupSession, args=[groupSessionPeopleID,])
-    monitorTheSessionCreated.start()
     dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID).select().as_list()
-    print("Second is ", dbGroupSessionPeople)
     # If there are no more users in the session: stop checking who is in the session
     if (dbGroupSessionPeople[0]["userIDs"] == []):
-        dbGroupSessionPeople[0]["isBeingMonitored"] = False
-        monitorTheSessionCreated.cancel()
         return
     # Looping through all the users in the group session and seeing if they have not been active.
     for index in range(len(dbGroupSessionPeople[0]["userIDs"])):
-        print(dbGroupSessionPeople[0]["displayNames"][index], " has time ", dbGroupSessionPeople[0]["timeLastActive"][index])
+        #print(dbGroupSessionPeople[0]["displayNames"][index], " has time ", dbGroupSessionPeople[0]["timeLastActive"][index])
         currentTime = time.time()
         timeOfLastUpdate = float(dbGroupSessionPeople[0]["timeLastActive"][index])
         timeSinceLastUpdate = currentTime - timeOfLastUpdate
-        if (timeSinceLastUpdate > 15):
-            print("This user has not been active ", timeSinceLastUpdate)
-            displayNames = dbGroupSessionPeople[0]["displayNames"]
-            profilePictures = dbGroupSessionPeople[0]["profilePictures"]
-            userIDs = dbGroupSessionPeople[0]["userIDs"]
-            timeLastActive = dbGroupSessionPeople[0]["timeLastActive"]
-            userID = userIDs[index]
-            print("the userID is ", userID)
-            if userID in dbGroupSessionPeople[0]["userIDs"]:
-                removalIndex = dbGroupSessionPeople[0]["userIDs"].index(userID)
-                del userIDs[removalIndex]
-                del displayNames[removalIndex]
-                del profilePictures[removalIndex]
-                del timeLastActive[removalIndex]
-                print(userIDs, displayNames, profilePictures, timeLastActive)
-                try:
-                    dbGroupSessionPeople = db(db.groupSessionPeople.id == groupSessionPeopleID)
-                    dbGroupSessionPeople.update(displayNames=displayNames, profilePictures=profilePictures,
-                                                userIDs=userIDs, timeLastActive=timeLastActive)
-                    db.commit()
-                except:
-                    return dict(session=session)
-        else:
-            print("Is fine")
-    print ("30 seconds have passed!")
+        if (timeSinceLastUpdate > 30):
+            userID = dbGroupSessionPeople[0]["userIDs"][index]
+            return removePeopleInSession(groupSessionPeopleID, userID)
     return 
-
-def checkActivePeopleInGroupSessionCaller(groupSessionPeopleID=None):
-    monitorTheSessionCreated =  threading.Timer(17, checkActivePeopleInGroupSession, args=[groupSessionPeopleID,])
-    monitorTheSessionCreated.start()
 
 #Search element for group session
 @action('group_search/<userID>', method=["GET", "POST"])
@@ -1643,10 +1586,10 @@ def group_search(userID=None):
 def getSettings(userID=None):
     profileURL = "http://shams.pythonanywhere.com"+(URL("user", userID))
     currentProfileEntry = db(db.dbUser.userID == userID).select().as_list()
-    profile_pic = ""
+    profilePic = ""
     if (currentProfileEntry != None) and (currentProfileEntry != []):
        # Setting the top tracks and profile pic variables
-       profile_pic = currentProfileEntry[0]["profile_pic"]
+       profilePic = currentProfileEntry[0]["profile_pic"]
     if userID is not None:
         user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
         theme_colors = return_theme(user_from_table.chosen_theme)
@@ -1656,7 +1599,7 @@ def getSettings(userID=None):
                     url_signer=url_signer,
                     background_bot=theme_colors[0],
                     background_top=theme_colors[1],
-                    profile_pic=profile_pic, 
+                    profilePic=profilePic, 
                     profileURL = profileURL)
     else:
         return dict(session=session, 
@@ -1665,7 +1608,7 @@ def getSettings(userID=None):
                     url_signer=url_signer,
                     background_bot=None, 
                     background_top=None,
-                    profile_pic=profile_pic, 
+                    profilePic=profilePic, 
                     profileURL=profileURL)
 
 @action('deleteProfile/<userID>', method=['GET'])

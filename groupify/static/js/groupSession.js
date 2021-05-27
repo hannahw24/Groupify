@@ -236,6 +236,11 @@ let init = (app) => {
       if (varTempCurrSeconds < 10) {
         varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
       }
+      // Prevents a song from displaying a time greater than its length. 
+      if (app.data.currMinutes >= app.data.lengthMinutes 
+         && varTempCurrSeconds >= app.data.lengthSeconds) {
+          varTempCurrSeconds = app.data.lengthSeconds;
+         }
       app.data.currSeconds = varTempCurrSeconds;
       app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;      
   };
@@ -278,33 +283,29 @@ let init = (app) => {
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
         app.data.currMinutes = Math.floor(app.data.playingTrackPos / 60);
-        app.data.currSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
-        if (app.data.currSeconds < 10) {
-          app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+        varTempCurrSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
+        if (varTempCurrSeconds < 10) {
+          varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
         }
+        app.data.currSeconds = varTempCurrSeconds;
         app.data.playingTrackLength = result.data.trackLength;
         app.data.playingTrackLength = parseInt(app.data.playingTrackLength);
         app.data.playingTrackLength = app.data.playingTrackLength/1000;
         app.data.lengthMinutes = Math.floor(app.data.playingTrackLength / 60);
-        app.data.lengthSeconds = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
-        if (app.data.lengthSeconds < 10) {
-          app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
-        }
+        varTempLengthSec = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
+        if (varTempLengthSec < 10) {
+          varTempLengthSec = "0" + (varTempLengthSec).toString();
+        } 
+        app.data.lengthSeconds = varTempLengthSec;
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
         }).catch(() => {
-          //This error occurs when the synchronizeVisitor URL has a userID but no deviceID.
+          // This error occurs when the synchronizeVisitor URL has a userID but no deviceID.
           if ((synchronizeVisitor.toString()).slice(-1) == "/") {
-            app.data.displayError = "Spotify Is Not Open"
-            axios.get(getDevice).then((result) => {
-              // adding the deviceID to the axios get URL.
-              console.log("result.data.deviceID ", result.data.deviceID)
-              synchronizeVisitor = synchronizeVisitor + result.data.deviceID;
-            }).then(() => {
-              app.data.preventButtonsFromBeingClicked = false;
-              app.data.isSynchronizing = false;
-              return
-            });
+            app.data.displayError = "Spotify Is/Was Not Open";
+            app.data.preventButtonsFromBeingClicked = false;
+            app.data.isSynchronizing = false;
           }
+          // Misc error catcher that displays no song.
           console.log("error caught in synchronizeVisitor");
           app.data.isPlaying = "";
           app.data.playingTrackName = "None";
@@ -394,15 +395,8 @@ let init = (app) => {
             // the groupSession page. If they later open one, then this will get the deviceID
             // and make the playOrPause call once again. 
             if ((pauseOrPlayTrack.toString()).slice(-1) == "/") {
-              app.data.displayError = "Spotify Is Not Open"
-              axios.get(getDevice).then((result) => {
-                // adding the deviceID to the axios get URL.
-                console.log("result.data.deviceID ", result.data.deviceID)
-                pauseOrPlayTrack = pauseOrPlayTrack + result.data.deviceID;
-              }).then(() => {
-                //app.playOrPause(content);
-                app.data.preventButtonsFromBeingClicked = false;
-              });
+              app.data.displayError = "Spotify Is/Was Not Open";
+              app.data.preventButtonsFromBeingClicked = false;
             }
             // This error occurs when the user has already paused the song in their
             // Spotify window, but then tries to pause on the groupSession page. 
