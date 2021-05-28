@@ -1,3 +1,5 @@
+// Vue app and comments based on given assignments in CSE183
+
 // This will be the object that will contain the Vue attributes
 // and be used to initialize it.
 let app = {};
@@ -10,29 +12,41 @@ let init = (app) => {
     app.data = {
         isEditing: 0,
         bio: "",
-        //reorder: false,
-        page: -1, // Index of album being edited, -1 means none selected
-        edited: false, // Albums edited or not edited
-        pending: false, // Save pending
-        message: "", // Text to show in pop-up
-        coverList: [], // app's list of album covers
-        urlList: [], // app's list of Spotify links
-        server_coverList: [], // server's list of album covers
-        server_urlList: [], // server's list of Spotify links
-        topAlbums: [], // Search result titles
-        topArtists: [], // Search result artists
-        trackLinks: [], // Search result links
-        artistLinks: [], // Search result artist links
-        imgList: [], // Search result album covers
-        totalResults: 0, // Number of results
+        // Index of album being edited, -1 means none selected
+        page: -1,
+        // Albums edited or not edited
+        edited: false,
+        // Save pending
+        pending: false,
+        // Text to show in pop-up
+        message: "",
+        // app's list of album covers
+        coverList: [],
+        // app's list of Spotify links
+        urlList: [],
+        // server's list of album covers
+        server_coverList: [],
+        // server's list of Spotify links
+        server_urlList: [],
+        // Search result titles
+        topAlbums: [],
+        // Search result artists
+        topArtists: [],
+        // Search result links
+        trackLinks: [],
+        // Search result artist links
+        artistLinks: [],
+        // Search result album covers
+        imgList: [],
+        // Number of results
+        totalResults: 0,
     };
     
     // Uses user input as it is types to search Spotify
     app.search_spotify = () => {
-        
-        input = document.getElementById('barInput'); // Get input from searcg bar
+        // Get input from search bar
+        input = document.getElementById('barInput');
         input = input.value;
-        console.log(input);
         // Send to server
         axios.post(search_url, {
             input: input,
@@ -44,21 +58,9 @@ let init = (app) => {
             app.vue.trackLinks = result.data.trackLinks;
             app.vue.artistLinks = result.data.artistLinks;
             app.vue.totalResults = result.data.totalResults;
-            console.log(result);
         }).catch(() => {
             console.log("Caught error");
         });
-    };
-    
-    app.compare = () => {
-        // Check each entry to see if edited
-        // Currently unused
-        let current = JSON.stringify(app.vue.coverList);
-        let original = JSON.stringify(app.vue.server_coverList);
-        if (current == original)
-            app.vue.edited = false;
-        else 
-            app.vue.edited = true;
     };
     
     // Reloads the page, needed to update cover art
@@ -68,11 +70,6 @@ let init = (app) => {
         app.vue.page = temp;  
     };
     
-    /*app.setReorder = (val) => {
-        app.vue.goto(-1);
-        app.vue.reorder = val;
-    }*/
-    
     // Adds an album to the banner
     app.add_album = (cover, url, i) =>{
         // If valid index of an album
@@ -80,8 +77,10 @@ let init = (app) => {
             // Update album data
             app.vue.coverList[i] = cover;
             app.vue.urlList[i] = url;
-            app.refresh_page(); // Update display
-            app.vue.edited = true; // Update edite status
+            // Update display
+            app.refresh_page();
+            // Update edite status
+            app.vue.edited = true;
         }
         else {
             app.barAlert("Select a square for this album!");
@@ -99,8 +98,8 @@ let init = (app) => {
         if (app.vue.urlList[i] != "x")
             app.vue.urlList[i] = "x";
         app.refresh_page();
-        app.vue.edited = true; // Update edited status
-        console.log(app.vue.edited);
+        // Update edited status
+        app.vue.edited = true;
     };
     
     // Save albums to server
@@ -118,8 +117,10 @@ let init = (app) => {
                 app.vue.urlList = result.data.urlList;
                 app.vue.server_coverList = result.data.coverList;
                 app.vue.server_urlList = result.data.urlList;
-                app.vue.pending = false; // End pending
-                app.vue.edited = false; // Update edited, server now matches data
+                // End pending
+                app.vue.pending = false;
+                // Update edited, server now matches data
+                app.vue.edited = false;
                 app.barAlert("Albums Saved!");
             }).catch(() => {
                 // If error, alert user
@@ -132,12 +133,7 @@ let init = (app) => {
     
     // Go to specific page (album index)
     app.goto = (pg) => {
-        /*if (app.vue.reorder){
-            return;
-        }*/
-        //updateCursor()
         app.vue.page = pg;
-        console.log(app.vue.page);
     };
     
     // Take in a message and display with alert
@@ -156,11 +152,14 @@ let init = (app) => {
         setTimeout(function(){ bar.className = bar.className.replace("show", ""); }, 3000);
     };
     
+    // Send message confirming exit when albums are unsaved
     app.confirmExit = () => {
+        // No message if saved
         if (app.vue.edited === false){
             window.location.replace(profileURL);
             return;
         }
+        // Set message and show alert
         var msg = confirm("Your albums are not saved. Are you sure you want to exit?");
         if (msg === true) {
             window.location.replace(profileURL);
@@ -170,6 +169,7 @@ let init = (app) => {
         }  
     };
     
+    // Update albums in app and set edited value
     app.rearrange = (covers, urls, edit) => {
         app.vue.coverList = covers;
         app.vue.urlList = urls;
@@ -187,13 +187,11 @@ let init = (app) => {
         add_album: app.add_album,
         delete_album: app.delete_album,
         save_albums: app.save_albums,
-        compare: app.compare,
         barAlert: app.barAlert,
         confirmExit: app.confirmExit,
-        //setReorder: app.setReorder,
         rearrange: app.rearrange,
         
-        // drag and drop methods (outside app)
+        // Drag and drop methods (outside app)
         drag: drag,
         drop: drop,
         allowDrop: allowDrop,
@@ -208,9 +206,7 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
-        console.log("Begin");
         axios.get(squares_url).then((result) => {
-            console.log(result);
             // Start with all lists as server version
             app.vue.coverList = result.data.coverList;
             app.vue.urlList = result.data.urlList;
@@ -228,62 +224,47 @@ let init = (app) => {
 // putting all the code i
 init(app);
 
-// page and lists editable outside app
+// Page and lists editable outside app
 let tempPage = app.data.page;
 let tempCovers = app.data.coverList;
 let tempUrls = app.data.urlList;
-let src = 0; // initial index of album being moved
-let dest = 0; // index album is being moved to
+// initial index of album being moved
+let src = 0;
+// index album is being moved to
+let dest = 0;
+// if dropping current element is allowed
 let allowed = false;
 
-// drag and drop functions partially based on: https://www.w3schools.com/html/html5_draganddrop.asp
+// Drag and drop functions partially based on: https://www.w3schools.com/html/html5_draganddrop.asp
 
-/*window.onload = function updateCursor() {
-    if (!allowed) {
-        for(i = 0; i < 12; i++) {
-            document.getElementById(i).style.cursor = "move";
-        }
-    }
-}*/
-
+// Hovering over drop area
 function allowDrop(ev) {
-    ev.preventDefault(); // prevent default behavior
-    dest = ev.target.id; // id is the index of the album
-    //console.log("SRC: " + src);
-    
-    // cursor change, work in progress
-    
-    /*if(!allowed && src === -1) {
-        for(i = 0; i < 12; i++) {
-            document.getElementById(i).style.cursor = "no-drop";
-        }
-    }
-    else {
-        document.body.style.cursor = "auto";
-    }*/
+    // prevent default behavior
+    ev.preventDefault();
+    // id is the index of the album
+    dest = ev.target.id;
 }
 
+// Dragging draggable element
 function drag(ev) {
     // save state of albums and page
     allowed = true;
     tempCovers = app.data.coverList;
     tempUrls = app.data.urlList;
     tempPage = app.data.page;
-    console.log("PAGE: " + tempPage);
     // save index
     src = ev.target.id;
-    // store data from id
-    //ev.dataTransfer.setData("text", ev.target.id);
 }
 
+// Execute drop
 function drop(ev) {
-    event.preventDefault(); // prevent default behavior
-    console.log("INDEXES: " + src + ", " + dest);
+    // prevent default behavior
+    event.preventDefault();
+    // if not allowed, reset and exit
     if(!allowed) {
         src = 0;
         dest = 0;
         allowed = false;
-        document.body.style.cursor = "auto";
         return;
     }
     // update page based on where selected album moves
@@ -306,7 +287,4 @@ function drop(ev) {
     allowed = false;
     src = 0;
     dest = 0;
-    document.body.style.cursor = "auto";
-  //var data = ev.dataTransfer.getData("text");
-  //ev.target.appendChild(document.getElementById(data));
 }
