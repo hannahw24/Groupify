@@ -1,3 +1,5 @@
+// Vue app and comments based on given assignments in CSE183
+
 // This will be the object that will contain the Vue attributes
 // and be used to initialize it.
 let app = {};
