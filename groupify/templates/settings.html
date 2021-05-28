@@ -44,11 +44,21 @@
         <br><br><br>
         <h1 class="title is-1" style="text-align: center;">Profile Settings </h1>
 
-        <p style="color:#221B1B;" class="labels">Share My Profile</p>
-        <input type="text" value="[[=(profileURL)]]" id="myInput" readonly style="width: 50%;">
-        <button onclick="myFunction()"><i class="fas fa-clipboard"></i></button>
-        <p class="smallgreentext"> Send your friends this link to share your profile!</p>
+        <div>
+          <p style="color:#221B1B;" class="labels">Share My Profile</p>
+          <input type="text" value="[[=(profileURL)]]" id="myInput" readonly style="width: 50%;">
+          <button onclick="myFunction()"><i class="fas fa-clipboard"></i></button>
+          <p class="smallgreentext"> Send your friends this link to share your profile!</p>
+        </div>
+        
         <br><br>
+
+        <center>
+          <!-- <object data="../static/resources/GroupifyUserManual.pdf" type="application/pdf"> -->
+          <iframe src="../static/resources/GroupifyUserManual.pdf" style="width:100%; height: 700px;"></iframe>
+          <!-- </object> -->
+          </center>
+        <br>
         <a class="button is-danger" id="tog" onclick="show_modal()"> Delete My Profile </a>
    </div>
 </section>
