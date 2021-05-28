@@ -15,38 +15,38 @@
  */
  
 function searchBar() {
-    // Set parameters
-    var input, filter, ul, li, a, i, txtValue;
-    // Searchbar input
-    input = document.getElementById('barInput');
-    // Filter with all uppercase
-    filter = input.value.toUpperCase();
-    // Total list items
-    ul = document.getElementById("listItems");
-    li = ul.getElementsByTagName('li');
-    
-    // Column will not always be defined
-    // Used to hide multiline columns on the playlists page
-    col = ul.getElementsByClassName('column is-4');
+  // Set parameters
+  var input, filter, ul, li, a, i, txtValue;
+  // Searchbar input
+  input = document.getElementById('barInput');
+  // Filter with all uppercase
+  filter = input.value.toUpperCase();
+  // Total list items
+  ul = document.getElementById("listItems");
+  li = ul.getElementsByTagName('li');
+  
+  // Column will not always be defined
+  // Used to hide multiline columns on the playlists page
+  col = ul.getElementsByClassName('column is-4');
 
-    // Hide entries that don't match input
-    for (i = 0; i < li.length; i++) {
-        // Get text value
-        a = li[i].getElementsByTagName("a")[0];
-        txtValue = a.textContent || a.innerText;
-        // Hide if does not match input
-        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            li[i].style.display = "";
-            // Check if col is defined and show
-            if (typeof col[i] != "undefined"){
-                col[i].style.display = "";
-            }
-        } else {
-            li[i].style.display = "none";
-            // Check if col is defined and hide
-            if (typeof col[i] != "undefined"){
-                col[i].style.display = "none";
-            }
-        }
-    }
+  // Hide entries that don't match input
+  for (i = 0; i < li.length; i++) {
+      // Get text value
+      a = li[i].getElementsByTagName("a")[0];
+      txtValue = a.textContent || a.innerText;
+      // Hide if does not match input
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          li[i].style.display = "";
+          // Check if col is defined and show
+          if (typeof col[i] != "undefined"){
+              col[i].style.display = "";
+          }
+      } else {
+          li[i].style.display = "none";
+          // Check if col is defined and hide
+          if (typeof col[i] != "undefined"){
+              col[i].style.display = "none";
+          }
+      }
+  }
 }

@@ -1,5 +1,3 @@
-// Vue app and comments based on given assignments in CSE183
-
 // This will be the object that will contain the Vue attributes
 // and be used to initialize it.
 let app = {};
@@ -61,9 +59,8 @@ let init = (app) => {
       axios.get(getPeopleInSession).then((result) => {
         app.data.displayNames = result.data.displayNames;
         app.data.displayPictures = result.data.profilePictures;
-        console.log(result.data.redirect)
         if (result.data.redirect != false) {
-          window.location = hostIsNotInSessionURL;
+          window.location = refreshGroupSession;
         }
         }).catch(() => {
           console.log("Error getting names and pictures");
@@ -97,113 +94,24 @@ let init = (app) => {
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
         app.data.currMinutes = Math.floor(app.data.playingTrackPos / 60);
-        app.data.currSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
-        if (app.data.currSeconds < 10) {
-          app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+        varTempCurrSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
+        if (varTempCurrSeconds < 10) {
+          varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
         }
-
+        app.data.currSeconds = varTempCurrSeconds;
         app.data.playingTrackLength = result.data.trackLength;
         app.data.playingTrackLength = parseInt(app.data.playingTrackLength);
         app.data.playingTrackLength = app.data.playingTrackLength/1000;
         app.data.lengthMinutes = Math.floor(app.data.playingTrackLength / 60);
-        app.data.lengthSeconds = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
-        if (app.data.lengthSeconds < 10) {
-          app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
+        varTempLengthSec = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
+        if (varTempLengthSec < 10) {
+          varTempLengthSec = "0" + (varTempLengthSec).toString();
         }
+        app.data.lengthSeconds = varTempLengthSec;
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
         }).then(() => {
         });
     }
-
-
-    app.search_spotify_songs = () => {
-      input2 = document.getElementById('songSearch'); // Get input from searcg bar
-      input2 = input2.value;
-      //console.log(input2);
-      // Send to server
-      axios.post(search_url, {
-          input2: input2,
-      }).then((result) => {
-          // Update all search result fields with server result
-          app.vue.topTracks = result.data.topTracks;
-          app.vue.topArtists = result.data.topArtists;
-          app.vue.imgList = result.data.imgList;
-          app.vue.trackLinks = result.data.trackLinks;
-          app.vue.artistLinks = result.data.artistLinks;
-          app.vue.totalResults = result.data.totalResults;
-          //console.log(result2);
-      }).catch(() => {
-          console.log("Caught error");
-      });
-  };
-
-    // Adds an album to the banner
-    app.add_song = (cover, url) =>{
-      let i=0;
-      for(i = 0; i<10; i++){
-        if(app.vue.queueListImage[i] == null){
-          app.vue.queueListImage[i] = cover;
-          app.vue.queueListURL[i] = url;
-          app.refresh_page(); // Update display
-          app.barAlert("Added to list!");
-          break;
-        }
-        app.refresh_page(); // Update display
-      }
-      if(i>=10){
-        app.barAlert("Only 10 songs queued at once!");
-      }
-      
-      axios.post(search_url, {
-        queueListImage: app.vue.queueListImage,
-        queueListURL: app.vue.queueListURL,
-      }).catch(() => {
-        console.log("Caught error");
-      });
-
-      //In controller: add if post line which then adds to database
-    };
-
-
-    // Take in a message and display with alert
-   // Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp
-    app.barAlert = (msg) => {
-    // Update message to be displayed
-      app.vue.message = msg;
-    
-      // Get the snackbar DIV
-      var bar = document.getElementById("snackbar");
-
-      //clear the search input and all the resulting searches
-      document.getElementById("songSearch").value = null;
-      axios.post(search_url, {
-        input2: input2,
-      }).then((result) => {
-          // Update all search result fields with null values so nothing pops up
-          app.vue.topTracks = null;
-          app.vue.topArtists = null;
-          app.vue.imgList = null;
-          app.vue.trackLinks = null;
-          app.vue.artistLinks = null;
-          app.vue.totalResults = null;
-          //console.log(result2);
-      }).catch(() => {
-          console.log("Caught error");
-      });
-
-      // Add the "show" class to DIV
-      bar.className = "show";
-
-      // After 3 seconds, remove the show class from DIV
-      setTimeout(function(){ bar.className = bar.className.replace("show", ""); }, 3000);
-    };
-
-    app.refresh_page = () => {
-      let temp = app.vue.page;
-      app.vue.page = -1;
-      app.vue.page = temp; 
-    };
- 
 
     // Function that updates the user's position in a song outside of backend calls. 
     app.updateSongTimeEachSecond = () =>{
@@ -224,18 +132,25 @@ let init = (app) => {
         app.synchronizeVisitor();
       }
 
-      app.data.currSeconds = parseInt(app.data.currSeconds);
+      //currSeconds may be a string if the number is under 10 (a '0' is added)
+      varTempCurrSeconds = parseInt(app.data.currSeconds);
       // increments the position of the song by 1 second.
-      app.data.currSeconds++;
+      varTempCurrSeconds++;
       app.data.playingTrackPos++;
       // Above code might lead to 61 for a flash second
-      if (app.data.currSeconds >= 60) {
+      if (varTempCurrSeconds >= 60) {
         app.data.currMinutes++;
-        app.data.currSeconds -= 60;
+        varTempCurrSeconds -= 60;
       }
-      if (app.data.currSeconds < 10) {
-        app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+      if (varTempCurrSeconds < 10) {
+        varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
       }
+      // Prevents a song from displaying a time greater than its length. 
+      if (app.data.currMinutes >= app.data.lengthMinutes 
+         && varTempCurrSeconds >= app.data.lengthSeconds) {
+          varTempCurrSeconds = app.data.lengthSeconds;
+         }
+      app.data.currSeconds = varTempCurrSeconds;
       app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;      
   };
 
@@ -277,33 +192,29 @@ let init = (app) => {
         app.data.playingTrackPos = parseInt(app.data.playingTrackPos);
         app.data.playingTrackPos = app.data.playingTrackPos/1000;
         app.data.currMinutes = Math.floor(app.data.playingTrackPos / 60);
-        app.data.currSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
-        if (app.data.currSeconds < 10) {
-          app.data.currSeconds = "0" + (app.data.currSeconds).toString();
+        varTempCurrSeconds = Math.floor(app.data.playingTrackPos - app.data.currMinutes * 60);
+        if (varTempCurrSeconds < 10) {
+          varTempCurrSeconds = "0" + (varTempCurrSeconds).toString();
         }
+        app.data.currSeconds = varTempCurrSeconds;
         app.data.playingTrackLength = result.data.trackLength;
         app.data.playingTrackLength = parseInt(app.data.playingTrackLength);
         app.data.playingTrackLength = app.data.playingTrackLength/1000;
         app.data.lengthMinutes = Math.floor(app.data.playingTrackLength / 60);
-        app.data.lengthSeconds = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
-        if (app.data.lengthSeconds < 10) {
-          app.data.lengthSeconds = "0" + (app.data.lengthSeconds).toString();
-        }
+        varTempLengthSec = Math.floor(app.data.playingTrackLength - app.data.lengthMinutes * 60);
+        if (varTempLengthSec < 10) {
+          varTempLengthSec = "0" + (varTempLengthSec).toString();
+        } 
+        app.data.lengthSeconds = varTempLengthSec;
         app.data.songProgressBar = app.data.playingTrackPos/app.data.playingTrackLength * 100;
         }).catch(() => {
-          //This error occurs when the synchronizeVisitor URL has a userID but no deviceID.
+          // This error occurs when the synchronizeVisitor URL has a userID but no deviceID.
           if ((synchronizeVisitor.toString()).slice(-1) == "/") {
-            app.data.displayError = "Spotify Is Not Open"
-            axios.get(getDevice).then((result) => {
-              // adding the deviceID to the axios get URL.
-              console.log("result.data.deviceID ", result.data.deviceID)
-              synchronizeVisitor = synchronizeVisitor + result.data.deviceID;
-            }).then(() => {
-              app.data.preventButtonsFromBeingClicked = false;
-              app.data.isSynchronizing = false;
-              return
-            });
+            app.data.displayError = "Spotify Is/Was Not Open";
+            app.data.preventButtonsFromBeingClicked = false;
+            app.data.isSynchronizing = false;
           }
+          // Misc error catcher that displays no song.
           console.log("error caught in synchronizeVisitor");
           app.data.isPlaying = "";
           app.data.playingTrackName = "None";
@@ -393,15 +304,8 @@ let init = (app) => {
             // the groupSession page. If they later open one, then this will get the deviceID
             // and make the playOrPause call once again. 
             if ((pauseOrPlayTrack.toString()).slice(-1) == "/") {
-              app.data.displayError = "Spotify Is Not Open"
-              axios.get(getDevice).then((result) => {
-                // adding the deviceID to the axios get URL.
-                console.log("result.data.deviceID ", result.data.deviceID)
-                pauseOrPlayTrack = pauseOrPlayTrack + result.data.deviceID;
-              }).then(() => {
-                //app.playOrPause(content);
-                app.data.preventButtonsFromBeingClicked = false;
-              });
+              app.data.displayError = "Spotify Is/Was Not Open";
+              app.data.preventButtonsFromBeingClicked = false;
             }
             // This error occurs when the user has already paused the song in their
             // Spotify window, but then tries to pause on the groupSession page. 
@@ -419,12 +323,11 @@ let init = (app) => {
     // to the Vue app in a single blow.
     app.methods = {
       getPlayingTrack: app.getPlayingTrack,
-      search_spotify_songs: app.search_spotify_songs,
-      add_song: app.add_song,
       increaseTimeSinceCall: app.increaseTimeSinceCall,
       synchronizeVisitor: app.synchronizeVisitor,
       playOrPause: app.playOrPause,
       synchronizeVisitorHandler: app.synchronizeVisitorHandler,
+      removePeopleInSession: app.removePeopleInSession,
     };
 
     // This creates the Vue instance.
@@ -466,9 +369,9 @@ let init = (app) => {
 
     // When a user leaves the groupSession, their profile will be 
     // removed from the display. 
-    window.addEventListener('beforeunload', function(event) {
+    window.onbeforeunload = function() {
       app.removePeopleInSession();
-    });
+    };
 
 };
 

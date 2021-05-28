@@ -20,6 +20,7 @@
                 </div>
             </div>
         </div>
+        <!--Profile pic with active status-->
         <ul id="listItems">
             <li>
                 <div class="tile is-parent">
@@ -28,9 +29,10 @@
                             <figure class="image is-64x64" >
                                 [[if (loggedInPicture == None) or (loggedInPicture == ""):]]
                                 <a href=[[=URL('user', session.get("userID"))]]><img class="is-rounded profile_photo" 
-                                        src=[[=URL('static', 'images/icon-crop.png')]] width="50"></a>
+                                    src=[[=URL('static', 'images/icon-crop.png')]] style="width:64px;height:64px;"></a>
                                 [[else:]]
-                                <a href=[[=URL('user', session.get("userID"))]] ><img class="is-rounded profile_photo" src=[[=(loggedInPicture)]]></a>
+                                <a href=[[=URL('user', session.get("userID"))]] >
+                                <img class="is-rounded profile_photo" src=[[=(loggedInPicture)]] style="width:64px;height:64px;"></a>
                                 [[pass]]
                             </figure>
                             <div style="padding-left: 15px; width: 78%; ">
@@ -64,24 +66,27 @@
                     </div>
                 </div>
             </li>
+            <!--Display all friends with their profile pic, display name, and active status-->
             [[for row in friendsList:]]
             [[ profileURL = "user/" + row["userID"] ]]
                 <li>
+                <!--Add friend button-->
                     <div class="tile is-parent">
                         <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
                             <div class="columns">
                                 <figure class="image is-64x64" >
                                     [[if (row["profile_pic"] == "") or (row["profile_pic"] == None):]]
                                     <a href=[[=URL(profileURL)]]><img class="is-rounded profile_photo"  
-                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50"></a>
+                                        src=[[=URL('static', 'images/icon-crop.png')]] style="width:64px;height:64px;"></a>
                                     [[else:]]
-                                    <a href=[[=URL(profileURL)]]><img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]></a>
+                                    <a href=[[=URL(profileURL)]]><img class="is-rounded profile_photo" src=[[=(row["profile_pic"])]]
+                                        style="width:64px;height:64px;"></a>
                                     [[pass]]
                                 </figure>
                                 <div style="padding-left: 15px; width: 78%; ">
                                     <a  class="friendname"  style="color:[[=text_color]]; text-decoration:none" href=[[=URL(profileURL)]]>
                                         <strong>[[=(row["display_name"])]]</strong></a>
-                                    <p class="friend_text" style="color:[[=text_color]]; height:45px; ">
+                                    <p class="friend_text" style="color:[[=text_color]]; height:45px;">
                                         [[=(row["active_stat"])]] </p>
                                 </div>
                             </div>
@@ -175,6 +180,7 @@
             </div>
         </div>
         </div>
+        <!--Button to either edit banner, follow friend, or unfollow friend-->
         <section>
             [[if (editable==True):]]
                 <div class="level-item">
@@ -213,9 +219,9 @@
                         <div class="tile">
                             <figure class="image is-128x128 index_pfp">
                                 [[if (profile_pic != ""):]]
-                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]">
+                                <img class="is-rounded profile_photo" src="[[=(profile_pic)]]" style="width:128px;height:102px;">
                                 [[else:]]
-                                <img class="is-rounded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
+                                <img class="is-rousnded profile_photo" src="https://bulma.io/images/placeholders/128x128.png">
                                 [[pass]]
                             </figure>
                                 <!-- <p>Bio and Status</p> -->
@@ -246,10 +252,7 @@
                                     </nav>
                                     [[else:]]
                                     <div >
-                                        <!-- <div v-if="true" class="control is-small">
-                                            <textarea spellcheck="false" class="textarea" name="bio&stat" id="bio&stat" v-model="bio" readonly>
-                                            </textarea>
-                                        </div> -->
+                                        <!--On someone else's profile; can't edit their bio-->
                                         <p style="color:#221B1B;"> [[=bio_status]] </p>
                                     </div>
                                     [[pass]]
@@ -258,6 +261,7 @@
                         
                     </article>
                 <div class="tile is-ancestor" >
+                    <!--Top Songs-->
                     <div class="tile is-parent" >
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]"> 
                             <!-- Panel title -->
@@ -313,6 +317,7 @@
                                 </div>
                         </div>
                     </div>
+                    <!--Top Artists-->
                     <div class="tile is-vertical is-parent">
                         <div class="tile is-child box" style="background-Color:[[=tile_color]]">
                             <strong>Top Artists</strong>
@@ -376,14 +381,10 @@
                             <a href="[[=URL('artists', userID, signer=url_signer)]]" style="color:#000000"><strong>See All</strong></a>  
                                                       
                         </div>
-                        <!--  
-                        <div class="tile is-child box" style="background-Color:[[=tile_color]]">
-                            Song of the day
-                        </div>
-                         -->
                     </div>
                 </div>
             </div>
+            <!--Public Playlists-->
             <div class="tile is-parent">
                 <article class="tile is-child box" style="background-Color:[[=tile_color]]">
                     <strong>Public Playlists</strong> <br> <br>
@@ -394,33 +395,33 @@
                             <div class="columns">
                                 <div class="column">
                                     <!-- Album art image with link to track -->
-                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]]></a>
+                                    <a href=[[=(playlistURLs[i])]] target="_blank"><img src=[[=(playlistImages[i])]] style="width:64px"></a>
                                 </div>
                                 <div class="column is-9">
                                     [[if len(playlistNames[i]) > 50:]]
                                     <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000">
-                                    <div class="overflow">
-                                    <!-- Playlist title with link to track -->
-                                    <strong>[[=(playlistNames[i])]]</strong>
-                                    </div>
+                                        <div class="overflow">
+                                            <!-- Playlist title with link to track -->
+                                            <strong>[[=(playlistNames[i])]]</strong>
+                                        </div>
                                     </a>
                                     [[else:]]
                                     <div>
-                                    <!-- Playlist title with link to track -->
-                                    <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"><strong>[[=(playlistNames[i])]]</strong></a>
+                                        <!-- Playlist title with link to track -->
+                                        <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"><strong>[[=(playlistNames[i])]]</strong></a>
                                     </div>
                                     [[pass]]
                                     <div>
                                         <!-- Playlist description with link to their Spotify page -->
                                         [[if len(playlistDescriptions[i]) > 50:]]
                                         <div class="desc_overflow">
-                                        <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"> 
-                                            [[if playlistDescriptions[i] != "[]":]]
-                                                <p class="playlist_text">[[=(playlistDescriptions[i])]]</p>
-                                            [[else:]]
-                                                <br>
-                                            [[pass]]
-                                        </a>
+                                            <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"> 
+                                                [[if playlistDescriptions[i] != "[]":]]
+                                                    <p class="playlist_text">[[=(playlistDescriptions[i])]]</p>
+                                                [[else:]]
+                                                    <br>
+                                                [[pass]]
+                                            </a>
                                         </div>
                                         [[else:]]
                                         <a href=[[=(playlistURLs[i])]] target="_blank" style="color:#000000"> 
@@ -444,7 +445,7 @@
         </div>
         </section>
     </div>
-
+    <!--Button to go to group session-->
     <div class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
         <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', user)]]">
             <i class="fa fa-forward" aria-hidden="true"></i>

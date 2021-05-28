@@ -17,6 +17,7 @@ def my_task():
     try:
         # this task will be executed in its own thread, connect to db
         db._adapter.reconnect()
+        print("In task")
         # do something here
         db.commit()
     except:
