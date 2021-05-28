@@ -1,6 +1,5 @@
 /* ********************** ACROSS ALL PAGES ********************** */
 /* page padding */
-
 .main {
     margin-top: 160px; /* Same as the width of the sidenav */
 }
@@ -14,21 +13,24 @@
     z-index: 1; /* Stay on top */
 }
 
+/* Heading Style */
 p.labels{
     text-decoration: none;
     font-size: 25px;
     color: #818181;
 }
 
+/* profile photo drop shadow */
 .profile_photo {
     border-radius:50%;
     box-shadow: 7px 7px 15px 1px #55555569;
 }
 
 
-/* ********************** HOME PAGE ********************** */
+/* ********************** LOGIN PAGE ********************** */
 
 body{
+    /* for login page gradient */
     background-image: linear-gradient(#4FE383,#191414);
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -46,208 +48,8 @@ body{
             text-size-adjust: 100%;  
 }
 
-/* home page friend left panel  */
-.friend_bar {
-    height: 85%; 
-    width: 25%; 
-    top: 10%; 
-    left: 0;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-/* for animated search bar */
-/* input[type=text] {
-    width: 130px;
-    box-sizing: border-box;
-    border-radius: 4px;
-    font-size: 16px;
-    
-    background-image: url('searchicon.png');
-    background-position: 10px 10px; 
-    background-repeat: no-repeat;
-    padding: 12px 20px 12px 40px;
-    -webkit-transition: width 0.4s ease-in-out;
-    transition: width 0.4s ease-in-out;
-  }
-  
-  input[type=text]:focus {
-    width: 100%;
-    background-color: white;
-  } */
-
-.add_friend_button {
-    border-style: solid; 
-    border-radius: 7px; 
-    opacity: 1; 
-    text-align: center;
-    font-size: xx-large;
-}
-.add_friend_button span {
-    cursor: pointer;
-    display: inline-block;
-    position: relative;
-    transition: 0.3s;
-}
-.add_friend_button span:after {
-    content: 'Add Friend'; /* 'f0fe'add friend icon */
-    font-size: x-large;
-    /* font-style: italic; */
-    font-weight: bold;
-    padding-top: 5px;
-    position: absolute;
-    opacity: 0;
-    right: -20px;
-    /* transition: 0.5; */
-}
-.add_friend_button:hover span {
-    padding-right: 140px;
-}
-.add_friend_button:hover span:after {
-    transition: 1s;
-    opacity: 1;
-    right: 0;
-}
-
-/* home page right panel group bar */
-.group_bar {
-    height: 85%;
-    width: 5%; 
-    top: 10%; 
-    right: 0;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    transition: 0.3s; 
-}
-
-.group_bar:hover{
-    height: 86%;	
-    width: 6%; 
-    top: 9.75%; 
-    right: 0;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    transition: 0.3s;
-}
-
-
-.group_button{
-    font-size:xx-large;
-    position: fixed;
-    top: 50%;
-    opacity: 1;
-}
-.group_button:hover{ opacity: 0.75;}
-
-
-/* ********************** EDIT ALBUMS PAGE ********************** */
-
-/* Based on: https://www.w3schools.com/howto/howto_css_image_overlay_title.asp */
-
-/* Container needed to position the overlay. Adjust the width as needed */
-.selected_box {
-    position: relative;
-    
-  }
-  
-  /* The overlay effect - lays on top of the container and over the image */
-  /*.overlay {
-    position: absolute;
-    bottom: 5px;
-    background: rgb(0, 0, 0);
-    background: rgba(0, 0, 0, 0.5); /* Black see-through */
-    /*color: #f1f1f1;
-    width: 100%;
-    transition: .5s ease;
-    opacity:0;
-    font-size: 20px;
-    color: white;
-    text-align: center;
-  }*/
-  
-  .overlay {
-    position: absolute;
-    bottom: 5px;
-    color: #f1f1f1;
-    width: 100%;
-    transition: .5s ease;
-    opacity:0;
-    font-size: 20px;
-    color: white;
-    text-align: center;
-  }
-  
-  .overlay_button {
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    color: #f1f1f1;
-    /*width: 100%;
-    transition: .5s ease;
-    opacity:0;
-    font-size: 20px;
-    color: white;
-    text-align: justify;*/
-  }
-  
-  /* When you mouse over the container, fade in the overlay title */
-  .edit_box:hover { opacity: 0.75; }
-  
-  .selected_box .overlay_button { opacity: 1; }
-  
-  .selected_box .overlay { opacity: 0; pointer-events: none; }
-  
-  /*.selected_box img { filter: brightness(50%); }*/
-  
-  /* The snackbar - position it at the bottom and in the middle of the screen */
-  #snackbar {
-    visibility: hidden; /* Hidden by default. Visible on click */
-    min-width: 250px; /* Set a default minimum width */
-    margin-left: -125px; /* Divide value of min-width by 2 */
-    background-color: #333; /* Black background color */
-    color: #fff; /* White text color */
-    text-align: center; /* Centered text */
-    border-radius: 2px; /* Rounded borders */
-    padding: 16px; /* Padding */
-    position: fixed; /* Sit on top of the screen */
-    z-index: 1; /* Add a z-index if needed */
-    left: 50%; /* Center the snackbar */
-    bottom: 30px; /* 30px from the bottom */
-  }
-  
-  /* Show the snackbar when clicking on a button (class added with JavaScript) */
-  /* Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp */
-  #snackbar.show {
-    visibility: visible; /* Show the snackbar */
-    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
-    However, delay the fade out process for 2.5 seconds */
-    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    animation: fadein 0.5s, fadeout 0.5s 2.5s;
-  }
-  
-  /* Animations to fade the snackbar in and out */
-  @-webkit-keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
-  }
-  
-  @keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
-  }
-  
-  @-webkit-keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
-  }
-  
-  @keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
-  }
-
-
-/* home page center panel */
+/* ********************** USER HOME PAGE ********************** */
+/* ***** home page center panel ***** */
 .main_profile{
     height: 90%; 
     width: 66%; 
@@ -301,7 +103,6 @@ p.friend_text{
     opacity: 1;	
 }	
 
-
 .album_box:hover{ opacity: 0.75;}
 
 .empty_album_box {	
@@ -315,7 +116,168 @@ p.friend_text{
     display: block;	
     /* padding: 1.25rem; */	
 }	
-.empty_album_box:hover{ opacity: 0.75;}	
+.empty_album_box:hover{ opacity: 0.75;}
+
+
+/* ***** home page friend left panel ***** */
+.friend_bar {
+    height: 85%; 
+    width: 25%; 
+    top: 10%; 
+    left: 0;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+/* add friend button animation */
+.add_friend_button {
+    border-style: solid; 
+    border-radius: 7px; 
+    opacity: 1; 
+    text-align: center;
+    font-size: xx-large;
+}
+.add_friend_button span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.3s;
+}
+.add_friend_button span:after {
+    content: 'Add Friend'; /* 'f0fe'add friend icon */
+    font-size: x-large;
+    /* font-style: italic; */
+    font-weight: bold;
+    padding-top: 5px;
+    position: absolute;
+    opacity: 0;
+    right: -20px;
+    /* transition: 0.5; */
+}
+.add_friend_button:hover span {
+    padding-right: 140px;
+}
+.add_friend_button:hover span:after {
+    transition: 1s;
+    opacity: 1;
+    right: 0;
+}
+
+/* ***** home page right panel group bar ***** */
+.group_bar {
+    height: 85%;
+    width: 5%; 
+    top: 10%; 
+    right: 0;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    transition: 0.3s; 
+}
+
+/* on hover button expands left slightly */
+.group_bar:hover{
+    height: 86%;	
+    width: 6%; 
+    top: 9.75%; 
+    right: 0;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    transition: 0.3s;
+}
+
+.group_button{
+    font-size:xx-large;
+    position: fixed;
+    top: 50%;
+    opacity: 1;
+}
+.group_button:hover{ opacity: 0.75;}
+
+
+
+
+/* ********************** EDIT ALBUMS PAGE ********************** */
+/* Based on: https://www.w3schools.com/howto/howto_css_image_overlay_title.asp */
+/* Container needed to position the overlay. Adjust the width as needed */
+.selected_box {
+    position: relative;
+  }
+  
+  .overlay {
+    position: absolute;
+    bottom: 5px;
+    color: #f1f1f1;
+    width: 100%;
+    transition: .5s ease;
+    opacity:0;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+  }
+  
+  .overlay_button {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    color: #f1f1f1;
+  }
+  
+  /* When you mouse over the container, fade in the overlay title */
+  .edit_box:hover { opacity: 0.75; }
+  
+  .selected_box .overlay_button { opacity: 1; }
+  
+  .selected_box .overlay { opacity: 0; pointer-events: none; }
+  
+  /* album saved confirmation message after clicking save */
+  /* The snackbar - position it at the bottom and in the middle of the screen */
+  #snackbar {
+    visibility: hidden; /* Hidden by default. Visible on click */
+    min-width: 250px; /* Set a default minimum width */
+    margin-left: -125px; /* Divide value of min-width by 2 */
+    background-color: #333; /* Black background color */
+    color: #fff; /* White text color */
+    text-align: center; /* Centered text */
+    border-radius: 2px; /* Rounded borders */
+    padding: 16px; /* Padding */
+    position: fixed; /* Sit on top of the screen */
+    z-index: 1; /* Add a z-index if needed */
+    left: 50%; /* Center the snackbar */
+    bottom: 30px; /* 30px from the bottom */
+  }
+  
+  /* Show the snackbar when clicking on a button (class added with JavaScript) */
+  /* Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp */
+  #snackbar.show {
+    visibility: visible; /* Show the snackbar */
+    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+    However, delay the fade out process for 2.5 seconds */
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  }
+  
+  /* Animations to fade the snackbar in and out */
+  @-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+  }
+  
+  @keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+  }
+  
+  @-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+  }
+  
+  @keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+  }
+	
+
 /* ********************** SEARCH/EDIT ALBUM PAGE ********************** */	
 /* Based on: https://www.w3schools.com/howto/howto_css_image_overlay_title.asp */	
 /* Container needed to position the overlay. Adjust the width as needed */	
@@ -373,7 +335,7 @@ p.friend_text{
     overflow-y: scroll;	
 }	
 
-
+/* format search results */
 .search_result {
     background-color: white;
     border-radius: 0px;
@@ -431,7 +393,7 @@ p.friend_text{
 }	
 
 
-/* ********************** GROUP PAGE ********************** */
+/* ********************** GROUP LISTEN PAGE ********************** */
 /* Group_Page sidebar  */
 .queue_panel {
     height: 85%; 
@@ -446,12 +408,12 @@ p.friend_text{
     width: 70%;
     top: 10%;
     left: 0;
+    padding: 2%;
 }
 
-.group_pfp {
-    margin-left: auto;
-    margin-right: auto;
-    top: 40%;
+.display_friends {
+    height: 70%;
+    width: 100%;
 }
 
 /* ********************** SETTINGS PAGE ********************** */
@@ -508,7 +470,7 @@ p.friend_text{
     
 }
 
-/* ********************** OVERFLOW (FOR PLAYLISTS) ********************** */
+/* ********************** SEE ALL PLAYLIST PAGE ********************** */
 
 /* Based on: https://css-tricks.com/line-clampin/ */
 

@@ -2,81 +2,116 @@
 
 <div id="vue-target">
     [[userPage = "user/" + session.get("userID") ]]
-    <div class="group_panel panel_spec" style="background-color: white;"> 
+    <div class="group_panel panel_spec" style="background-color: white;">
 
-        <!-- get back to profile -->
-        <a class="button [[=button_color]]" href="[[=URL(userPage)]]">
-            <i class="fa fa-backward" aria-hidden="true"></i>
-            &nbsp; Back
-        </a>
+        <nav class="level is-mobile">
+            <!-- Left side -->
+            <div class="level-left" style="width:50%;">
+                <div class="level-item" style="width:100%;justify-content: flex-start;">
+                    <div>
+                        <strong><p style="color:black;" class="labels">[[=hostName]]'s Group Session</p></strong>
+                        <p>Open Spotify to start listening.</p>
+                    </div> 
+                </div>
+            </div>
+            <!-- Right side -->
+            <div class="level-right" style="width:50%;">
+                <div class="level-item" style="width:100%; justify-content: flex-end;">
+                    <!-- get back to profile -->
+                    <a class="button [[=button_color]]" href="[[=URL(userPage)]]">
+                        <i class="fa fa-backward" aria-hidden="true"></i>
+                        &nbsp; Back
+                    </a>
+                </div>
+            </div>
+        </nav>
 
-        <!--Share session-->
-        <p style="color:#221B1B;" class="labels">Share Your Session</p>
-        <input type="text" value="[[=(profileURL)]]" id="sessionLink" readonly style="width: 50%;">
-        <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
-        <p class="smallgreentext"> Send your friends this link to share your group session!</p>
-
-        <!--Display names in session and profile pic-->
-        <div v-for="(n, i) in displayNames.length">
-            <div class="tile is-parent" style="width:25%;">
-                <div class="tile is-child notification">
-                    <div class="columns">
-                        <figure class="image is-64x64" >
-                            <div v-if="displayPictures[i] == 'no profile'">
-                                <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
-                                src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+        <div class="display_friends">
+        <ul id="listItems">
+            <div class="columns is-multiline">
+                <!-- for loop -->
+                <div v-for="(n, i) in displayNames.length">
+                    <div class="column is-2">
+                    <li>
+                        <div class="tile is-parent">
+                            <div class="tile is-child notification" >
+                                <center>
+                                    <figure class="image is-128x128" >
+                                        <div v-if="displayPictures[i] == 'no profile'">
+                                            <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
+                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                        </div>
+                                        <div v-else>
+                                            <img class="is-rounded profile_photo"  
+                                            :src=displayPictures[i] width="50">
+                                        </div>
+                                    </figure>
+                                    <br>
+                                    <div>
+                                        <span class="friendname">
+                                        <strong>{{displayNames[i]}}</strong></span>
+                                    </div>
+                                </center>
                             </div>
-                            <div v-else>
-                                <img class="is-rounded profile_photo"  
-                                :src=displayPictures[i] width="50">
-                            </div>
-                        </figure>
-                        <div style="padding-left: 15px; width: 78%; ">
-                            <span class="friendname">
-                            <strong>{{displayNames[i]}}</strong></span>
                         </div>
+                    </li>
                     </div>
                 </div>
             </div>
+            
+        </ul>
+
+        <!-- song queue -->
+        <div>
         </div>
 
-        <!--Queue list for when queue is implemented; Add python brackets so for&if works-->
-        <!-- <div>
-            <div class="title"><bold>Queue</bold></div>
-            for i in range(0, len(queueImage)): 
-            <section>
-                    <div class="columns">
-                        if queueImage[i] != None:
-                        <div class="column">
-                            Album art image with link to track
-                            <img width="64" height="64" src="=(queueImage[i])"">
-                        </div>
-                        pass
-                        if queueURL[i] != None:
-                        <div class="column is-9">
-                            <div>
-                                Song title with link to track
-                                <a href="=(queueURL[i])">Song Link</a>
-                            </div>
-                        </div>
-                        [[pass]]
-                    </div>
-               
-              </section>
-              pass
-        </div> -->
-        
+        </div>
+
+        <br><br>
+        <div>
+            <!-- Share Session Link -->
+            <strong><p style="color:black;" class="labels">Share Your Session</p></strong>
+            <input type="text" value="[[=(profileURL)]]" id="sessionLink" readonly style="font-size: medium; width: 75%;">
+            <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
+            <p style="color: green;"> Send this link and invite your friends to listen along!</p> 
+        </div>  
     </div>
+
     <div class="queue_panel panel_spec" style="background-color: white;"> 
-        <!--Display current song image-->
-        <div class="box">
+        <div class="nowPlayingBox">
             <figure class="image">
                 <img :src="playingTrackImage">
             </figure> 
         </div>
-        <!--Progress bar for current song-->
+        <br>
+        
+        <!-- Current Song playing title -->
+        <strong><p>{{playingTrackName}}</p></strong>
+        <span>{{playingTrackArtist}}</span>
+        <nav class="level">
+            <div v-if="displayError != ''" class="level-item has-text-danger has-text-weight-bold">
+                <span class="is-danger">{{displayError}}</span>
+            </div>
+        </nav>
+        
+        <!-- progress bar -->
         <progress class="progress" :value="songProgressBar" max="100" style="margin-bottom: 2px;"></progress>
-        <!--Play/pause button-->
+        <!-- progress bar times -->
+        <nav class="level" style="margin-bottom: 1px;">
+            <!-- Left side -->
+            <div class="level-left" style="width:50%;">
+                <div class="level-item" style="width:100%;justify-content: flex-start;">
+                    <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}</span>
+                </div>
+            </div>
+            <!-- Right side -->
+            <div class="level-right" style="width:50%;">
+                <div class="level-item" style="width:100%; justify-content: flex-end;">
+                    <span v-if="Number.isNaN(currMinutes) != true">{{lengthMinutes}}:{{lengthSeconds}}</span>
+                </div>
+            </div>
+        </nav>
+        <!-- play/pause button -->
         <nav class="level" style="margin-bottom: 1px;">
             <div class="level-item">
                 <div v-if="isPlaying == false" >
@@ -94,27 +129,6 @@
                 </div>
             </div>
         </nav>
-        <!--Track song progress with name and timestamp-->
-        <nav class="level" style="margin-bottom: 1px;">
-          <!-- Left side -->
-          <div class="level-left" style="width:80%;">
-            <div class="level-item" style="width:100%;justify-content: flex-start;">
-              <strong>{{playingTrackName}} </strong>
-            </div>
-          </div>
-          <span class="level-right" style="width:20%;">
-            <span class="level-item" style="width:100%;justify-content: right">
-              <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}/{{lengthMinutes}}:{{lengthSeconds}}</span>
-            </span>
-          </span>
-          <br>
-        </nav>
-        <span>{{playingTrackArtist}}</span>
-        <div v-if="displayError != ''" class="level-item has-text-danger has-text-weight-bold">
-            <span class="is-danger">{{displayError}}</span>
-        </div>
-        <br><br>
-        <!--Synchronize button to sync up with host-->
         <div v-if="isHost == false" class="level-item">
             <span v-if="isSynchronizing == false">
                 <button @click="synchronizeVisitorHandler()" class="button is-black" key="synchEnabled" style="width:100px;">
@@ -128,50 +142,16 @@
             </div>
             <br><br><br>
         </div>
-        <!--Song search box for queue implementation-->
-        <!-- <div class="columns is-mobile is-centered">
-          <div class="column is-11">
-              user types search here 
-              <input id="songSearch" class="input" type="text" v-on:keyup="search_spotify_songs()" placeholder="Find a song">
-              if there is at least one result 
-              <div v-if="totalResults > 0">
-                  show tile for each result
-                  <div class="tile is-child box"> 
-                      <div v-for="(t, index) in trackLinks">
-                          <section>
-                              when result is clicked, add album to list at selected index
-                              <a @click="add_song(imgList[index], trackLinks[index])">
-                                  <div class="columns">
-                                      <div class="column">
-                                          Album art image with link to track
-                                          <img width="64" height="64" :src="imgList[index]">
-                                      </div>
-                                      <div class="column is-9">
-                                          <div>
-                                              Song title with link to track
-                                              <span target="_blank" style="color:#000000"><strong>{{topTracks[index]}}</strong></span>
-                                          </div>
-                                          <div>
-                                              Artist name with link to their Spotify page
-                                              <span target="_blank" style="color:#000000">{{topArtists[index]}}</span>
-                                          </div>
-                                      </div>
-                                  </div>
-                                </a>
-                            </section>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div> -->
-  </div>
+        <div> 
+        </div>
+        
+    </div>
   <!-- defines the box tha confirms save/shows error -->
   <div id="snackbar">{{message}}</div>
 </div>
 
 
 
-<!--Copy link in input box to clipboard-->
 <script>
 function getGroupLink() {
   var link = document.getElementById("sessionLink");
@@ -185,8 +165,6 @@ function getGroupLink() {
 [[block page_scripts]]
 <script>
     let currentPlaying = "[[=XML(currentPlaying)]]";
-    let squares_url = "[[=XML(squares_url)]]";
-    let search_url = "[[=XML(search_url)]]";
     let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
     let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
     let shouldSynchronizeVisitor = "[[=XML(shouldSynchronizeVisitor)]]";

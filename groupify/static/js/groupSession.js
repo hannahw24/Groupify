@@ -59,7 +59,6 @@ let init = (app) => {
       axios.get(getPeopleInSession).then((result) => {
         app.data.displayNames = result.data.displayNames;
         app.data.displayPictures = result.data.profilePictures;
-        console.log(result.data.redirect)
         if (result.data.redirect != false) {
           window.location = refreshGroupSession;
         }
@@ -113,96 +112,6 @@ let init = (app) => {
         }).then(() => {
         });
     }
-
-
-    app.search_spotify_songs = () => {
-      input2 = document.getElementById('songSearch'); // Get input from searcg bar
-      input2 = input2.value;
-      //console.log(input2);
-      // Send to server
-      axios.post(search_url, {
-          input2: input2,
-      }).then((result) => {
-          // Update all search result fields with server result
-          app.vue.topTracks = result.data.topTracks;
-          app.vue.topArtists = result.data.topArtists;
-          app.vue.imgList = result.data.imgList;
-          app.vue.trackLinks = result.data.trackLinks;
-          app.vue.artistLinks = result.data.artistLinks;
-          app.vue.totalResults = result.data.totalResults;
-          //console.log(result2);
-      }).catch(() => {
-          console.log("Caught error");
-      });
-  };
-
-    // Adds an album to the banner
-    app.add_song = (cover, url) =>{
-      let i=0;
-      for(i = 0; i<10; i++){
-        if(app.vue.queueListImage[i] == null){
-          app.vue.queueListImage[i] = cover;
-          app.vue.queueListURL[i] = url;
-          app.refresh_page(); // Update display
-          app.barAlert("Added to list!");
-          break;
-        }
-        app.refresh_page(); // Update display
-      }
-      if(i>=10){
-        app.barAlert("Only 10 songs queued at once!");
-      }
-      
-      axios.post(search_url, {
-        queueListImage: app.vue.queueListImage,
-        queueListURL: app.vue.queueListURL,
-      }).catch(() => {
-        console.log("Caught error");
-      });
-
-      //In controller: add if post line which then adds to database
-    };
-
-
-    // Take in a message and display with alert
-   // Based on: https://www.w3schools.com/howto/howto_js_snackbar.asp
-    app.barAlert = (msg) => {
-    // Update message to be displayed
-      app.vue.message = msg;
-    
-      // Get the snackbar DIV
-      var bar = document.getElementById("snackbar");
-
-      //clear the search input and all the resulting searches
-      document.getElementById("songSearch").value = null;
-      axios.post(search_url, {
-        input2: input2,
-      }).then((result) => {
-          // Update all search result fields with null values so nothing pops up
-          app.vue.topTracks = null;
-          app.vue.topArtists = null;
-          app.vue.imgList = null;
-          app.vue.trackLinks = null;
-          app.vue.artistLinks = null;
-          app.vue.totalResults = null;
-          //console.log(result2);
-      }).catch(() => {
-          console.log("Caught error");
-      });
-
-      // Add the "show" class to DIV
-      bar.className = "show";
-
-      // After 3 seconds, remove the show class from DIV
-      setTimeout(function(){ bar.className = bar.className.replace("show", ""); }, 3000);
-    };
-
-    app.refresh_page = () => {
-      let temp = app.vue.page;
-      app.vue.page = -1;
-      app.vue.page = temp; 
-    };
- 
 
     // Function that updates the user's position in a song outside of backend calls. 
     app.updateSongTimeEachSecond = () =>{
@@ -414,8 +323,6 @@ let init = (app) => {
     // to the Vue app in a single blow.
     app.methods = {
       getPlayingTrack: app.getPlayingTrack,
-      search_spotify_songs: app.search_spotify_songs,
-      add_song: app.add_song,
       increaseTimeSinceCall: app.increaseTimeSinceCall,
       synchronizeVisitor: app.synchronizeVisitor,
       playOrPause: app.playOrPause,

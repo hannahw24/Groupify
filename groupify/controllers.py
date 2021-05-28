@@ -1095,8 +1095,8 @@ def groupSession(userID=None):
 
     # Non premium users will not be allowed inside the groupSession. 
     premiumStatus = loggedInProfileEntry[0]["premiumStatus"]
-    if (premiumStatus != "premium"):
-        return nonPremiumUser(session.get("userID"))
+    #if (premiumStatus != "premium"):
+        #return nonPremiumUser(session.get("userID"))
 
     # Try to get the deviceID of the instance of Spotify the user is listening on.
     deviceID = (getDevice()).get("deviceID")
@@ -1161,10 +1161,12 @@ def groupSession(userID=None):
                                         userIDs=userIDs, timeLastActive=timeLastActive)
 
     profileURL = "http://shams.pythonanywhere.com"+(URL("groupSession", userID))
+    hostName=""
     if userID is not None:
         try:
-            user_from_table = db.dbUser[getIDFromUserTable(session.get("userID"))]
-            theme_colors = return_theme(user_from_table.chosen_theme)
+            dbUserEntry = db.dbUser[getIDFromUserTable(userID)]
+            hostName=dbUserEntry.display_name
+            theme_colors = return_theme(dbUserEntry.chosen_theme)
         except:
             theme_colors = return_theme(0)
         return dict(session=session, 
@@ -1172,7 +1174,8 @@ def groupSession(userID=None):
                     background_bot=theme_colors[0],
                     background_top=theme_colors[1], 
                     button_color=theme_colors[5],
-                    profileURL = profileURL, 
+                    profileURL = profileURL,
+                    hostName=hostName,
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
                     search_url = URL('group_search', userID), 
@@ -1191,7 +1194,8 @@ def groupSession(userID=None):
                     background_bot=None, 
                     background_top=None,
                     button_color=None,
-                    profileURL = profileURL, 
+                    profileURL = profileURL,
+                    hostName=hostName,
                     currentPlaying=URL("currentPlaying", userID),
                     squares_url = URL('get_squares'),
                     search_url = URL('group_search', userID), 
