@@ -1,3 +1,5 @@
+// Vue app and comments based on given assignments in CSE183
+
 // This will be the object that will contain the Vue attributes
 // and be used to initialize it.
 let app = {};
@@ -8,21 +10,26 @@ let init = (app) => {
 
     // This is the Vue data.
     app.data = {
+        // Editng status
         isEditingAlbums: 0,
         isEditingBio: 0,
         isEditingStatus: 0,
+        // User bio
         bio: "",
         originalBio: "",
+        // Active status
         active: "",
         originalActive: "",
-        //To display in top songs dropdown
+        // To display in top songs dropdown
         termString: "",
-        //1 is short term, 2 is medium term, 3 is long term
+        // 1 is short term, 2 is medium term, 3 is long term
         currentTerm: 0,
+        // Track info
         topTracks: [],
-        topArtists: [],
         imgList: [],
         trackLinks: [],
+        // Artist info
+        topArtists: [],
         artistLinks: [],
         artistNames: [],
         artistImages: [],
@@ -30,72 +37,70 @@ let init = (app) => {
         genres: [[]],
         followers: [],
         artistTerm: ""
-        //playlistNames: [],
-        //playlistImages: [],
-       // playlistLinks: [],
 
     };
     
     //Used to save the album cover art for the user profiles. 
     app.save_bio = (content) => {
-        console.log("I'm in save_bio");
+        // Send bio to server
         axios.post(userBio, null, {params: {
             content: content,
             }}).then((result) => {
+                // Update editing status
                 app.data.isEditingBio = 0;
-                console.log("Received:", result.data);
+                // Update app bio
                 bio = content;
                 app.data.bio = content;
                 app.data.originalBio = content;
-                //Goes to userProfile      
-                //window.location.replace(profileURL);       
             }).catch(() => {
                 console.log("Caught error");
-                //Stays in the current window
             });
         };
-
+    
+    // User discards change to bio
     app.cancel_bio = () => {
-        console.log("I'm in cancel_bio");
         app.data.bio = app.data.originalBio;
         app.data.isEditingBio = 0;
         };
-
+    
+    // Get ative status from server
     app.getStat = () => {
         axios.get(userStat).then((result) => {
             let active = result.data.userStat;
             app.data.active = active;
             app.data.originalActive = active;
             }).then(() => {
-                console.log(app.data.active);
             });
     }
 
-    //Saving status
+    // Save active status
     app.save_stat = (content) => {
+        // Send status to server
         axios.post(userStat, null, {params: {
             content: content,
             }}).then((result) => {
+                // Update editing status
                 app.data.isEditingStatus = 0;
+                // Update status on app
                 active = content;
                 app.data.active = content;
-                app.data.originalActive = content;
-                //Goes to userProfile      
-                //window.location.replace(profileURL);       
+                app.data.originalActive = content;      
             }).catch(() => {
                 console.log("Caught error");
-                //Stays in the current window
             });
         };
-
+    
+    // User discards change to active status
     app.cancel_stat = () => {
         app.data.active = app.data.originalActive;
         app.data.isEditingStatus = 0;
         };
-
+    
+    // Change state of edit button
     app.controlEditButton = () => {
+        // Find edit button
         editButton = document.getElementById('editButton');
-        console.log(app.data.isEditingAlbums);
+        // Set editing status
         if (app.data.isEditingAlbums === 0) {
             app.data.isEditingAlbums = 1;
         }
@@ -104,13 +109,12 @@ let init = (app) => {
         }
     };
 
-    //Called to see the top 10 songs
+    // Called to see the top 10 songs
     app.seeTerm = (term) => {
-        console.log("I'm in seeTerm");
+        // Get term and tracks from server
         axios.get(getTopSongs, {params: {
             term: term
             }}).then((result) => {
-            console.log(term);
             app.data.termString = result.data.term_str;
             app.data.topTracks = result.data.topTracks;
             app.data.topArtists = result.data.topArtists;
@@ -118,14 +122,11 @@ let init = (app) => {
             app.data.trackLinks = result.data.trackLinks;
             app.data.artistLinks = result.data.artistLinks;
             }).then(() => {
-                //show what the bio is.
-                console.log(app.data.termString);
             });
         }
     
-    //Called to change the term of top 10 songs
+    // Called to change the term of top 10 songs
     app.changeTerm = (term, editable) => {
-        console.log("I'm in changeTerm");
         if (editable == "True") {
             axios.post(getTopSongs, null, {params: {
                 term: term,
@@ -140,8 +141,8 @@ let init = (app) => {
         }
         };
     
+    // Get artist term from server
     app.seeArtistTerm = (term) => {
-        console.log("I'm in seeArtistTerm");
         axios.get(getTopArtists, {params: {
             term: term
             }}).then((result) => {
@@ -151,29 +152,25 @@ let init = (app) => {
             app.data.artistURLs = result.data.artistLinks;
             app.data.genres = result.data.genres;
             app.data.followers = result.data.followers;
-            console.log("Followers", app.data.followers)
 
             app.data.genres = app.parseArray(app.data.genres);
 
             }).catch(() => {
-                //show what the bio is.
-                console.log("Error in seeArtistTerm")
                 var emptyString = [];
                 for (i = 0; i < 9; i++) {
                     emptyString.push("")
                 }
+                // Ensure items are not undefined
                 app.data.artistNames = emptyString;
                 app.data.artistImages = emptyString;
                 app.data.artistURLs = emptyString;
                 app.data.genres = emptyString;
-                //empty to prevent "Followers" from appearing
                 app.data.followers = [];
             });
         }
     
     //Called to change the term of top 10 songs
     app.changeArtistTerm = (term, editable) => {
-        console.log("I'm in changeArtistTerm");
         if (editable == "True") {
             axios.post(getTopArtists, null, {params: {
                 term: term
@@ -187,23 +184,21 @@ let init = (app) => {
             app.seeArtistTerm(term); 
         }
         };
-
+    
+    // Parse genres array
     app.parseArray = (genres) => {
         var returnList = [];
         for (i = 0; i < genres.length; i++) {
+            // Parse genres from given string, push to new string, return
             var tempString = "";
-            console.log(genres[i]);
             var res = app.data.genres[i].split("'");
             res.splice(0, 1);
             res.splice(res.length-1, 1);
-            console.log("res", res);
             for (j = 0; j < Math.min(res.length, 3); j++) {
                 tempString += res[j];
             }
-            console.log("tempString", tempString);
             returnList.push(tempString);
         }
-        console.log("returnList", returnList);
         return returnList;
     }
 
@@ -220,8 +215,7 @@ let init = (app) => {
         changeTerm: app.changeTerm,
         seeArtistTerm: app.seeArtistTerm,
         changeArtistTerm: app.changeArtistTerm,
-        parseArray: app.parseArray,
-        //seePlaylists: app.seePlaylists
+        parseArray: app.parseArray
     };
 
     // This creates the Vue instance.
@@ -239,13 +233,11 @@ let init = (app) => {
             app.data.bio = bio;
             app.data.originalBio = bio;
             }).then(() => {
-                console.log(app.data.bio);
-                //After setting the Bio move on to displaying top songs
-                //and user playlists
+                // After setting the Bio move on to displaying top songs
+                // and user playlists
                 app.seeTerm();
                 app.seeArtistTerm();
                 app.getStat();
-                //app.seePlaylists();
             });
     };
 
