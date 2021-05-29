@@ -1,3 +1,5 @@
+// Vue app and comments based on given assignments in CSE183
+
 // This will be the object that will contain the Vue attributes
 // and be used to initialize it.
 let app = {};
@@ -8,20 +10,26 @@ let init = (app) => {
 
     // This is the Vue data.
     app.data = {
+        // Artist data
         artistNames: [],
         artistImages: [],
         artistURLs: [],
         genres: [[]],
         followers: [],
+        // Other parameters
+        
+        // Number of results
         resultsLen: 0,
-        filterReset: false,
         fullLen:0,
+        // Set to true to update page
+        filterReset: false,
+        // Term of artists shown
         artistTerm: ""
 
     };
     
+    // Gets artist term data from server
     app.seeArtistTerm = (term) => {
-        console.log("I'm in seeArtistTerm");
         axios.get(getTopArtists, {params: {
             term: term
             }}).then((result) => {
@@ -31,32 +39,32 @@ let init = (app) => {
             app.data.artistURLs = result.data.artistLinks;
             app.data.genres = result.data.genres;
             app.data.followers = result.data.followers;
-            console.log("Followers", app.data.followers)
             app.data.resultsLen = result.data.topArtists.length;
             app.data.fullLen = result.data.topArtists.length;
             app.data.genres = app.parseArray(app.data.genres);
 
             }).catch(() => {
-                //show what the bio is.
-                console.log("Error in seeArtistTerm")
+                // Show what the bio is
                 var emptyString = [];
                 for (i = 0; i < 9; i++) {
                     emptyString.push("")
                 }
+                // Ensure data is not undefined
                 app.data.artistNames = emptyString;
                 app.data.artistImages = emptyString;
                 app.data.artistURLs = emptyString;
                 app.data.genres = emptyString;
                 app.data.resultsLen = 0;
                 app.data.fullLen = 0;
-                //empty to prevent "Followers" from appearing
+                // Empty to prevent "Followers" from appearing
                 app.data.followers = [];
+                console.log("Caught error");
             });
         };
     
-    //Called to change the term of top 10 songs
+    // Called to change the term of artists (4 weeks, 6 months, all time)
     app.changeArtistTerm = (term, editable) => {
-        console.log("I'm in changeArtistTerm");
+        // Call seeArtistTerm() to get data for new term
         if (editable == "True") {
             axios.post(getTopArtists, null, {params: {
                 term: term
@@ -69,26 +77,26 @@ let init = (app) => {
         else {
             app.seeArtistTerm(term); 
         }
+        // Clear filter on new results.
         input = document.getElementById('barInput');
         input.value = "";
     };
-
+    
+    // Parse genres from server
     app.parseArray = (genres) => {
         var returnList = [];
+        // Separate genres in given string
         for (i = 0; i < genres.length; i++) {
             var tempString = "";
-            console.log(genres[i]);
             var res = app.data.genres[i].split("'");
             res.splice(0, 1);
             res.splice(res.length-1, 1);
-            console.log("res", res);
+            // Add parsed results to return string
             for (j = 0; j < Math.min(res.length, 3); j++) {
                 tempString += res[j];
             }
-            console.log("tempString", tempString);
             returnList.push(tempString);
         }
-        console.log("returnList", returnList);
         return returnList;
     };
     
@@ -98,10 +106,11 @@ let init = (app) => {
         // Set parameters
         var input, filter, ul, li, a, i, txtValue;
         var rLen = 0;
+        // Search bar input
         input = document.getElementById('barInput');
+        // Change to upper case
         filter = input.value.toUpperCase();
         ul = document.getElementById("listItems");
-        console.log(ul);
         li = ul.getElementsByTagName('li');
 
         // Hide entries that don't match input
@@ -110,15 +119,16 @@ let init = (app) => {
             txtValue = a.textContent || a.innerText;
             if (txtValue.toUpperCase().indexOf(filter) > -1) {
                 li[i].style.display = "";
+                // Increment result total if not hidden
                 rLen++;
             } else {
                 li[i].style.display = "none";
             }
         }
         app.vue.resultsLen = rLen;
+        // Quickly reset to update displayed page
         app.vue.filterReset = true;
         app.vue.filterReset = false;
-        console.log(app.vue.resultsLen);
     };
     
 
@@ -148,6 +158,5 @@ let init = (app) => {
 };
 
 
-// This takes the (empty) app object, and initializes it,
-// putting all the code i
+// This takes the (empty) app object, and initializes it.
 init(app);
