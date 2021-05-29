@@ -66,8 +66,9 @@
             <div class="navbar-item">
               <div class="buttons">
                 [[if session.get("userID") is not None:]]
-                <a class="button" href="[[=URL('sign_out')]]">sign out</a>
+                <a class="button" href="[[=URL('signOut')]]">sign out</a>
                 [[else:]]
+                <a class="button is-light" href="../static/resources/GroupifyUserManual.pdf">user manual</a>
                 <a class="button is-light" href="[[=URL('login')]]">sign in</a>
                 [[pass]]
               </div>
