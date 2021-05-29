@@ -51,11 +51,11 @@
                                         <div class="level-right">
                                             <!-- Save button -->
                                             <div v-if="isEditingStatus === 1" class="level-item">
-                                                <button @click="save_stat(active)" class="button is-primary">
+                                                <button @click="saveStat(active)" class="button is-primary">
                                                     <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
                                             <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
                                             <div v-if="isEditingStatus === 1" class="level-item">
-                                                <button @click="cancel_stat" class="button is-danger">
+                                                <button @click="cancelStat" class="button is-danger">
                                                     <i class="fa fa-window-close" aria-hidden="true"></i></button>
                                             </div>
                                         </div>
@@ -241,11 +241,11 @@
                                         <div class="level-right">
                                             <!-- Save button -->
                                             <div v-if="isEditingBio === 1" class="level-item">
-                                                <button @click="save_bio(bio)" class="button is-primary">
+                                                <button @click="saveBio(bio)" class="button is-primary">
                                                     <i class="fa fa-check-square" aria-hidden="true"></i></button></div>
                                             <!-- Cancel edit button MIGHT BRING ERRORS IF CANCELED AT A BAD TIME-->
                                             <div v-if="isEditingBio === 1" class="level-item">
-                                                <button @click="cancel_bio" class="button is-danger">
+                                                <button @click="cancelBio" class="button is-danger">
                                                     <i class="fa fa-window-close" aria-hidden="true"></i></button>
                                             </div>
                                         </div>
@@ -447,7 +447,7 @@
     </div>
     <!--Button to go to group session-->
     <div class="group_bar panel_spec" style="background-Color:[[=tile_color]]">
-        <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', user)]]">
+        <a class="group_button" style="color:[[=friend_tile]]" href="[[=URL('groupSession', userID)]]">
             <i class="fa fa-forward" aria-hidden="true"></i>
         </a>    
     </div>

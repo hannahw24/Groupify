@@ -34,7 +34,7 @@ let init = (app) => {
             term: term
             }}).then((result) => {
             app.data.artistNames = result.data.topArtists;
-            app.data.artistTerm = result.data.term_str;
+            app.data.artistTerm = result.data.termStr;
             app.data.artistImages = result.data.imgList;
             app.data.artistURLs = result.data.artistLinks;
             app.data.genres = result.data.genres;
@@ -58,7 +58,7 @@ let init = (app) => {
                 app.data.fullLen = 0;
                 // Empty to prevent "Followers" from appearing
                 app.data.followers = [];
-                console.log("Caught error");
+                console.log("Caught error in seeArtistTerm");
             });
         };
     
@@ -71,7 +71,7 @@ let init = (app) => {
                 }}).then(() => {
                     app.seeArtistTerm(); 
                 }).catch(() => {
-                    console.log("Caught error");
+                    console.log("Caught error in changeArtistTerm");
                 });
         }
         else {

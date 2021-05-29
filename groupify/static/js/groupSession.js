@@ -83,7 +83,6 @@ let init = (app) => {
     // display the appropriate names and times of the song. 
     app.getPlayingTrack = () => {
       axios.get(currentPlaying).then((result) => {
-        console.log("In getPlayingTrack");
         app.data.isPlaying = result.data.isPlaying;
 
         app.data.playingTrackName = result.data.trackName;
@@ -229,7 +228,6 @@ let init = (app) => {
         }).then(() => {
             app.data.preventButtonsFromBeingClicked = false;
             app.data.isSynchronizing = false;
-            console.log("synchronizeVisitor Finished");
         });
     }
 
@@ -241,19 +239,15 @@ let init = (app) => {
         // Gets the current time.
         var d = new Date();
         var n = d.getUTCSeconds();
-        console.log("n = ", n);
-        console.log("app.data.timeWhenDatabaseWasUpdated ", app.data.timeWhenDatabaseWasUpdated);
-        console.log("seconds until next call is ", (app.data.timeWhenDatabaseWasUpdated + 5));
+
         // Determines when the next call by the host will be made by adding the set call timer
         // to it. Then takes the modulo to determine how many seconds are left until the next 
         // call is made. 
         var modulo = ((app.data.timeWhenDatabaseWasUpdated + (app.data.hostAPICallTimer + 1)) % n)
-        console.log("modulo ", modulo);
         // Currently, if there is still 3.5 seconds until the host will make a call, then 
         // the visitor will synch immediately. 
         if (modulo >= 3.5) {
           // good time to synch
-          console.log("good time to synch ", modulo);
           app.synchronizeVisitor();
         }
         // Else, the visitor will wait until the host has made a call, then immediately
@@ -262,7 +256,6 @@ let init = (app) => {
           // display a loading icon to the user informing them that they are going to synchronize.
           app.data.isSynchronizing = true;
           // wait for later
-          console.log("wait for later");
           setTimeout(app.synchronizeVisitor, modulo*1000);
           return;
         }
@@ -275,7 +268,6 @@ let init = (app) => {
     // Pauses or Unpauses a song
     // content: true is unpausing a song, false is pausing.
     app.playOrPause = (content) => {
-      console.log("playOrPause");
       app.data.preventButtonsFromBeingClicked = true;
       // If the host has paused or played, it is a good time to update the song information in the
       // database.
@@ -299,6 +291,7 @@ let init = (app) => {
               app.data.isPlaying = content;
               app.data.preventButtonsFromBeingClicked = false;
           }).catch(() => {
+            console.log("error in pauseOrPlayTrack")
             // Checks to see if the problem is a missing deviceID, 
             // This can occur when a user does not have an instance of spotify when entering
             // the groupSession page. If they later open one, then this will get the deviceID
