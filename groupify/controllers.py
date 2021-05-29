@@ -787,7 +787,7 @@ def getCurrentPlaying(userID=None):
     try:
         imageURL = results["item"]["album"]["images"][1]["url"]
     except:
-        imageURL = "https://bulma.io/images/placeholders/128x128.png"
+        imageURL = "https://i.pinimg.com/564x/74/b0/b4/74b0b4e5436c31adebdf7c5acbcac7dc.jpg"
 
     # Entry where information about the host's playing song is stored. 
     dbGroupSessionEntry = (db(db.groupSession.userID == userID))

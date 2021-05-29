@@ -412,7 +412,7 @@ p.friend_text{
 }
 
 .display_friends {
-    height: 70%;
+    height: 65%;
     width: 100%;
 }
 
@@ -422,6 +422,10 @@ p.friend_text{
     width: 60%;
     top: 10%;
     left: 20%;
+    padding-top: 2%;
+    padding-bottom: 4%;
+    padding-left: 4%;
+    padding-right: 4%;
 }
 
 .settings_pfp {
