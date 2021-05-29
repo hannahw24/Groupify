@@ -25,9 +25,9 @@ let init = (app) => {
         // app's list of Spotify links
         urlList: [],
         // server's list of album covers
-        server_coverList: [],
+        serverCoverList: [],
         // server's list of Spotify links
-        server_urlList: [],
+        serverUrlList: [],
         // Search result titles
         topAlbums: [],
         // Search result artists
@@ -43,12 +43,12 @@ let init = (app) => {
     };
     
     // Uses user input as it is types to search Spotify
-    app.search_spotify = () => {
+    app.searchSpotify = () => {
         // Get input from search bar
         input = document.getElementById('barInput');
         input = input.value;
         // Send to server
-        axios.post(search_url, {
+        axios.post(searchURL, {
             input: input,
         }).then((result) => {
             // Update all search result fields with server result
@@ -64,21 +64,21 @@ let init = (app) => {
     };
     
     // Reloads the page, needed to update cover art
-    app.refresh_page = () => {
+    app.refreshPage = () => {
         let temp = app.vue.page;
         app.vue.page = -1;
         app.vue.page = temp;  
     };
     
     // Adds an album to the banner
-    app.add_album = (cover, url, i) =>{
+    app.addAlbum = (cover, url, i) =>{
         // If valid index of an album
         if (i >= 0 && i < 12) {
             // Update album data
             app.vue.coverList[i] = cover;
             app.vue.urlList[i] = url;
             // Update display
-            app.refresh_page();
+            app.refreshPage();
             // Update edite status
             app.vue.edited = true;
         }
@@ -88,7 +88,7 @@ let init = (app) => {
     };
     
     // Delete an album from the banner
-    app.delete_album = (i) => {
+    app.deleteAlbum = (i) => {
         // If invalid index, return
         if (i < 0 || i > 11)
             return;
@@ -97,17 +97,17 @@ let init = (app) => {
             app.vue.coverList[i] = "x";
         if (app.vue.urlList[i] != "x")
             app.vue.urlList[i] = "x";
-        app.refresh_page();
+        app.refreshPage();
         // Update edited status
         app.vue.edited = true;
     };
     
     // Save albums to server
-    app.save_albums = () => {
+    app.saveAlbums = () => {
         // If albums have been edited
         if(app.vue.edited){
             app.vue.pending = true; // Update pending status
-            axios.post(squares_url, {
+            axios.post(squaresURL, {
                 // Send lists to server
                 coverList: app.vue.coverList,
                 urlList: app.vue.urlList
@@ -115,8 +115,8 @@ let init = (app) => {
                 // Update lists with server data
                 app.vue.coverList = result.data.coverList;
                 app.vue.urlList = result.data.urlList;
-                app.vue.server_coverList = result.data.coverList;
-                app.vue.server_urlList = result.data.urlList;
+                app.vue.serverCoverList = result.data.coverList;
+                app.vue.serverUrlList = result.data.urlList;
                 // End pending
                 app.vue.pending = false;
                 // Update edited, server now matches data
@@ -182,11 +182,11 @@ let init = (app) => {
     // to the Vue app in a single blow.
     app.methods = {
         goto: app.goto,
-        search_spotify: app.search_spotify,
-        refresh_page: app.refresh_page,
-        add_album: app.add_album,
-        delete_album: app.delete_album,
-        save_albums: app.save_albums,
+        searchSpotify: app.searchSpotify,
+        refreshPage: app.refreshPage,
+        addAlbum: app.addAlbum,
+        deleteAlbum: app.deleteAlbum,
+        saveAlbums: app.saveAlbums,
         barAlert: app.barAlert,
         confirmExit: app.confirmExit,
         rearrange: app.rearrange,
@@ -206,12 +206,12 @@ let init = (app) => {
 
     // And this initializes it.
     app.init = () => {
-        axios.get(squares_url).then((result) => {
+        axios.get(squaresURL).then((result) => {
             // Start with all lists as server version
             app.vue.coverList = result.data.coverList;
             app.vue.urlList = result.data.urlList;
-            app.vue.server_coverList = result.data.coverList;
-            app.vue.server_urlList = result.data.urlList;
+            app.vue.serverCoverList = result.data.coverList;
+            app.vue.serverUrlList = result.data.urlList;
         })
     };
 

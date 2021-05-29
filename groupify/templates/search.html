@@ -31,7 +31,7 @@
                                     search to edit album
                                 </div>
                                 <div :id="index" class="overlay_button">
-                                    <button class="button is-danger" @click="delete_album(index)">
+                                    <button class="button is-danger" @click="deleteAlbum(index)">
                                         <i class="fa fa-times"></i>
                                     </button>
                                 </div>
@@ -89,7 +89,7 @@
                             &nbsp;&nbsp;
                             <!-- if albums have been edited and save is not pending, Save button is clickable -->
                             <div v-if="edited && !pending">
-                                <button class="button is-primary" @click="save_albums">Save</button>
+                                <button class="button is-primary" @click="saveAlbums">Save</button>
                             </div>
                             <!-- else if albums have been edited but save is pending, Save button shows loading icon -->
                             <div v-else-if="edited && pending">
@@ -123,7 +123,7 @@
     <div class="columns is-mobile is-centered">
         <div class="column">
             <!-- user types search here -->
-            <input id="barInput" class="input" type="text" v-on:keyup="search_spotify()" placeholder="Find an Album">
+            <input id="barInput" class="input" type="text" v-on:keyup="searchSpotify()" placeholder="Find an Album">
             <!-- if there is at least one result -->
             <div v-if="totalResults > 0">
                 <!-- show tile for each result -->
@@ -131,7 +131,7 @@
                     <div v-for="(t, index) in trackLinks">
                         <section>
                             <!-- when result is clicked, add album to list at selected index -->
-                            <a @click="add_album(imgList[index], trackLinks[index], page)">
+                            <a @click="addAlbum(imgList[index], trackLinks[index], page)">
                                 <div class="columns">
                                     <div class="column">
                                         <!-- Album art image with link to track -->
@@ -165,8 +165,8 @@
 </div>
 [[block page_scripts]]
 <script>
-    let squares_url = "[[=XML(squares_url)]]";
-    let search_url = "[[=XML(search_url)]]";
+    let squaresURL = "[[=XML(squaresURL)]]";
+    let searchURL = "[[=XML(searchURL)]]";
     let profileURL = "[[=XML(profileURL)]]";
 </script>
 <!-- Loads the user-specific js for Vue -->

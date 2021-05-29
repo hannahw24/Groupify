@@ -356,8 +356,8 @@ def editUserSquare(userID):
                 editable=False, 
                 url_signer=url_signer, userID=userID, 
                 profileURL=profileURL,
-                squares_url = URL('getSquares'),
-                search_url = URL('doSearch'),
+                squaresURL = URL('getSquares'),
+                searchURL = URL('doSearch'),
                 background_bot=theme_colors[0],
                 background_top=theme_colors[1])
 
@@ -1007,87 +1007,77 @@ def addFriend():
     for frand in friendsList:
         friend_ids.append(frand["userID"])
     if request.method == "GET":
-        return dict(
-            session=session, 
-            editable=False, 
-            nullError=False, 
-            alreadyFriend=False, 
-            CannotAddSelf=False, 
-            background_bot=theme_colors[0], 
-            background_top=theme_colors[1],
-            friend_tile=theme_colors[2],
-            tile_color=theme_colors[3],
-            text_color=theme_colors[4],
-            button_color=theme_colors[5],
-            allusers = allusers,
-            friendsList=friendsList,
-            friend_ids=friend_ids,
-            )
+        return dict(session=session, 
+                    editable=False, 
+                    nullError=False, 
+                    alreadyFriend=False, 
+                    CannotAddSelf=False, 
+                    background_bot=theme_colors[0], 
+                    background_top=theme_colors[1],
+                    friend_tile=theme_colors[2],
+                    tile_color=theme_colors[3],
+                    text_color=theme_colors[4],
+                    button_color=theme_colors[5],
+                    allusers = allusers,
+                    friendsList=friendsList,
+                    friend_ids=friend_ids)
 
     else:
         loggedInUserId = session.get("userID")
         form_userID = request.params.get("userID")
         dbUserEntry = (db(db.dbUser.userID == form_userID).select().as_list())
         if dbUserEntry == []:
-            return dict(
-                session=session, 
-                editable=False, 
-                nullError=True, 
-                alreadyFriend=False, 
-                CannotAddSelf=False, 
-                background_bot=theme_colors[0], 
-                background_top=theme_colors[1],
-                friend_tile=theme_colors[2],
-                tile_color=theme_colors[3],
-                text_color=theme_colors[4],
-	            button_color=theme_colors[5],
-                allusers = allusers,
-                friendsList=friendsList,
-                friend_ids=friend_ids,
-                )
+            return dict(session=session, 
+                        editable=False, 
+                        nullError=True, 
+                        alreadyFriend=False, 
+                        CannotAddSelf=False, 
+                        background_bot=theme_colors[0], 
+                        background_top=theme_colors[1],
+                        friend_tile=theme_colors[2],
+                        tile_color=theme_colors[3],
+                        text_color=theme_colors[4],
+                        button_color=theme_colors[5],
+                        allusers = allusers,
+                        friendsList=friendsList,
+                        friend_ids=friend_ids)
         if (checkIfFriendDuplicate(form_userID)):
-            return dict(
-                session=session, 
-                editable=False, 
-                nullError=False, 
-                alreadyFriend=True, 
-                CannotAddSelf=False, 
-                background_bot=theme_colors[0], 
-                background_top=theme_colors[1],
-                friend_tile=theme_colors[2],
-                tile_color=theme_colors[3],
-                text_color=theme_colors[4],
-	            button_color=theme_colors[5],
-                allusers = allusers,
-                friendsList=friendsList,
-                friend_ids=friend_ids,
-                )
+            return dict(session=session, 
+                        editable=False, 
+                        nullError=False, 
+                        alreadyFriend=True, 
+                        CannotAddSelf=False, 
+                        background_bot=theme_colors[0], 
+                        background_top=theme_colors[1],
+                        friend_tile=theme_colors[2],
+                        tile_color=theme_colors[3],
+                        text_color=theme_colors[4],
+                        button_color=theme_colors[5],
+                        allusers = allusers,
+                        friendsList=friendsList,
+                        friend_ids=friend_ids)
         if (form_userID == loggedInUserId):
-            return dict(
-                session=session, 
-                editable=False, 
-                nullError=False, 
-                alreadyFriend=False, 
-                CannotAddSelf=True, 
-                background_bot=theme_colors[0], 
-                background_top=theme_colors[1],
-                friend_tile=theme_colors[2],
-                tile_color=theme_colors[3],
-                text_color=theme_colors[4],
-	            button_color=theme_colors[5],
-                allusers = allusers,
-                friendsList=friendsList,
-                friend_ids=friend_ids,
-                )
+            return dict(session=session, 
+                        editable=False, 
+                        nullError=False, 
+                        alreadyFriend=False, 
+                        CannotAddSelf=True, 
+                        background_bot=theme_colors[0], 
+                        background_top=theme_colors[1],
+                        friend_tile=theme_colors[2],
+                        tile_color=theme_colors[3],
+                        text_color=theme_colors[4],
+                        button_color=theme_colors[5],
+                        allusers = allusers,
+                        friendsList=friendsList,
+                        friend_ids=friend_ids)
 
-        db.dbFriends.insert(
-                userID=form_userID, 
-                friendToWhoID=getIDFromUserTable(loggedInUserId), 
-                profile_pic=dbUserEntry[0]["profile_pic"], 
-                display_name=dbUserEntry[0]["display_name"], 
-                bio_status=dbUserEntry[0]["bio_status"], 
-                active_stat=dbUserEntry[0]["active_stat"]
-            )
+        db.dbFriends.insert(userID=form_userID, 
+                            friendToWhoID=getIDFromUserTable(loggedInUserId), 
+                            profile_pic=dbUserEntry[0]["profile_pic"], 
+                            display_name=dbUserEntry[0]["display_name"], 
+                            bio_status=dbUserEntry[0]["bio_status"], 
+                            active_stat=dbUserEntry[0]["active_stat"])
         return redirect(URL('add_friend'))
 
 # Function that follows a user from their profile.
@@ -1281,16 +1271,16 @@ def getTopSongs(userID=None):
         term = (db.dbUser[getIDFromUserTable(userID)]).chosen_term 
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
-        term_str = 'last 4 weeks'	
+        termStr = 'last 4 weeks'	
         termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
     elif term == '2':	
-        term_str = 'last 6 months'	
+        termStr = 'last 6 months'	
         termList = db(db.mediumTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
     elif term == '3':	
-        term_str = 'of all time'	
+        termStr = 'of all time'	
         termList = db(db.longTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
     else:	
-        term_str = 'last 4 weeks'	
+        termStr = 'last 4 weeks'	
         termList = db(db.shortTerm.topTracksOfWho == getIDFromUserTable(userID)).select().as_list()
 
     # Get the fields from the termList, but only if they have a reference in it 
@@ -1310,7 +1300,7 @@ def getTopSongs(userID=None):
         trackLinks = fillerTopTracks
         artistLinks = fillerTopTracks
 
-    return dict(term_str=term_str, topTracks=topTracks, topArtists=topArtists,
+    return dict(termStr=termStr, topTracks=topTracks, topArtists=topArtists,
     imgList=imgList, trackLinks=trackLinks, artistLinks=artistLinks, session=session)
 
 # NEEDS SECURITY CHECK
@@ -1466,19 +1456,19 @@ def getTopArtists(userID=None):
     # Obtains the whole entry of the user in the correct table.
     # Also sets the term string to display on the dropdown menu.
     if term == '1':	
-        term_str = 'last 4 weeks'	
+        termStr = 'last 4 weeks'	
         termList = db(db.shortArtists.topArtistsOfWho 
                 == getIDFromUserTable(userID)).select().as_list()	
     elif term == '2':	
-        term_str = 'last 6 months'	
+        termStr = 'last 6 months'	
         termList = db(db.mediumArtists.topArtistsOfWho 
                 == getIDFromUserTable(userID)).select().as_list()	
     elif term == '3':	
-        term_str = 'of all time'	
+        termStr = 'of all time'	
         termList = db(db.longArtists.topArtistsOfWho
                  == getIDFromUserTable(userID)).select().as_list()	
     else:	
-        term_str = 'last 4 weeks'	
+        termStr = 'last 4 weeks'	
         termList = db(db.shortArtists.topArtistsOfWho 
                 == getIDFromUserTable(userID)).select().as_list()
 
@@ -1499,7 +1489,7 @@ def getTopArtists(userID=None):
         genres = [[""], [""], [""], [""], [""]]
         followers = fillerTopArtists
 
-    return dict(term_str=term_str, topArtists=topArtists, imgList=imgList,
+    return dict(termStr=termStr, topArtists=topArtists, imgList=imgList,
     artistLinks=artistLinks, genres=genres, followers=followers, session=session)
 
 # Changes the chosen term for top tracks of the user. Posts the change

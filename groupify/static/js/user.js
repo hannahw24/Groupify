@@ -41,7 +41,7 @@ let init = (app) => {
     };
     
     //Used to save the album cover art for the user profiles. 
-    app.save_bio = (content) => {
+    app.saveBio = (content) => {
         // Send bio to server
         axios.post(userBio, null, {params: {
             content: content,
@@ -53,17 +53,17 @@ let init = (app) => {
                 app.data.bio = content;
                 app.data.originalBio = content;
             }).catch(() => {
-                console.log("Caught error");
+                console.log("Caught error in saveBio");
             });
         };
     
     // User discards change to bio
-    app.cancel_bio = () => {
+    app.cancelBio = () => {
         app.data.bio = app.data.originalBio;
         app.data.isEditingBio = 0;
         };
     
-    // Get ative status from server
+    // Get active status from server
     app.getStat = () => {
         axios.get(userStat).then((result) => {
             let active = result.data.userStat;
@@ -74,7 +74,7 @@ let init = (app) => {
     }
 
     // Save active status
-    app.save_stat = (content) => {
+    app.saveStat = (content) => {
         // Send status to server
         axios.post(userStat, null, {params: {
             content: content,
@@ -86,12 +86,12 @@ let init = (app) => {
                 app.data.active = content;
                 app.data.originalActive = content;      
             }).catch(() => {
-                console.log("Caught error");
+                console.log("Caught error in saveStat");
             });
         };
     
     // User discards change to active status
-    app.cancel_stat = () => {
+    app.cancelStat = () => {
         app.data.active = app.data.originalActive;
         app.data.isEditingStatus = 0;
         };
@@ -115,7 +115,7 @@ let init = (app) => {
         axios.get(getTopSongs, {params: {
             term: term
             }}).then((result) => {
-            app.data.termString = result.data.term_str;
+            app.data.termString = result.data.termStr;
             app.data.topTracks = result.data.topTracks;
             app.data.topArtists = result.data.topArtists;
             app.data.imgList = result.data.imgList;
@@ -133,7 +133,7 @@ let init = (app) => {
                 }}).then(() => {
                     app.seeTerm(); 
                 }).catch(() => {
-                    console.log("Caught error");
+                    console.log("Caught error in changeTerm");
                 });
         }
         else {
@@ -147,7 +147,7 @@ let init = (app) => {
             term: term
             }}).then((result) => {
             app.data.artistNames = result.data.topArtists;
-            app.data.artistTerm = result.data.term_str;
+            app.data.artistTerm = result.data.termStr;
             app.data.artistImages = result.data.imgList;
             app.data.artistURLs = result.data.artistLinks;
             app.data.genres = result.data.genres;
@@ -169,7 +169,7 @@ let init = (app) => {
             });
         }
     
-    //Called to change the term of top 10 songs
+    // Called to change the term of top 10 songs
     app.changeArtistTerm = (term, editable) => {
         if (editable == "True") {
             axios.post(getTopArtists, null, {params: {
@@ -177,7 +177,7 @@ let init = (app) => {
                 }}).then(() => {
                     app.seeArtistTerm(); 
                 }).catch(() => {
-                    console.log("Caught error");
+                    console.log("Caught error in changeArtistTerm");
                 });
         }
         else {
@@ -194,6 +194,7 @@ let init = (app) => {
             var res = app.data.genres[i].split("'");
             res.splice(0, 1);
             res.splice(res.length-1, 1);
+            // Stores at a maximum two genres of the artist.
             for (j = 0; j < Math.min(res.length, 3); j++) {
                 tempString += res[j];
             }
@@ -207,10 +208,10 @@ let init = (app) => {
     // to the Vue app in a single blow.
     app.methods = {
         controlEditButton: app.controlEditButton,
-        save_bio: app.save_bio,
-        cancel_bio: app.cancel_bio,
-        save_stat: app.save_stat,
-        cancel_stat: app.cancel_stat,
+        saveBio: app.saveBio,
+        cancelBio: app.cancelBio,
+        saveStat: app.saveStat,
+        cancelStat: app.cancelStat,
         seeTerm: app.seeTerm,
         changeTerm: app.changeTerm,
         seeArtistTerm: app.seeArtistTerm,
