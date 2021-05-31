@@ -1,27 +1,49 @@
 import unittest
 import requests
 from pydal import DAL, Field
+import sys
+from .common import db, session
 from . import controllers
-import json
-
 
 #F.I.R.S.T = Fast Independent Repeatable Self-validating Thorough 
+
+db = DAL("sqlite:memory")
+db.define_table(
+    'dbUser',
+    Field('userID', notnull=True, unique=True),
+    Field('display_name'),
+    Field('chosen_theme'),
+    Field('bio_status'),
+    Field('active_stat'),
+    Field('profile_pic'),
+    Field('chosen_term'),
+    Field('artist_term'),
+    Field('premiumStatus'),
+    )
+db.define_table(
+    'playlists',
+    #Change this to one big field with 1 list with 6 index [0][1]...
+    #Also just return the albumsOfWho ID for albumInput because it should be unique. 
+    Field('names', 'list:string'), 
+    Field('images', 'list:string'),
+    Field('links', 'list:string'), 
+    Field('descriptions', 'list:string'),
+    Field('playlistsOfWho', db.dbUser)
+    )
+
 class TestUserProfileResponses(unittest.TestCase):
 
     localURL = 'http://127.0.0.1:8000/groupify'
     hostedURL = 'http://shams.pythonanywhere.com/groupify'
-
-    #def setUp(self):
-        #print('setUp')
-
-    #def tearDown(self):
-        #print('tearDown')
 
     def testExistingProfileReturnsOK(self):
         print('testExistingProfileReturnsOK\n')
         # URL to non existent user. 
         localGroupSessionURL = self.localURL + "/user/122858386"
         response = requests.head(localGroupSessionURL)
+        self.assertEqual(response.ok, True)
+        hostedGroupSessionURL = self.hostedURL + "/user/122858386"
+        response = requests.head(hostedGroupSessionURL)
         self.assertEqual(response.ok, True)
 
     # Checks if user is redirected to a "user does not exist" page when placing an incorrect userID
@@ -30,6 +52,9 @@ class TestUserProfileResponses(unittest.TestCase):
         # URL to non existent user. 
         localGroupSessionURL = self.localURL + "/user/1"
         response = requests.head(localGroupSessionURL)
+        self.assertEqual(response.is_redirect, True)
+        hostedGroupSessionURL = self.hostedURL + "/user/1"
+        response = requests.head(hostedGroupSessionURL)
         self.assertEqual(response.is_redirect, True)
 
 class TestGroupSessionResponses(unittest.TestCase):
@@ -43,6 +68,10 @@ class TestGroupSessionResponses(unittest.TestCase):
         localGroupSessionURL = self.localURL + "/groupSession/122858386"
         response = requests.head(localGroupSessionURL)
         self.assertEqual(response.ok, True)
+        hostedGroupSessionURL = self.hostedURL + "/groupSession/122858386"
+        response = requests.head(hostedGroupSessionURL)
+        self.assertEqual(response.ok, True)
+
 
     def testGroupSessionRedirectOnNonExistentUser(self):
         print('testGroupSessionRedirectOnNonExistentUser\n')
@@ -50,42 +79,25 @@ class TestGroupSessionResponses(unittest.TestCase):
         localGroupSessionURL = self.localURL + "/groupSession/1"
         response = requests.head(localGroupSessionURL)
         self.assertEqual(response.is_redirect, True)
+        hostedGroupSessionURL = self.hostedURL + "/groupSession/122858386"
+        response = requests.head(hostedGroupSessionURL)
+        self.assertEqual(response.is_redirect, True)
 
 class TestPlaylistParsingAndStorage(unittest.TestCase):
 
+    # Creates a dbUser entry
     @classmethod
     def setUpClass(self):
-        self.db = DAL("sqlite:memory")
-        self.db.define_table(
-            'dbUser',
-            Field('userID', notnull=True, unique=True),
-            Field('display_name'),
-            Field('chosen_theme'),
-            Field('bio_status'),
-            Field('active_stat'),
-            Field('profile_pic'),
-            Field('chosen_term'),
-            Field('artist_term'),
-            Field('premiumStatus'),
-        )
-        self.db.define_table(
-            'playlists',
-            #Change this to one big field with 1 list with 6 index [0][1]...
-            #Also just return the albumsOfWho ID for albumInput because it should be unique. 
-            Field('names', 'list:string'), 
-            Field('images', 'list:string'),
-            Field('links', 'list:string'), 
-            Field('descriptions', 'list:string'),
-            Field('playlistsOfWho', self.db.dbUser)
-        )
-        self.insertionID = self.db.dbUser.insert(userID=1, display_name="tester", profile_pic="")
-        self.db.commit()
-        self.dbUser = (self.db(self.db.dbUser.id == self.insertionID).select().as_list())
-        print (self.dbUser)
+        self.insertionID = db.dbUser.insert(userID=1, display_name="tester", profile_pic="")
+        db.commit()
+        self.dbUser = (db(db.dbUser.id == self.insertionID).select().as_list())
         return
     
+    # Deletes the user entry stored in the database, along with any references to it.
     @classmethod
     def tearDownClass(self):
+        db(db.dbUser.userID == self.insertionID).delete()
+        db.commit()
         return
 
     fullPlaylistVariablesJSON = \
@@ -211,16 +223,23 @@ class TestPlaylistParsingAndStorage(unittest.TestCase):
         # string.
         self.assertEqual(descriptionList, [[]])
 
+    # Tests if the parsed information is correctly stored in the database. 
     def testParsedAlbumsAreStoredInDatabase(self):
         print ("testParsedAlbumsAreStoredInDatabase")
         results = self.testParseAlbumResultsReturnsCorrectPlaylistInformation()
+
+        ############################################################################################
+        # The following code is emulating storePlaylists() from controllers.py
+        # The function in its current state cannot accept a constructor injection giving it the 
+        # parsed playlist information that is tested in 
+        # testParseAlbumResultsReturnsCorrectPlaylistInformation()
         playlistNames = results[0]
         playlistImages = results[1]
         playlistURLs = results[2]
         descriptions = results[3]
 
         # Tries to find the entry of the user in the playlist table
-        playlistEntry = (self.db(self.db.playlists.playlistsOfWho 
+        playlistEntry = (db(db.playlists.playlistsOfWho 
                         == self.insertionID).select().as_list())
 
         # Is their playlist entry already populated?
@@ -232,7 +251,7 @@ class TestPlaylistParsingAndStorage(unittest.TestCase):
                 playlistImages = []
                 playlistURLs = []
                 descriptions = []
-            insertPlaylistID = self.db.playlists.insert(names=playlistNames, images=playlistImages,
+            insertPlaylistID = db.playlists.insert(names=playlistNames, images=playlistImages,
                                 links=playlistURLs, descriptions=descriptions, 
                                 playlistsOfWho=insertedID)
         # If there are already playlists, then update the information
@@ -244,14 +263,16 @@ class TestPlaylistParsingAndStorage(unittest.TestCase):
                 playlistURLs = []
                 descriptions = []
             # Finds the correct user entry
-            dbRow = self.db(self.db.playlists.playlistsOfWho == insertedID)
+            dbRow = db(db.playlists.playlistsOfWho == insertedID)
             insertPlaylistID = dbRow.update(names=playlistNames, images=playlistImages,
                         links=playlistURLs, descriptions=descriptions)
-        print((self.db(self.db.playlists.id == insertPlaylistID).select().as_list()))
-        self.db.commit()
-
-        insertPlaylistEntry = (self.db(self.db.playlists.id == insertPlaylistID).select().as_list())
+        db.commit()
+        ############################################################################################
         
+        # Getting the table entry where the playlist information is stored.
+        insertPlaylistEntry = (db(db.playlists.id == insertPlaylistID).select().as_list())
+        
+        # Checking that the table entry has the correct playlist information stored.
         self.assertEqual(insertPlaylistEntry[0]["names"], ["West coast"])
         self.assertEqual(insertPlaylistEntry[0]["images"], 
                         ['https://i.scdn.co/image/ab67706c0000bebb6f4e8d14163c77eaaaa49463'])
@@ -261,30 +282,33 @@ class TestPlaylistParsingAndStorage(unittest.TestCase):
                         ['MUSC 80P forced me to listen to this'])
 
 
-class TestAlbumParsingAndStorage(unittest.TestCase):
-    def testParseAlbumResults(self):
+class TestDeleteProfile(unittest.TestCase):
+    # Creates a dbUser and playlists entry
+    @classmethod
+    def setUpClass(self):
+        self.dbuserInsertionID = db.dbUser.insert(userID=1, display_name="tester", profile_pic="")
+        self.insertPlaylistID = db.playlists.insert(names=["test name"], images=["none"],
+                                links=["ucsc.edu"], descriptions=["test description"], 
+                                playlistsOfWho=self.dbuserInsertionID)        
+        db.commit()
+
+    # Tests if deleting a dbUser table entry will also delete the reference to it in 
+    # the playlists table.
+    def testDeleteProfileActionDeletesAllInstancesFromDatabase(self):
+        print("testDeleteProfileActionDeletesAllInstancesFromDatabase")
+        dbUser = (db(db.dbUser.id == self.dbuserInsertionID)).select().as_list()
+        playlists = (db(db.playlists.playlistsOfWho == self.dbuserInsertionID)).select().as_list()
+        # Assert that the entry has been filled with something, and therefore is not an empty list
+        self.assertNotEqual(dbUser, [])
+        self.assertNotEqual(playlists, [])
+        db(db.dbUser.userID == 1).delete()
+        # Assert that the entry has been deleted, and therefore the list is empty.
+        dbUser = (db(db.dbUser.id == self.dbuserInsertionID)).select().as_list()
+        playlists = (db(db.playlists.playlistsOfWho == self.dbuserInsertionID)).select().as_list()
+        self.assertEqual(dbUser, [])
+        self.assertEqual(playlists, [])
+        db.commit()
         return
-        #results = controllers.parseAlbumResults("")
-        #self.assertEqual(results, None)
 
-    # Constructor Injection into a parse functions
-    # Put a mock object in these functions 
-
-    # May need to add dummy objects, things that aren't needed but need to be supplied to the function
-    # for it to run.
-
-    #Try synch button or pause button but need device ID :(
-    
-    # Test the speed of functions that use time.time() to see if it's acceptable window
-
-    # We don't have enough information about the internal state of the functions because they were not designed with unit testing in mind. 
-    # As we learned in lecture we could maybe encapsulate methods or refactor our code to suit the tests but there wasn't enough time to 
-    # ensure all functions would work the same way as before. 
-    # I also didn't want to intermengle testing code with product code. 
-
-    # Integration tests check the interactions between already unit tested components. 
-
-    # Selenium 
-    # easymock
 if __name__ == '__main__':
     unittest.main()

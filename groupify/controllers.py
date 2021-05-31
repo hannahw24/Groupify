@@ -981,6 +981,7 @@ def checkActivePeopleInGroupSession(groupSessionPeopleID=None):
 
 # Loops through dbFriends entries to find if the userID in the parameter is already a friend
 # of the logged in user.
+@action.uses(session)
 def checkIfFriendDuplicate(userID):
     friendsEntries = (db(db.dbFriends.userID == userID).select().as_list())
     friendtowhoID = getIDFromUserTable(session.get("userID"))
