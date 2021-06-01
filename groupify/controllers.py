@@ -23,7 +23,7 @@ from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.url_signer import URLSigner
-from html.parser import HTMLParser
+import html
 from datetime import datetime
 import time
 import os
@@ -641,8 +641,8 @@ def groupSession(userID=None):
 
     # Non premium users will not be allowed inside the groupSession. 
     premiumStatus = loggedInProfileEntry[0]["premiumStatus"]
-    #if (premiumStatus != "premium"):
-        #return nonPremiumUser(session.get("userID"))
+    if (premiumStatus != "premium"):
+        return nonPremiumUser(session.get("userID"))
 
     # Try to get the deviceID of the instance of Spotify the user is listening on.
     deviceID = (getDevice()).get("deviceID")
@@ -981,6 +981,7 @@ def checkActivePeopleInGroupSession(groupSessionPeopleID=None):
 
 # Loops through dbFriends entries to find if the userID in the parameter is already a friend
 # of the logged in user.
+@action.uses(session)
 def checkIfFriendDuplicate(userID):
     friendsEntries = (db(db.dbFriends.userID == userID).select().as_list())
     friendtowhoID = getIDFromUserTable(session.get("userID"))
@@ -1541,48 +1542,49 @@ def parsePlaylistResults(results):
     # Empty lists that will be filled with the information of each playlist, each index in the lists
     # will correspond to a different playlist. Therefore it is important that SOMETHING is placed
     # in the list even if the field like 'description' is empty. 
-    TopSongsList = []
+    playlistNameList = []
     descriptionList = []
-    ImgLinkList = []
-    TLinkList = []
+    imgLinkList = []
+    playlistLinkList = []
     BigList = []
     # Clean any potential HTML markings such as "&'<
-    unescape = HTMLParser().unescape
     for idx, item in enumerate(results['items']):
         # Get items from correct place in given Spotipy dictionary
         playlistName = item['name']
-        playlistName = unescape(playlistName)
+        playlistName = html.unescape(playlistName)
         # Attempts to get the playlist icon, if it doesn't exist put a placeholder
         try:
             icon = item['images'][0]['url']
         except:
             icon = "https://bulma.io/images/placeholders/128x128.png"
-        trLink = item['external_urls']['spotify']
+        playlistLink = item['external_urls']['spotify']
         description = item['description']
-        description = unescape(description)
+        description = html.unescape(description)
         # Append the parsed results to the return lists
-        TopSongsList.append(playlistName)
-        ImgLinkList.append(icon)
-        TLinkList.append(trLink)
-        descriptionList.append(description)
+        playlistNameList.append(playlistName)
+        imgLinkList.append(icon)
+        playlistLinkList.append(playlistLink)
         # Done so the descriptionList matches the length of the other lists
         # inside of BigList
         if description == "":
-            # Warning: this is a string "[]" not an actual list
+            # Warning: this will be treated as a string "[]" not an actual list
+            # appending "" is problematic because it will not be inserted into the database.
             descriptionList.append([])
+        else:
+            descriptionList.append(description)
     # Avoid empty lists
-    if TopSongsList == []:
-        TopSongsList = ""
-    if ImgLinkList == []:
-        ImgLinkList = ""
-    if TLinkList == []:
-        TLinkList = ""
+    if playlistNameList == []:
+        playlistNameList = ""
+    if imgLinkList == []:
+        imgLinkList = ""
+    if playlistLinkList == []:
+        playlistLinkList = ""
     if descriptionList == []:
         descriptionList = ""
     # Add all to list to be returned
-    BigList.append(TopSongsList)
-    BigList.append(ImgLinkList)
-    BigList.append(TLinkList)
+    BigList.append(playlistNameList)
+    BigList.append(imgLinkList)
+    BigList.append(playlistLinkList)
     BigList.append(descriptionList)
     # Returned to the user profile
     return BigList  
@@ -1705,6 +1707,9 @@ def getUserBio(userID=None):
 @action('userBio/<userID>', method=["POST"])
 @action.uses(session)
 def postUserBio(userID=None):
+    # Checks if the user is allowed to edit this person's Bio.
+    if (session.get("userID") != userID):
+        return
     dbBioEntry = db(db.dbUser.userID == userID)
     content = request.params.get('content')
     dbBioEntry.update(bio_status=content)
@@ -1724,6 +1729,9 @@ def getUserStat(userID=None):
 @action('userStat/<userID>', method=["POST"])
 @action.uses(session)
 def postUserStat(userID=None):
+    # Checks if the user is allowed to edit this person's Bio.
+    if (session.get("userID") != userID):
+        return
     dbStatEntry = db(db.dbUser.userID == userID)
     content = request.params.get('content')
     dbStatEntry.update(active_stat=content)
