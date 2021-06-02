@@ -1,0 +1,118 @@
+[[extend 'layout.html']]
+
+<script src="js/searchbar.js"></script>
+<div id="vue-target">
+    <section>
+        <div class="addfriend_panel " style="background-color: [[=tile_color]];">
+            <!-- get back to profile -->
+            <a class="button [[=button_color]]" href="[[=URL(profileURL)]]">
+                <i class="fa fa-backward" aria-hidden="true"></i> &nbsp; Back
+            </a>
+            <div>
+                <h1 class="title has-text-centered blackoutline">
+                    [[if user==userID:]]
+                        <p>Your Artists</p>
+                    [[else:]]
+                        <p>[[=display_name]]'s Artists</p>
+                    [[pass]]
+                </h1>
+                <br>
+            </div>
+            <div class="tile is-child field">
+                <!-- search bar -->
+                <div>
+                    <div class="control has-icons-left has-icons-right">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <!-- Calls function when something is entered -->
+                        <form>
+                            <input id="barInput" class="input" type="text" name="search" v-on:keyup="searchBar()" placeholder="Filter">
+                        </form>
+                        <div class="dropdown is-hoverable">	
+                            <div class="dropdown-trigger">	
+                                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                                    <p>{{artistTerm}} <i class="fas fa-angle-down" aria-hidden="true"></i></p>
+                                </button>	
+                            </div>
+                            <!--Dropdown for what artist list to show-->
+                            <div class="dropdown-menu" id="dropdown-menu4" role="menu">	
+                                <div class="dropdown-content">	
+                                    <a class="dropdown-item" @click="changeArtistTerm('1', [[=editable]]); searchBar()">	
+                                        <p>last 4 weeks</p>	
+                                    </a>	
+                                    <a class="dropdown-item" @click="changeArtistTerm('2', [[=editable]]); searchBar()">	
+                                        <p>last 6 months</p>	
+                                    </a>	
+                                    <a class="dropdown-item" @click="changeArtistTerm('3', [[=editable]]); searchBar()">	
+                                        <p>of all time</p>	
+                                    </a>	
+                                </div>	
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- search results -->
+                <!-- TODO toggle display based off of search results as opposed to automatic updating -->
+                <!-- TODO based off of username or display name -->
+                <div v-if="artistNames[0].length > 0">
+                    <div class="add_friend_results">
+                        <ul id="listItems">
+                            <div v-for="(n, i) in artistNames">
+                                <li>
+                                    <div class="tile is-parent">
+                                        <div class="tile is-child notification" style="background-Color:[[=friend_tile]]; ">
+                                            <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; font-size:x-large; text-decoration:none; margin-left:15px"><strong>{{artistNames[i]}}</strong></a>
+                                            <strong class="is-pulled-right" style="color:[[=text_color]]; font-size:x-large; margin-right:15px">{{i+1}}</strong>
+                                            <section>
+                                                <div class="columns">
+                                                    <div class="column">
+                                                        <!-- Album art image with link to track -->
+                                                        <a :href="artistURLs[i]" target="_blank"><img :src="artistImages[i]" style="height:175px"></a>
+                                                    </div>
+                                                    <div class="column is-9">
+                                                    <!-- Song title with link to track -->
+                                                        <div>
+                                                            <!-- Artist Genres with link to their Spotify page -->
+                                                            <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; text-decoration:none;"> 
+                                                                <span v-if="genres != null">
+                                                                    <strong style="font-size:large">Genres</strong>
+                                                                    <br>
+                                                                    <span v-if="genres[i] != ''">{{genres[i]}}</span>
+                                                                </span>
+                                                            </a>
+                                                            <br>
+                                                            <!-- Artist followers with link to their Spotify page -->
+                                                            <a :href="artistURLs[i]" target="_blank" style="color:[[=text_color]]; text-decoration:none;">
+                                                                <strong v-if="followers[i] != undefined" style="font-size:large">{{followers[i]}} Followers</strong>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                </li>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="level">
+                        <div class="level-item">
+                            <strong style="font-size:x-large">No artists for this term.</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+[[block page_scripts]]
+<script>
+    let getTopArtists = "[[=XML(getTopArtists)]]";
+</script>
+<!-- Loads the user-specific js for Vue -->
+<script src="js/artists.js"></script>
+[[end]]
