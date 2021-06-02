@@ -1,0 +1,177 @@
+[[extend 'layout.html']]
+
+<div id="vue-target">
+    [[userPage = "user/" + session.get("userID") ]]
+    <div class="group_panel panel_spec" style="background-color: white;">
+
+        <nav class="level is-mobile">
+            <!-- Left side -->
+            <div class="level-left" style="width:50%;">
+                <div class="level-item" style="width:100%;justify-content: flex-start;">
+                    <div>
+                        <strong><p style="color:black;" class="labels">[[=hostName]]'s Group Session</p></strong>
+                        <p>Open Spotify to start listening.</p>
+                    </div> 
+                </div>
+            </div>
+            <!-- Right side -->
+            <div class="level-right" style="width:50%;">
+                <div class="level-item" style="width:100%; justify-content: flex-end;">
+                    <!-- get back to profile -->
+                    <a class="button [[=button_color]]" href="[[=URL(userPage)]]">
+                        <i class="fa fa-backward" aria-hidden="true"></i>
+                        &nbsp; Back
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="display_friends">
+        <ul id="listItems">
+            <div class="columns is-multiline">
+                <!-- for loop -->
+                <div v-for="(n, i) in displayNames.length">
+                    <div class="column is-2">
+                    <li>
+                        <div class="tile is-parent">
+                            <div class="tile is-child notification" >
+                                <center>
+                                    <figure class="image is-128x128" >
+                                        <div v-if="displayPictures[i] == 'no profile'">
+                                            <img class="is-rounded profile_photo" href=[[=URL(profileURL)]] 
+                                            src=[[=URL('static', 'images/icon-crop.png')]] width="50">
+                                        </div>
+                                        <div v-else>
+                                            <img class="is-rounded profile_photo"  
+                                            :src=displayPictures[i] width="50">
+                                        </div>
+                                    </figure>
+                                    <br>
+                                    <div>
+                                        <span class="friendname">
+                                        <strong>{{displayNames[i]}}</strong></span>
+                                    </div>
+                                </center>
+                            </div>
+                        </div>
+                    </li>
+                    </div>
+                </div>
+            </div>
+            
+        </ul>
+
+        <!-- song queue -->
+        <div>
+        </div>
+
+        </div>
+
+        <br><br>
+        <div>
+            <!-- Share Session Link -->
+            <strong><p style="color:black;" class="labels">Share Your Session</p></strong>
+            <input type="text" value="[[=(profileURL)]]" id="sessionLink" readonly style="font-size: medium; width: 75%;">
+            <button onclick="getGroupLink()"><i class="fas fa-clipboard"></i></button>
+            <p style="color: green;"> Send this link and invite your friends to listen along!</p> 
+        </div>  
+    </div>
+
+    <div class="queue_panel panel_spec" style="background-color: white;"> 
+        <div class="nowPlayingBox">
+            <figure class="image">
+                <img :src="playingTrackImage">
+            </figure> 
+        </div>
+        <br>
+        
+        <!-- Current Song playing title -->
+        <strong><p>{{playingTrackName}}</p></strong>
+        <span>{{playingTrackArtist}}</span>
+        <nav class="level">
+            <div v-if="displayError != ''" class="level-item has-text-danger has-text-weight-bold">
+                <span class="is-danger">{{displayError}}</span>
+            </div>
+        </nav>
+        
+        <!-- progress bar -->
+        <progress class="progress" :value="songProgressBar" max="100" style="margin-bottom: 2px;"></progress>
+        <!-- progress bar times -->
+        <nav class="level" style="margin-bottom: 1px;">
+            <!-- Left side -->
+            <div class="level-left" style="width:50%;">
+                <div class="level-item" style="width:100%;justify-content: flex-start;">
+                    <span v-if="Number.isNaN(currMinutes) != true">{{currMinutes}}:{{currSeconds}}</span>
+                </div>
+            </div>
+            <!-- Right side -->
+            <div class="level-right" style="width:50%;">
+                <div class="level-item" style="width:100%; justify-content: flex-end;">
+                    <span v-if="Number.isNaN(currMinutes) != true">{{lengthMinutes}}:{{lengthSeconds}}</span>
+                </div>
+            </div>
+        </nav>
+        <!-- play/pause button -->
+        <nav class="level" style="margin-bottom: 1px;">
+            <div class="level-item">
+                <div v-if="isPlaying == false" >
+                    <!-- "key" added to avoid Vue's efficient rendering -->
+                    <button @click="playOrPause(true)" class="button is-white" 
+                    :class="preventButtonsFromBeingClicked ? 'is-loading' : ''" key="play">
+                        <i class="fa fa-play" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div v-else-if="isPlaying == true" >
+                    <button @click="playOrPause(false)" class="button is-white"  
+                    :class="preventButtonsFromBeingClicked ? 'is-loading' : ''" key="pause">
+                        <i class="fa fa-pause" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div v-if="isHost == false" class="level-item">
+            <span v-if="isSynchronizing == false">
+                <button @click="synchronizeVisitorHandler()" class="button is-black" key="synchEnabled" style="width:100px;">
+                    Synchronize
+                </button>            
+            </span>
+            <div v-else>
+                <button class="button is-black" key="synchDisabled" style="width:100px;">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                </button>    
+            </div>
+            <br><br><br>
+        </div>
+        <div> 
+        </div>
+        
+    </div>
+  <!-- defines the box tha confirms save/shows error -->
+  <div id="snackbar">{{message}}</div>
+</div>
+
+
+
+<script>
+function getGroupLink() {
+  var link = document.getElementById("sessionLink");
+  link.select();
+  link.setSelectionRange(0, 99999)
+  document.execCommand("copy");
+  alert("Copied the text: " + link.value);
+}
+</script>
+
+[[block page_scripts]]
+<script>
+    let currentPlaying = "[[=XML(currentPlaying)]]";
+    let isGroupSessionHost = "[[=XML(isGroupSessionHost)]]";
+    let synchronizeVisitor = "[[=XML(synchronizeVisitor)]]";
+    let shouldSynchronizeVisitor = "[[=XML(shouldSynchronizeVisitor)]]";
+    let pauseOrPlayTrack = "[[=XML(pauseOrPlayTrack)]]";
+    let getPeopleInSession = "[[=XML(getPeopleInSession)]]";
+    let removePeopleInSession = "[[=XML(removePeopleInSession)]]";
+    let refreshGroupSession = "[[=XML(refreshGroupSession)]]";
+</script>
+<script src="js/groupSession.js"></script>
+[[end]]
